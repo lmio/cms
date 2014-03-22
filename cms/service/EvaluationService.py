@@ -37,7 +37,7 @@ from collections import namedtuple
 from cms import ServiceCoord, get_service_shards
 from cms.io import Service, rpc_method
 from cms.db import SessionGen, Contest, Dataset, Submission, \
-    SubmissionResult, UserTest, UserTestResult
+    SubmissionResult, UserTest, UserTestResult, get_active_contest_list
 from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
 from cms.grading.Job import JobGroup
@@ -382,7 +382,7 @@ class WorkerPool(object):
         """
         shard = worker_coord.shard
         logger.info("Worker %s online again." % shard)
-        self._worker[shard].precache_files(contest_id=self._service.contest_id)
+        self._worker[shard].precache_files()
         # We don't requeue the job, because a connection lost does not
         # invalidate a potential result given by the worker (as the
         # problem was the connection and not the machine on which the
@@ -648,10 +648,8 @@ class EvaluationService(Service):
     # How often we look for submission not compiled/evaluated.
     JOBS_NOT_DONE_CHECK_TIME = timedelta(seconds=117)
 
-    def __init__(self, shard, contest_id):
+    def __init__(self, shard):
         Service.__init__(self, shard)
-
-        self.contest_id = contest_id
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -688,58 +686,56 @@ class EvaluationService(Service):
         """
         new_jobs = 0
         with SessionGen() as session:
-            contest = session.query(Contest).\
-                filter_by(id=self.contest_id).first()
+            for contest in get_active_contest_list(session):
+                # Only adding submission not compiled/evaluated that have
+                # not yet reached the limit of tries.
+                for submission in contest.get_submissions():
+                    for dataset in get_datasets_to_judge(submission.task):
+                        submission_result = \
+                            submission.get_result_or_create(dataset)
+                        if to_compile(submission_result):
+                            if self.push_in_queue(
+                                    JobQueueEntry(
+                                        EvaluationService.JOB_TYPE_COMPILATION,
+                                        submission.id,
+                                        dataset.id),
+                                    EvaluationService.JOB_PRIORITY_HIGH,
+                                    submission.timestamp):
+                                new_jobs += 1
+                        elif to_evaluate(submission_result):
+                            if self.push_in_queue(
+                                    JobQueueEntry(
+                                        EvaluationService.JOB_TYPE_EVALUATION,
+                                        submission.id,
+                                        dataset.id),
+                                    EvaluationService.JOB_PRIORITY_MEDIUM,
+                                    submission.timestamp):
+                                new_jobs += 1
 
-            # Only adding submission not compiled/evaluated that have
-            # not yet reached the limit of tries.
-            for submission in contest.get_submissions():
-                for dataset in get_datasets_to_judge(submission.task):
-                    submission_result = \
-                        submission.get_result_or_create(dataset)
-                    if to_compile(submission_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_COMPILATION,
-                                    submission.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_HIGH,
-                                submission.timestamp):
-                            new_jobs += 1
-                    elif to_evaluate(submission_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_EVALUATION,
-                                    submission.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_MEDIUM,
-                                submission.timestamp):
-                            new_jobs += 1
-
-            # The same for user tests
-            for user_test in contest.get_user_tests():
-                for dataset in get_datasets_to_judge(user_test.task):
-                    user_test_result = \
-                        user_test.get_result_or_create(dataset)
-                    if user_test_to_compile(user_test_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.
-                                    JOB_TYPE_TEST_COMPILATION,
-                                    user_test.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_HIGH,
-                                user_test.timestamp):
-                            new_jobs += 1
-                    elif user_test_to_evaluate(user_test_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_TEST_EVALUATION,
-                                    user_test.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_MEDIUM,
-                                user_test.timestamp):
-                            new_jobs += 1
+                # The same for user tests
+                for user_test in contest.get_user_tests():
+                    for dataset in get_datasets_to_judge(user_test.task):
+                        user_test_result = \
+                            user_test.get_result_or_create(dataset)
+                        if user_test_to_compile(user_test_result):
+                            if self.push_in_queue(
+                                    JobQueueEntry(
+                                        EvaluationService.
+                                        JOB_TYPE_TEST_COMPILATION,
+                                        user_test.id,
+                                        dataset.id),
+                                    EvaluationService.JOB_PRIORITY_HIGH,
+                                    user_test.timestamp):
+                                new_jobs += 1
+                        elif user_test_to_evaluate(user_test_result):
+                            if self.push_in_queue(
+                                    JobQueueEntry(
+                                        EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                                        user_test.id,
+                                        dataset.id),
+                                    EvaluationService.JOB_PRIORITY_MEDIUM,
+                                    user_test.timestamp):
+                                new_jobs += 1
 
             session.commit()
 
@@ -785,7 +781,7 @@ class EvaluationService(Service):
             return False
 
     @rpc_method
-    def submissions_status(self):
+    def submissions_status(self, contest_id):
         """Returns a dictionary of statistics about the number of
         submissions on a specific status. There are seven statuses:
         evaluated, compilation failed, evaluating, compiling, maximum
@@ -796,6 +792,8 @@ class EvaluationService(Service):
 
         The status of a submission is checked on its result for the
         active dataset of its task.
+
+        contest_id (int): id of the contest whose submissions to check
 
         return (dict): statistics on the submissions.
 
@@ -810,7 +808,7 @@ class EvaluationService(Service):
             "max_evaluations": 0,
             "invalid": 0}
         with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
+            contest = Contest.get_from_id(contest_id, session)
             for submission_result in contest.get_submission_results():
                 if submission_result.compilation_failed():
                     stats["compilation_fail"] += 1
@@ -1305,6 +1303,7 @@ class EvaluationService(Service):
                               dataset_id=None,
                               user_id=None,
                               task_id=None,
+                              contest_id=None,
                               level="compilation"):
         """Request to invalidate some computed data.
 
@@ -1312,10 +1311,9 @@ class EvaluationService(Service):
         SubmissionResults that:
         - belong to submission_id or, if None, to any submission of
           user_id and/or task_id or, if both None, to any submission
-          of the contest this service is running for.
+          of contest_id.
         - belong to dataset_id or, if None, to any dataset of task_id
-          or, if None, to any dataset of any task of the contest this
-          service is running for.
+          or, if None, to any dataset of any task of contest_id.
 
         The data is cleared, the jobs involving the submissions
         currently enqueued are deleted, and the ones already assigned
@@ -1326,6 +1324,7 @@ class EvaluationService(Service):
         dataset_id (int): id of the dataset to invalidate, or None.
         user_id (int): id of the user to invalidate, or None.
         task_id (int): id of the task to invalidate, or None.
+        contest_id (int): id of the contest to invalidate, or None.
         level (string): 'compilation' or 'evaluation'
 
         """
@@ -1339,11 +1338,8 @@ class EvaluationService(Service):
 
         with SessionGen() as session:
             submission_results = get_submission_results(
-                # Give contest_id only if all others are None.
-                self.contest_id
-                if {user_id, task_id, submission_id, dataset_id} == {None}
-                else None,
-                user_id, task_id, submission_id, dataset_id, session)
+                contest_id, user_id, task_id, submission_id, dataset_id,
+                session)
 
             logger.info("Submission results to invalidate %s for: %d." %
                         (level, len(submission_results)))

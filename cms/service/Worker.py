@@ -25,7 +25,7 @@ import logging
 import gevent.coros
 
 from cms.io import Service, rpc_method
-from cms.db import SessionGen, Contest
+from cms.db import SessionGen, Contest, get_active_contest_list
 from cms.db.filecacher import FileCacher
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
@@ -66,22 +66,20 @@ class Worker(Service):
         self._ignore_job = True
 
     @rpc_method
-    def precache_files(self, contest_id):
-        """RPC to ask the worker to precache of files in the contest.
-
-        contest_id (int): the id of the contest
+    def precache_files(self):
+        """RPC to ask the worker to precache of files in all active contests.
 
         """
         # Lock is not needed if the admins correctly placed cache and
         # temp directories in the same filesystem. This is what
         # usually happens since they are children of the same,
         # cms-created, directory.
-        logger.info("Precaching files for contest %d." % contest_id)
+        logger.info("Precaching files.")
         with SessionGen() as session:
-            contest = Contest.get_from_id(contest_id, session)
-            for digest in contest.enumerate_files(skip_submissions=True,
-                                                  skip_user_tests=True):
-                self.file_cacher.load(digest)
+            for contest in get_active_contest_list(session):
+                for digest in contest.enumerate_files(skip_submissions=True,
+                                                      skip_user_tests=True):
+                    self.file_cacher.load(digest)
         logger.info("Precaching finished.")
 
     @rpc_method
