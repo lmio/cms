@@ -77,8 +77,8 @@ __all__ = [
     # drop
     "drop_db",
     # util
-    "test_db_connection", "get_contest_list", "is_contest_id",
-    "ask_for_contest",
+    "test_db_connection", "get_contest_list", "get_active_contest_list",
+    "is_contest_id", "ask_for_contest",
 ]
 
 
@@ -110,8 +110,8 @@ from .fsobject import FSObject
 from .init import init_db
 from .drop import drop_db
 
-from .util import test_db_connection, get_contest_list, is_contest_id, \
-    ask_for_contest
+from .util import test_db_connection, get_contest_list, \
+    get_active_contest_list, is_contest_id, ask_for_contest
 
 
 configure_mappers()

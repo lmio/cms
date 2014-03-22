@@ -126,6 +126,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_timedelta_sec(attrs, "per_user_time")
             self.get_int(attrs, "score_precision")
 
+            self.get_bool(attrs, "active")
+
             # Update the contest.
             contest.set_attrs(attrs)
 

@@ -82,6 +82,13 @@
       </td>
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Whether this contest should be handled by CMS services."></span>
+        Active
+      </td>
+      <td><input type="checkbox" name="active" {{ "checked" if contest.active else "" }}></td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>
