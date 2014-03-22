@@ -597,6 +597,8 @@ class AddContestHandler(BaseHandler):
             self.get_timedelta_sec(attrs, "per_user_time")
             self.get_int(attrs, "score_precision")
 
+            self.get_bool(attrs, "active")
+
             # Create the contest.
             contest = Contest(**attrs)
             self.sql_session.add(contest)
@@ -654,6 +656,8 @@ class ContestHandler(BaseHandler):
             self.get_string(attrs, "timezone", empty=None)
             self.get_timedelta_sec(attrs, "per_user_time")
             self.get_int(attrs, "score_precision")
+
+            self.get_bool(attrs, "active")
 
             # Update the contest.
             contest.set_attrs(attrs)
