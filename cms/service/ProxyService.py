@@ -97,6 +97,24 @@ def safe_put_data(ranking, resource, data, operation):
         raise CannotSendError(msg)
 
 
+def get_ranking_contests(index):
+    """Get the set of contest ids to send to the RWS specified by index.
+
+    index (int): The index of the RWS as specified in the config.
+
+    return ({int}|None): The set of contest ids, or None if the RWS should
+        handle all active contests.
+
+    """
+    if index >= len(config.ranking_contests):
+        return None
+    contests = config.ranking_contests[index]
+    if isinstance(contests, (list, tuple, set)):
+        return set(contests)
+    else:
+        return {contests}
+
+
 class RankingProxy(object):
 
     """A thread that sends data to one ranking.
@@ -139,7 +157,7 @@ class RankingProxy(object):
     # before trying again.
     FAILURE_WAIT = 60.0
 
-    def __init__(self, ranking):
+    def __init__(self, ranking, contests):
         """Create a proxy for the ranking at the given URL.
 
         ranking (bytes): a complete URL (containing protocol, username,
@@ -148,7 +166,19 @@ class RankingProxy(object):
 
         """
         self.ranking = ranking
+        self.contests = contests
         self.data_queue = gevent.queue.JoinableQueue()
+
+    def can_handle_contest(self, contest_id):
+        """Determine whether data about contest_id should be sent to this RWS.
+
+        contest_id (int): id of the contest
+
+        return (bool): True if this ranking handles contest_id.
+        """
+        if self.contests is None:
+            return True
+        return contest_id in self.contests
 
     def run(self):
         """Consume (i.e. send) the data put in the queue, forever.
@@ -263,8 +293,9 @@ class ProxyService(Service):
 
         # Create and spawn threads to send data to rankings.
         self.rankings = list()
-        for ranking in config.rankings:
-            proxy = RankingProxy(ranking.encode('utf-8'))
+        for i, ranking in enumerate(config.rankings):
+            contests = get_ranking_contests(i)
+            proxy = RankingProxy(ranking.encode('utf-8'), contests)
             gevent.spawn(proxy.run)
             self.rankings.append(proxy)
 
@@ -319,10 +350,6 @@ class ProxyService(Service):
         """
         logger.info("Initializing rankings.")
 
-        contests = dict()
-        users = dict()
-        tasks = dict()
-
         with SessionGen() as session:
             for contest in get_active_contest_list(session):
                 contest_id = encode_id(contest.name)
@@ -331,7 +358,8 @@ class ProxyService(Service):
                     "begin": int(make_timestamp(contest.start)),
                     "end": int(make_timestamp(contest.stop)),
                     "score_precision": contest.score_precision}
-                contests[contest_id] = contest_data
+
+                users = dict()
 
                 for user in contest.users:
                     if not user.hidden:
@@ -339,6 +367,8 @@ class ProxyService(Service):
                             {"f_name": user.first_name,
                              "l_name": user.last_name,
                              "team": None}
+
+                tasks = dict()
 
                 for task in contest.tasks:
                     score_type = get_score_type(dataset=task.active_dataset)
@@ -351,10 +381,12 @@ class ProxyService(Service):
                          "extra_headers": score_type.ranking_headers,
                          "score_precision": task.score_precision}
 
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.CONTEST_TYPE, contests))
-            ranking.data_queue.put((ranking.USER_TYPE, users))
-            ranking.data_queue.put((ranking.TASK_TYPE, tasks))
+                for ranking in self.rankings:
+                    if ranking.can_handle_contest(contest.id):
+                        ranking.data_queue.put((ranking.CONTEST_TYPE,
+                                                {contest_id: contest_data}))
+                        ranking.data_queue.put((ranking.USER_TYPE, users))
+                        ranking.data_queue.put((ranking.TASK_TYPE, tasks))
 
     def send_score(self, submission):
         """Send the score for the given submission to all rankings.
@@ -387,10 +419,11 @@ class ProxyService(Service):
 
         # Adding operations to the queue.
         for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
+            if ranking.can_handle_contest(submission.task.contest_id):
+                ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                        {submission_id: submission_data}))
+                ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                        {subchange_id: subchange_data}))
 
         self.scores_sent_to_rankings.add(submission.id)
 
@@ -417,10 +450,11 @@ class ProxyService(Service):
 
         # Adding operations to the queue.
         for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
+            if ranking.can_handle_contest(submission.task.contest_id):
+                ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                        {submission_id: submission_data}))
+                ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                        {subchange_id: subchange_data}))
 
         self.tokens_sent_to_rankings.add(submission.id)
 

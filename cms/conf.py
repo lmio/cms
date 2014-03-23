@@ -105,6 +105,7 @@ class Config(object):
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
+        self.ranking_contests = []
 
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \
