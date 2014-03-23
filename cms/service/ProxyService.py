@@ -108,10 +108,29 @@ def safe_put_data(ranking, resource, data, operation):
         raise CannotSendError(msg)
 
 
+def get_ranking_contests(index):
+    """Get the set of contest ids to send to the RWS specified by index.
+
+    index (int): The index of the RWS as specified in the config.
+
+    return ({int}|None): The set of contest ids, or None if the RWS should
+        handle all active contests.
+
+    """
+    if index >= len(config.ranking_contests):
+        return None
+    contests = config.ranking_contests[index]
+    if isinstance(contests, (list, tuple, set)):
+        return set(contests)
+    else:
+        return {contests}
+
+
 class ProxyOperation(QueueItem):
-    def __init__(self, type_, data):
+    def __init__(self, type_, data, contest_id=None):
         self.type_ = type_
         self.data = data
+        self.contest_id = contest_id
 
     def __str__(self):
         return "sending data of type %s to ranking" % (
@@ -163,7 +182,7 @@ class ProxyExecutor(Executor):
     # before trying again.
     FAILURE_WAIT = 60.0
 
-    def __init__(self, ranking):
+    def __init__(self, ranking, contests):
         """Create a proxy for the ranking at the given URL.
 
         ranking (bytes): a complete URL (containing protocol, username,
@@ -174,6 +193,24 @@ class ProxyExecutor(Executor):
         super(ProxyExecutor, self).__init__(batch_executions=True)
 
         self._ranking = ranking
+        self.contests = contests
+
+    def can_handle_contest(self, contest_id):
+        """Determine whether data about contest_id should be sent to this RWS.
+
+        contest_id (int): id of the contest
+
+        return (bool): True if this ranking handles contest_id.
+        """
+        if self.contests is None:
+            return True
+        return contest_id in self.contests
+
+    def enqueue(self, item, priority=None, timestamp=None):
+        if item.contest_id is not None and \
+                not self.can_handle_contest(item.contest_id):
+            return False
+        return super(ProxyExecutor, self).enqueue(item, priority, timestamp)
 
     def execute(self, entries):
         """Consume (i.e. send) the data put in the queue, forever.
@@ -263,8 +300,9 @@ class ProxyService(TriggeredService):
 
         # Create one executor for each ranking.
         self.rankings = list()
-        for ranking in config.rankings:
-            self.add_executor(ProxyExecutor(ranking))
+        for i, ranking in enumerate(config.rankings):
+            contests = get_ranking_contests(i)
+            self.add_executor(ProxyExecutor(ranking, contests))
 
         # Enqueue the dispatch of some initial data to rankings. Needs
         # to be done before the sweeper is started, as otherwise RWS
@@ -360,10 +398,14 @@ class ProxyService(TriggeredService):
                     }
 
                 self.enqueue(ProxyOperation(ProxyExecutor.CONTEST_TYPE,
-                                            {contest_id: contest_data}))
-                self.enqueue(ProxyOperation(ProxyExecutor.TEAM_TYPE, teams))
-                self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users))
-                self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks))
+                                            {contest_id: contest_data},
+                                            contest.id))
+                self.enqueue(ProxyOperation(ProxyExecutor.TEAM_TYPE, teams,
+                                            contest.id))
+                self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users,
+                                            contest.id))
+                self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks,
+                                            contest.id))
 
     def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
@@ -397,9 +439,11 @@ class ProxyService(TriggeredService):
 
         return [
             ProxyOperation(ProxyExecutor.SUBMISSION_TYPE,
-                           {submission_id: submission_data}),
+                           {submission_id: submission_data},
+                           submission.task.contest_id),
             ProxyOperation(ProxyExecutor.SUBCHANGE_TYPE,
-                           {subchange_id: subchange_data})]
+                           {subchange_id: subchange_data},
+                           submission.task.contest_id)]
 
     def operations_for_token(self, submission):
         """Send the token for the given submission to all rankings.
@@ -426,9 +470,11 @@ class ProxyService(TriggeredService):
 
         return [
             ProxyOperation(ProxyExecutor.SUBMISSION_TYPE,
-                           {submission_id: submission_data}),
+                           {submission_id: submission_data},
+                           submission.task.contest_id),
             ProxyOperation(ProxyExecutor.SUBCHANGE_TYPE,
-                           {subchange_id: subchange_data})]
+                           {subchange_id: subchange_data},
+                           submission.task.contest_id)]
 
     @rpc_method
     def reinitialize(self):
