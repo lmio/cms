@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,7 +37,8 @@ from urlparse import urljoin, urlsplit
 
 from cms import config
 from cms.io import Service, rpc_method
-from cms.db import SessionGen, Contest, Task, Submission
+from cms.db import SessionGen, Contest, Task, Submission, \
+    get_active_contest_list
 from cms.grading.scoretypes import get_score_type
 from cmscommon.datetime import make_timestamp
 
@@ -239,7 +241,7 @@ class ProxyService(Service):
     # How often we look for submission not scored/tokened.
     JOBS_NOT_DONE_CHECK_TIME = 347.0
 
-    def __init__(self, shard, contest_id):
+    def __init__(self, shard):
         """Start the service with the given parameters.
 
         Create an instance of the ProxyService and make it listen on
@@ -250,12 +252,9 @@ class ProxyService(Service):
             corresponds to the shard-th entry in the list of addresses
             (hostname/port pairs) for this kind of service in the
             configuration file.
-        contest_id (int): the ID of the contest to manage.
 
         """
         Service.__init__(self, shard)
-
-        self.contest_id = contest_id
 
         # Store what data we already sent to rankings. This is to aid
         # search_jobs_not_done determine what data we didn't send yet.
@@ -291,21 +290,20 @@ class ProxyService(Service):
         job_count = 0
 
         with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
+            for contest in get_active_contest_list(session):
+                for submission in contest.get_submissions():
+                    if submission.user.hidden:
+                        continue
 
-            for submission in contest.get_submissions():
-                if submission.user.hidden:
-                    continue
+                    if submission.get_result().scored() and \
+                            submission.id not in self.scores_sent_to_rankings:
+                        self.send_score(submission)
+                        job_count += 1
 
-                if submission.get_result().scored() and \
-                        submission.id not in self.scores_sent_to_rankings:
-                    self.send_score(submission)
-                    job_count += 1
-
-                if submission.tokened() and \
-                        submission.id not in self.tokens_sent_to_rankings:
-                    self.send_token(submission)
-                    job_count += 1
+                    if submission.tokened() and \
+                            submission.id not in self.tokens_sent_to_rankings:
+                        self.send_token(submission)
+                        job_count += 1
 
         logger.info("Found %d unsent subchanges." % job_count)
 
@@ -321,46 +319,40 @@ class ProxyService(Service):
         """
         logger.info("Initializing rankings.")
 
+        contests = dict()
+        users = dict()
+        tasks = dict()
+
         with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
+            for contest in get_active_contest_list(session):
+                contest_id = encode_id(contest.name)
+                contest_data = {
+                    "name": contest.description,
+                    "begin": int(make_timestamp(contest.start)),
+                    "end": int(make_timestamp(contest.stop)),
+                    "score_precision": contest.score_precision}
+                contests[contest_id] = contest_data
 
-            if contest is None:
-                logger.error("Received request for unexistent contest "
-                             "id %s." % self.contest_id)
-                raise KeyError("Contest not found.")
+                for user in contest.users:
+                    if not user.hidden:
+                        users[encode_id(user.username)] = \
+                            {"f_name": user.first_name,
+                             "l_name": user.last_name,
+                             "team": None}
 
-            contest_id = encode_id(contest.name)
-            contest_data = {
-                "name": contest.description,
-                "begin": int(make_timestamp(contest.start)),
-                "end": int(make_timestamp(contest.stop)),
-                "score_precision": contest.score_precision}
-
-            users = dict()
-
-            for user in contest.users:
-                if not user.hidden:
-                    users[encode_id(user.username)] = \
-                        {"f_name": user.first_name,
-                         "l_name": user.last_name,
-                         "team": None}
-
-            tasks = dict()
-
-            for task in contest.tasks:
-                score_type = get_score_type(dataset=task.active_dataset)
-                tasks[encode_id(task.name)] = \
-                    {"short_name": task.name,
-                     "name": task.title,
-                     "contest": encode_id(contest.name),
-                     "order": task.num,
-                     "max_score": score_type.max_score,
-                     "extra_headers": score_type.ranking_headers,
-                     "score_precision": task.score_precision}
+                for task in contest.tasks:
+                    score_type = get_score_type(dataset=task.active_dataset)
+                    tasks[encode_id(task.name)] = \
+                        {"short_name": task.name,
+                         "name": task.title,
+                         "contest": encode_id(contest.name),
+                         "order": task.num,
+                         "max_score": score_type.max_score,
+                         "extra_headers": score_type.ranking_headers,
+                         "score_precision": task.score_precision}
 
         for ranking in self.rankings:
-            ranking.data_queue.put((ranking.CONTEST_TYPE,
-                                    {contest_id: contest_data}))
+            ranking.data_queue.put((ranking.CONTEST_TYPE, contests))
             ranking.data_queue.put((ranking.USER_TYPE, users))
             ranking.data_queue.put((ranking.TASK_TYPE, tasks))
 
