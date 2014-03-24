@@ -31,7 +31,7 @@ from __future__ import unicode_literals
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum
+from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, Boolean
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
@@ -178,6 +178,12 @@ class Contest(Base):
         CheckConstraint("score_precision >= 0"),
         nullable=False,
         default=0)
+
+    # Whether this contest should be handled by CMS services.
+    active = Column(
+        Boolean,
+        nullable=False,
+        default=False)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

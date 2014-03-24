@@ -25,7 +25,6 @@ gevent.monkey.patch_all()
 import sys
 
 from cms import default_argument_parser
-from cms.db import ask_for_contest
 from cms.service.ProxyService import ProxyService
 
 
@@ -34,8 +33,7 @@ def main():
 
     """
     return default_argument_parser("Ranking relayer for CMS.",
-                                   ProxyService,
-                                   ask_contest=ask_for_contest).run()
+                                   ProxyService).run()
 
 
 if __name__ == "__main__":

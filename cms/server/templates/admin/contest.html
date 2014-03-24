@@ -94,6 +94,10 @@
       <td>The number of decimal places the scores will be rounded to</td>
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
+    <tr>
+      <td>Active</td>
+      <td><input type="checkbox" name="active" {% if contest.active %}checked{% end %}></td>
+    </tr>
   </table>
   <input type="submit" value="Update">
   <input type="reset" value="Reset">

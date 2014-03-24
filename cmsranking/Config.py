@@ -75,6 +75,14 @@ class Config(object):
                                   "cms.ranking.conf"),
                      os.path.join("/", "etc", "cms.ranking.conf")]
 
+        # Allow user to override config file path using environment
+        # variable 'CMS_RANKING_CONFIG'.
+        CMS_CONFIG_ENV_VAR = "CMS_RANKING_CONFIG"
+        if CMS_CONFIG_ENV_VAR in os.environ:
+            paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
+
+        self._load(paths)
+
         try:
             os.makedirs(self.lib_dir)
         except OSError:
@@ -89,8 +97,6 @@ class Config(object):
             os.makedirs(self.log_dir)
         except OSError:
             pass  # We assume the directory already exists...
-
-        self._load(paths)
 
     def get(self, key):
         """Get the config value for the given key.
