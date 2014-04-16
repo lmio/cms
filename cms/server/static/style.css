@@ -219,10 +219,10 @@ ul.normal_list {
     left: 345px;
     top: 0px;
     bottom: 0px;
+    right: 0px;
     display: none;
     margin-bottom: 1em;
     padding: 1.5em 1em 0 1em;
-    width: 660px;
     z-index: 10;
 }
 
