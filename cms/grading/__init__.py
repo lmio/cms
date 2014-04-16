@@ -30,7 +30,8 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
+from cms import LANG_C, LANG_CPP, LANG_CPP11, LANG_PASCAL, LANG_PYTHON,\
+    LANG_PHP, LANG_JAVA
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -103,6 +104,13 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
         commands.append(command)
+    elif language == LANG_CPP11:
+        command = ["/usr/bin/g++"]
+        if for_evaluation:
+            command += ["-DEVAL"]
+        command += ["-std=c++11", "-static", "-O2", "-o", executable_filename]
+        command += source_filenames
+        commands.append(command)
     elif language == LANG_PASCAL:
         command = ["/usr/bin/fpc"]
         if for_evaluation:
@@ -152,7 +160,7 @@ def get_evaluation_commands(language, executable_filename):
 
     """
     commands = []
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
+    if language in (LANG_C, LANG_CPP, LANG_CPP11, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
