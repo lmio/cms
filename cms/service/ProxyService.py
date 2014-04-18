@@ -347,6 +347,11 @@ class ProxyService(Service):
 
         No support for teams, flags and faces.
 
+        BOI2014: Added limited support for teams. Team code corresponds with
+        first three characters from user login name. A '2' is appended if
+        username suffix is anything other than a digit 1 to 6.
+        Team names should be uploaded to RWS beforehand.
+
         """
         logger.info("Initializing rankings.")
 
@@ -363,10 +368,13 @@ class ProxyService(Service):
 
                 for user in contest.users:
                     if not user.hidden:
+                        team = user.username[:3]
+                        if user.username[3:] not in ('1', '2', '3', '4', '5', '6'):
+                            team += '2'
                         users[encode_id(user.username)] = \
                             {"f_name": user.first_name,
                              "l_name": user.last_name,
-                             "team": None}
+                             "team": team}
 
                 tasks = dict()
 
