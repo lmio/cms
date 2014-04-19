@@ -29,6 +29,7 @@ import os
 import os.path
 import sys
 import yaml
+import json
 from datetime import timedelta
 
 from cms import LANGUAGES
@@ -310,6 +311,12 @@ class YamlLoader(Loader):
 
         load(conf, args, ["hidden", "fake"],
              conv=lambda a: a is True or a == "True")
+
+        primary_language = load(conf, None, "primary_language")
+        if primary_language is not None:
+            primary_statements = {task: [primary_language]
+                                  for task in self.tasks_order.iterkeys()}
+            args["primary_statements"] = json.dumps(primary_statements)
 
         logger.info("User parameters loaded.")
 
