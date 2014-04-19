@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import io
+import json
 import logging
 import os
 import os.path
@@ -256,6 +257,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["first_name"] = ""
         if "last_name" not in args:
             args["last_name"] = args["username"]
+
+        primary_language = load(conf, None, "primary_language")
+        if primary_language is not None:
+            args["preferred_languages"] = json.dumps([primary_language])
 
         logger.info("User parameters loaded.")
 
