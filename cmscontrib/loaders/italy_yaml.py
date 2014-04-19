@@ -37,7 +37,7 @@ import os
 import os.path
 import sys
 import yaml
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
@@ -46,7 +46,6 @@ from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
-from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
@@ -119,6 +118,12 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def make_datetime(t):
+    if isinstance(t, datetime):
+        return t
+    return datetime.utcfromtimestamp(t)
 
 
 def make_timedelta(t):
