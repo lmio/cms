@@ -30,10 +30,9 @@ import os.path
 import sys
 import yaml
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from cms import LANGUAGES
-from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader
@@ -101,6 +100,12 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def make_datetime(t):
+    if isinstance(t, datetime):
+        return t
+    return datetime.utcfromtimestamp(t)
 
 
 def make_timedelta(t):
