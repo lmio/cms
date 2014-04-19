@@ -273,6 +273,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if "last_name" not in args:
             args["last_name"] = args["username"]
 
+        primary_language = load(conf, None, "primary_language")
+        if primary_language is not None:
+            args["preferred_languages"] = [primary_language]
+
         logger.info("User parameters loaded.")
 
         return User(**args)
