@@ -79,6 +79,25 @@ def get_contest_list(session=None):
     return session.query(Contest).all()
 
 
+def get_active_contest_list(session=None):
+    """Return all active contest objects available on the database.
+
+    session (Session): if specified, use such session for connecting
+        to the database; otherwise, create a temporary one and discard
+        it after the operation (this means that no further expansion
+        of lazy properties of the returned Contest objects will be
+        possible).
+
+    return ([Contest]): the list of active contests in the DB.
+
+    """
+    if session is None:
+        with SessionGen() as session:
+            return get_active_contest_list(session)
+
+    return session.query(Contest).filter_by(active=True).all()
+
+
 def is_contest_id(contest_id):
     """Return if there is a contest with the given id in the database.
 

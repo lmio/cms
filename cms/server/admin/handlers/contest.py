@@ -133,6 +133,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_datetime(attrs, "analysis_start")
             self.get_datetime(attrs, "analysis_stop")
 
+            self.get_bool(attrs, "active")
+
             # Update the contest.
             contest.set_attrs(attrs)
 
