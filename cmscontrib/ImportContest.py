@@ -106,8 +106,9 @@ class ContestImporter(BaseImporter):
                         # at this point (note that contest does not even have
                         # participations). Tasks can be ignored or not, since
                         # they can live even detached from a contest.
+                        # Also, don't change the active flag.
                         self._update_object(old_contest, contest,
-                                            ignore={"participations"})
+                                            ignore={"participations", "active"})
                     contest = old_contest
                 elif self.update_tasks:
                     contest = old_contest
