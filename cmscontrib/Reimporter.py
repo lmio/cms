@@ -226,6 +226,9 @@ class Reimporter(object):
             # Load the new contest from the filesystem.
             new_contest, new_tasks, new_users = self.loader.get_contest()
 
+            # Don't change the active flag
+            new_contest.active = old_contest.active
+
             # Updates contest-global settings that are set in new_contest.
             self._update_columns(old_contest, new_contest)
 
