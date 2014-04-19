@@ -252,7 +252,8 @@ class YamlLoader(Loader):
         files.append(os.path.join(path, "gen", "GEN"))
 
         # Statement
-        files.append(os.path.join(path, "statement", "statement.pdf"))
+        for filename in os.listdir(os.path.join(path, "statement")):
+            files.append(os.path.join(path, "statement", filename))
         files.append(os.path.join(path, "testo", "testo.pdf"))
 
         # Managers
@@ -362,19 +363,38 @@ class YamlLoader(Loader):
         primary_language = load(conf, None, "primary_language")
         if primary_language is None:
             primary_language = 'it'
-        paths = [os.path.join(task_path, "statement", "statement.pdf"),
-                 os.path.join(task_path, "testo", "testo.pdf")]
-        for path in paths:
-            if os.path.exists(path):
-                digest = self.file_cacher.put_file_from_path(
-                    path,
-                    "Statement for task %s (lang: %s)" % (name,
-                                                          primary_language))
-                break
+        statement_languages = load(conf, None, "statement_languages")
+        if statement_languages is None:
+            paths = [os.path.join(task_path, "statement", "statement.pdf"),
+                     os.path.join(task_path, "testo", "testo.pdf")]
+            for path in paths:
+                if os.path.exists(path):
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Statement for task %s (lang: %s)" % (name,
+                                                              primary_language))
+                    break
+            else:
+                logger.critical("Couldn't find any task statement, aborting...")
+                sys.exit(1)
+            args["statements"] = [Statement(primary_language, digest)]
         else:
-            logger.critical("Couldn't find any task statement, aborting...")
-            sys.exit(1)
-        args["statements"] = [Statement(primary_language, digest)]
+            statements = []
+            for language in statement_languages:
+                path = os.path.join(
+                    task_path,
+                    "statement",
+                    "statement-%s.pdf" % (language))
+                if os.path.exists(path):
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Statement for task %s (lang: %s)" % (name,
+                                                              language))
+                    statements.append(Statement(language, digest))
+                else:
+                    logger.warning("Statement for language %s was not found",
+                                   language)
+            args["statements"] = statements
 
         args["primary_statements"] = '["%s"]' % (primary_language)
 
