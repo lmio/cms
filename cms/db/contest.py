@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -257,6 +258,12 @@ class Contest(Base):
         CheckConstraint("score_precision >= 0"),
         nullable=False,
         default=0)
+
+    # Whether this contest should be handled by CMS services.
+    active = Column(
+        Boolean,
+        nullable=False,
+        default=False)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
