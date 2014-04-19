@@ -34,13 +34,12 @@ import os
 import os.path
 import sys
 import yaml
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cms.db import Contest, User, Task, Statement, Attachment, \
     Team, SubmissionFormatElement, Dataset, Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
-from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
@@ -106,6 +105,12 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def make_datetime(t):
+    if isinstance(t, datetime):
+        return t
+    return datetime.utcfromtimestamp(t)
 
 
 def make_timedelta(t):
