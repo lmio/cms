@@ -167,6 +167,11 @@ $(document).ready(function () {
                             <li{% if request.path == '/testing' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/testing">{{ _("Testing") }}</a>
                             </li>
+        {% if contest.max_printouts > 0 %}
+                            <li{% if request.path == '/print' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/print">{{ _("Print") }}</a>
+                            </li>
+        {% end %}
     {% end %}
                         </ul>
                     </div>

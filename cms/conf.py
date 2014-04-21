@@ -98,6 +98,10 @@ class Config(object):
         # [2] http://freedesktop.org/wiki/Software/shared-mime-info
         self.shared_mime_info_prefix = "/usr"
 
+        # Printouts
+        self.max_printout_length = 5000000
+        self.printout_local_path = "%s/printouts/"
+
         # AdminWebServer.
         self.admin_listen_address = ""
         self.admin_listen_port = 8889

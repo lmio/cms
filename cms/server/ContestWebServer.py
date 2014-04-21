@@ -62,7 +62,7 @@ from werkzeug.datastructures import LanguageAccept
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
-    File, UserTest, UserTestFile, UserTestManager
+    File, UserTest, UserTestFile, UserTestManager, Printout
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
@@ -1823,6 +1823,123 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
                 raise
 
 
+class PrintInterfaceHandler(BaseHandler):
+    """Serve the interface to print files.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self):
+        self.render("print_interface.html", **self.r_params)
+
+
+class PrintHandler(BaseHandler):
+
+    refresh_cookie = False
+
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def post(self):
+
+        # Alias for easy access
+        contest = self.contest
+
+        # Enforce maximum number of user_tests
+        try:
+            printouts = self.sql_session.query(func.count(Printout.id))\
+                .filter(Printout.user == self.current_user).scalar()
+            if printouts >= contest.max_printouts:
+                raise ValueError(
+                    self._("You have reached the maximum limit of "
+                           "at most %d printouts.") %
+                    contest.max_printouts)
+        except ValueError as error:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Too many prints!"),
+                error.message,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/print")
+            return
+
+        # Ensure that the user sent one file.
+        if not (len(self.request.files) == 1 and
+                self.request.files.keys()[0] == "file" and
+                len(self.request.files["file"]) == 1):
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Invalid file!"),
+                self._("Please select a file."),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/print")
+            return
+
+        filename = self.request.files["file"][0]["filename"]
+        body = self.request.files["file"][0]["body"]
+
+        # Check if submitted file is small enough.
+        if len(body) > config.max_printout_length:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("File is too big!"),
+                self._("The file must be at most %d bytes long.") %
+                config.max_printout_length,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/print")
+            return
+
+        # We now have to send all the files to the destination...
+        try:
+            path = config.printout_local_path.replace("%s", config.data_dir)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            filepath = os.path.join(
+                path,
+                "%s.%d%s" % (self.current_user.username,
+                             int(make_timestamp(self.timestamp)),
+                             os.path.splitext(filename)[1]))
+            with io.open(filepath, "wb") as file_:
+                file_.write(body)
+
+            digest = self.application.service.file_cacher.put_file_content(
+                body,
+                "Print file %s sent by %s at %d." % (
+                    filename, self.current_user.username,
+                    make_timestamp(self.timestamp)))
+
+        # In case of error, the server aborts the submission
+        except Exception as error:
+            logger.error("Storage failed! %s" % error)
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("File storage failed!"),
+                self._("Please try again."),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/print")
+            return
+
+        # All the files are stored, ready to submit!
+        printout = Printout(user=self.current_user,
+                            timestamp=self.timestamp,
+                            filename=filename,
+                            digest=digest)
+
+        self.sql_session.add(printout)
+        self.sql_session.commit()
+        self.application.service.add_notification(
+            self.current_user.username,
+            self.timestamp,
+            self._("Print request received"),
+            self._("Your print request has been received "
+                   "and is currently being executed."),
+            ContestWebServer.NOTIFICATION_SUCCESS)
+        self.redirect("/print")
+
+
 _cws_handlers = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
@@ -1850,4 +1967,6 @@ _cws_handlers = [
     (r"/question", QuestionHandler),
     (r"/testing", UserTestInterfaceHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
+    (r"/print", PrintInterfaceHandler),
+    (r"/print/upload", PrintHandler),
 ]

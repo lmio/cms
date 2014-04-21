@@ -1,0 +1,41 @@
+{% extends base.html %}
+
+{% block core %}
+
+{% if actual_phase == 0 %}
+
+<div class="span9">
+
+<div class="page-header">
+    <h1>{{ _("Print") }}</h1>
+</div>
+
+
+<h2 style="margin-bottom: 10px">{{ _("Print a file") }}</h2>
+
+<div class="row">
+    <div class="span5">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/print/upload" method="POST">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="file">{{ _("File") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="file" name="file"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{ _("Send") }}</button>
+                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+
+</div>
+{% end %}
+
+{% end %}
