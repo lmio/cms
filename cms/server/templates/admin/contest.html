@@ -98,6 +98,10 @@
       <td>Active</td>
       <td><input type="checkbox" name="active" {% if contest.active %}checked{% end %}></td>
     </tr>
+    <tr>
+      <td>Maximum number of printouts for each user</td>
+      <td><input type="text" name="max_printouts" value="{{ contest.max_printouts }}"></td>
+    </tr>
   </table>
   <input type="submit" value="Update">
   <input type="reset" value="Reset">
