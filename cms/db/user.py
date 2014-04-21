@@ -142,6 +142,7 @@ class User(Base):
     # questions (list of Question objects)
     # submissions (list of Submission objects)
     # user_tests (list of UserTest objects)
+    # printouts (list of Printout objects)
 
     # Moreover, we have the following methods.
     # get_tokens (defined in __init__.py)
@@ -245,3 +246,40 @@ class Question(Base):
                         order_by=[question_timestamp, reply_timestamp],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
+
+
+class Printout(Base):
+    """Class to store files submitted for printing.
+    """
+    __tablename__ = 'printouts'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # User (id and object) owning the question.
+    user_id = Column(
+        Integer,
+        ForeignKey(User.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    user = relationship(
+        User,
+        backref=backref('printouts',
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Time the file was submitted.
+    timestamp = Column(
+        DateTime,
+        nullable=False)
+
+    # Filename and digest of the submitted file.
+    filename = Column(
+        Unicode,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)

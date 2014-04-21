@@ -185,6 +185,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Maximum number of printed files allowed for each user
+    max_printouts = Column(
+        Integer,
+        CheckConstraint("max_printouts >= 0"),
+        default=0)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)
