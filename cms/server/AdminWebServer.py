@@ -598,6 +598,7 @@ class AddContestHandler(BaseHandler):
             self.get_int(attrs, "score_precision")
 
             self.get_bool(attrs, "active")
+            self.get_int(attrs, "max_printouts")
 
             # Create the contest.
             contest = Contest(**attrs)
@@ -658,6 +659,7 @@ class ContestHandler(BaseHandler):
             self.get_int(attrs, "score_precision")
 
             self.get_bool(attrs, "active")
+            self.get_int(attrs, "max_printouts")
 
             # Update the contest.
             contest.set_attrs(attrs)
