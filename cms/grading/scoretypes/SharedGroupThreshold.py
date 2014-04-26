@@ -29,8 +29,9 @@ def N_(message):
 
 class SharedGroupThreshold(ScoreTypeGroup):
     """A score type that allows tests to be shared between groups.
-    The score for a subtask is not zero only if the results of all tests
-    in the subtask are not lower that a threshold. The score type parameters
+    The score for a subtask is multiplied by minimum result if the
+    results of all tests in the subtask are not lower than a threshold,
+    and is zero otherwise. The score type parameters
     must be in the form [[m, codes, t], [...], ...], where m is the score
     for the subtask, codes is a list of code names for tests that comprise
     this subtask, and t is the score threshold.
@@ -127,15 +128,17 @@ class SharedGroupThreshold(ScoreTypeGroup):
 
     def get_public_outcome(self, outcome, parameter):
         threshold = parameter[2]
-        if outcome >= threshold:
+        if outcome < threshold:
+            return N_("Not correct")
+        elif outcome >= 1.0:
             return N_("Correct")
         else:
-            return N_("Not correct")
+            return N_("Partially correct")
 
     def reduce(self, outcomes, parameter):
         threshold = parameter[2]
         if all(outcome >= threshold
                for outcome in outcomes):
-            return 1.0
+            return min(outcomes)
         else:
             return 0.0
