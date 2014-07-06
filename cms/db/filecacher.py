@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -25,6 +25,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
@@ -46,6 +47,9 @@ logger = logging.getLogger(__name__)
 
 
 class FileCacherBackend(object):
+    """Abstract base class for all FileCacher backends.
+
+    """
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
@@ -118,7 +122,6 @@ class FileCacherBackend(object):
 
 
 class FSBackend(FileCacherBackend):
-
     """This class implements a backend for FileCacher that keeps all
     the files in a file system directory, named after their digest. Of
     course this directory can be shared, for example with NFS, acting
@@ -210,7 +213,6 @@ class FSBackend(FileCacherBackend):
 
 
 class DBBackend(FileCacherBackend):
-
     """This class implements an actual backend for FileCacher that
     stores the files as lobjects (encapsuled in a FSObject) into a
     PostgreSQL database.
@@ -317,8 +319,8 @@ class DBBackend(FileCacherBackend):
         This implementation also accepts an additional (and optional)
         parameter: a SQLAlchemy session to use to query the database.
 
-        session (Session): the session to use; if not given a temporary
-            one will be created and used.
+        session (Session|None): the session to use; if not given a
+            temporary one will be created and used.
 
         """
         def _list(session):
@@ -336,7 +338,6 @@ class DBBackend(FileCacherBackend):
 
 
 class NullBackend(FileCacherBackend):
-
     """This backend is always empty, it just drops each file that
     receives. It looks mostly like /dev/null. It is useful when you
     want to just rely on the caching capabilities of FileCacher for
@@ -364,7 +365,6 @@ class NullBackend(FileCacherBackend):
 
 
 class FileCacher(object):
-
     """This class implement a local cache for files stored as FSObject
     in the database.
 
@@ -390,13 +390,15 @@ class FileCacher(object):
         By default the database-powered backend will be used, but this
         can be changed using the parameters.
 
-        service (Service): the service we are running for. Only used to
-            determine the location of the file-system cache (and to
-            provide the shard number to the Sandbox... sigh!).
-        path (string): if specified, back the FileCacher with a file
-            system-based storage instead of the default database-based
-            one. The specified directory will be used as root for the
-            storage and it will be created if it doesn't exist.
+        service (Service|None): the service we are running for. Only
+            used if present to determine the location of the
+            file-system cache (and to provide the shard number to the
+            Sandbox... sigh!).
+        path (string|None): if specified, back the FileCacher with a
+            file system-based storage instead of the default
+            database-based one. The specified directory will be used
+            as root for the storage and it will be created if it
+            doesn't exist.
         null (bool): if True, back the FileCacher with a NullBackend,
             that just discards every file it receives. This setting
             takes priority over path.

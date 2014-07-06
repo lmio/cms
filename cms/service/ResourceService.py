@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -25,6 +25,10 @@ that saves the resources usage in that machine.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import bisect
 import logging
 import os
@@ -36,7 +40,7 @@ from gevent import subprocess
 #import gevent_subprocess as subprocess
 
 from cms import config, get_safe_shard, ServiceCoord
-from cms.io import Service, rpc_method, RemoteServiceClient
+from cms.io import Service, rpc_method
 
 
 logger = logging.getLogger(__name__)
@@ -161,9 +165,9 @@ class ResourceService(Service):
                         "scripts",
                         "cms%s" % service.name)
                 process = subprocess.Popen([command,
-                                            str(service.shard),
+                                            "%d" % service.shard,
                                             "-c",
-                                            str(self.contest_id)],
+                                            "%d" % self.contest_id],
                                            stdout=devnull,
                                            stderr=subprocess.STDOUT
                                            )
@@ -234,8 +238,9 @@ class ResourceService(Service):
         """Returns the pid of a given service running on this machine.
 
         service (ServiceCoord): the service we are interested in
-        returns (psutil.Process): the process of service, or None if
-                                  not found
+
+        return (psutil.Process|None): the process of service, or None
+             if not found
 
         """
         logger.debug("ResourceService._find_proc")
@@ -336,7 +341,7 @@ class ResourceService(Service):
                     dic["running"] = False
             # If the process is not running, we have nothing to do.
             if not dic["running"]:
-                data["services"][str(service)] = dic
+                data["services"]["%s" % (service,)] = dic
                 continue
 
             try:
@@ -364,7 +369,7 @@ class ResourceService(Service):
                 # Shut down while we operated?
                 dic = {"autorestart": self._will_restart[service],
                        "running": False}
-            data["services"][str(service)] = dic
+            data["services"]["%s" % (service,)] = dic
 
         if store:
             if len(self._local_store) >= 5000:  # almost 7 hours
@@ -406,8 +411,9 @@ class ResourceService(Service):
         except ValueError:
             logger.error("Unable to decode service shard.")
 
-        remote_service = RemoteServiceClient(ServiceCoord(name, shard))
-        remote_service.quit(reason="Asked by ResourceService")
+        remote_service = self.connect_to(ServiceCoord(name, shard))
+        result = remote_service.quit(reason="Asked by ResourceService")
+        return result.get()
 
     @rpc_method
     def toggle_autorestart(self, service):
