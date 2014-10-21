@@ -257,6 +257,7 @@ class YamlLoader(Loader):
 
         # Score file
         files.append(os.path.join(path, "gen", "GEN"))
+        files.append(os.path.join(path, "gen", "shared"))
 
         # Statement
         for filename in os.listdir(os.path.join(path, "statement")):
@@ -538,83 +539,114 @@ class YamlLoader(Loader):
         else:
             evaluation_param = "diff"
 
-        # Detect subtasks by checking GEN
-        gen_filename = os.path.join(task_path, 'gen', 'GEN')
-        try:
-            with io.open(gen_filename, "rt", encoding="utf-8") as gen_file:
-                subtasks = []
-                testcases = 0
-                points = None
-                for line in gen_file:
-                    line = line.strip()
-                    splitted = line.split('#', 1)
-
-                    if len(splitted) == 1:
-                        # This line represents a testcase, otherwise it's
-                        # just a blank
-                        if splitted[0] != '':
-                            testcases += 1
-
-                    else:
-                        testcase, comment = splitted
-                        testcase_detected = False
-                        subtask_detected = False
-                        if testcase.strip() != '':
-                            testcase_detected = True
-                        comment = comment.strip()
-                        if comment.startswith('ST:'):
-                            subtask_detected = True
-
-                        if testcase_detected and subtask_detected:
-                            raise Exception("No testcase and subtask in the"
-                                            " same line allowed")
-
-                        # This line represents a testcase and contains a
-                        # comment, but the comment doesn't start a new
-                        # subtask
-                        if testcase_detected:
-                            testcases += 1
-
-                        # This line starts a new subtask
-                        if subtask_detected:
-                            # Close the previous subtask
-                            if points is None:
-                                assert(testcases == 0)
-                            else:
-                                subtasks.append([points, testcases])
-                            # Open the new one
-                            testcases = 0
-                            points = int(comment[3:].strip())
-
-                # Close last subtask (if no subtasks were defined, just
-                # fallback to Sum)
-                if points is None:
-                    args["score_type"] = "Sum"
-                    total_value = float(conf.get("total_value", 100.0))
-                    input_value = 0.0
-                    n_input = testcases
-                    if n_input != 0:
-                        input_value = total_value / n_input
-                    args["score_type_parameters"] = "%s" % input_value
-                else:
-                    subtasks.append([points, testcases])
-                    assert(100 == sum([int(st[0]) for st in subtasks]))
-                    n_input = sum([int(st[1]) for st in subtasks])
-                    args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = "%s" % subtasks
-
-                if "n_input" in conf:
-                    assert int(conf['n_input']) == n_input
-
-        # If gen/GEN doesn't exist, just fallback to Sum
-        except IOError:
-            args["score_type"] = "Sum"
-            total_value = float(conf.get("total_value", 100.0))
-            input_value = 0.0
+        # Detect shared test subtasks
+        sharedtest_filename = os.path.join(task_path, 'gen', 'shared')
+        if os.path.isfile(sharedtest_filename):
+            subtasks = []
+            max_score = None
+            threshold = None
+            tests = []
             n_input = int(conf['n_input'])
-            if n_input != 0:
-                input_value = total_value / n_input
-            args["score_type_parameters"] = "%s" % input_value
+            with io.open(sharedtest_filename, "rt", encoding="utf-8") as sharedtest_file:
+                for line in sharedtest_file:
+                    line = line.split('#', 1)[0].strip()
+                    if not line:
+                        continue
+                    if line.startswith('ST:'):
+                        if max_score is not None:
+                            subtasks.append((max_score, tests, threshold))
+                        params = line[3:].split()
+                        max_score = int(params[0])
+                        threshold = float(params[1])
+                        tests = []
+                    else:
+                        assert max_score is not None
+                        i = int(line)
+                        assert 0 <= i < n_input
+                        tests.append("%03d" % i)
+                assert max_score is not None
+                subtasks.append((max_score, tests, threshold))
+            args["score_type"] = "SharedGroupThreshold"
+            args["score_type_parameters"] = json.dumps(subtasks)
+
+        else:
+            # Detect subtasks by checking GEN
+            gen_filename = os.path.join(task_path, 'gen', 'GEN')
+            try:
+                with io.open(gen_filename, "rt", encoding="utf-8") as gen_file:
+                    subtasks = []
+                    testcases = 0
+                    points = None
+                    for line in gen_file:
+                        line = line.strip()
+                        splitted = line.split('#', 1)
+
+                        if len(splitted) == 1:
+                            # This line represents a testcase, otherwise it's
+                            # just a blank
+                            if splitted[0] != '':
+                                testcases += 1
+
+                        else:
+                            testcase, comment = splitted
+                            testcase_detected = False
+                            subtask_detected = False
+                            if testcase.strip() != '':
+                                testcase_detected = True
+                            comment = comment.strip()
+                            if comment.startswith('ST:'):
+                                subtask_detected = True
+
+                            if testcase_detected and subtask_detected:
+                                raise Exception("No testcase and subtask in the"
+                                                " same line allowed")
+
+                            # This line represents a testcase and contains a
+                            # comment, but the comment doesn't start a new
+                            # subtask
+                            if testcase_detected:
+                                testcases += 1
+
+                            # This line starts a new subtask
+                            if subtask_detected:
+                                # Close the previous subtask
+                                if points is None:
+                                    assert(testcases == 0)
+                                else:
+                                    subtasks.append([points, testcases])
+                                # Open the new one
+                                testcases = 0
+                                points = int(comment[3:].strip())
+
+                    # Close last subtask (if no subtasks were defined, just
+                    # fallback to Sum)
+                    if points is None:
+                        args["score_type"] = "Sum"
+                        total_value = float(conf.get("total_value", 100.0))
+                        input_value = 0.0
+                        n_input = testcases
+                        if n_input != 0:
+                            input_value = total_value / n_input
+                        args["score_type_parameters"] = "%s" % input_value
+                    else:
+                        subtasks.append([points, testcases])
+                        assert(100 == sum([int(st[0]) for st in subtasks]))
+                        n_input = sum([int(st[1]) for st in subtasks])
+                        args["score_type"] = "GroupMin"
+                        args["score_type_parameters"] = "%s" % subtasks
+
+                    if "n_input" in conf:
+                        assert int(conf['n_input']) == n_input
+
+            # If gen/GEN doesn't exist, just fallback to Sum
+            except IOError:
+                args["score_type"] = "Sum"
+                total_value = float(conf.get("total_value", 100.0))
+                input_value = 0.0
+                n_input = int(conf['n_input'])
+                if n_input != 0:
+                    input_value = total_value / n_input
+                args["score_type_parameters"] = "%s" % input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
