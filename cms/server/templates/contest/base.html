@@ -69,6 +69,7 @@ $(document).ready(function () {
             </div>
         </div>
 {% if current_user is None %}
+    {% block login %}
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
@@ -102,10 +103,16 @@ $(document).ready(function () {
                                 <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <a class="btn btn-warning btn-large" href="{{ url_root }}/register">{{ _("Register") }}</a>
+                            </div>
+                        </div>
                     </fieldset>
                 </form>
             </div>
         </div>
+    {% end %}
 {% else %}
         <div id="notifications" class="notifications"></div>
         <!-- Some hidden divs to provide translations of strings used by JS -->

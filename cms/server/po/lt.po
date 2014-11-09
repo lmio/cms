@@ -917,3 +917,25 @@ msgstr "Testo detalės"
 
 msgid "Evaluation outcome"
 msgstr "Vertinimo išeiga"
+
+
+msgid "Register"
+msgstr "Registruotis"
+
+msgid "Registration successful"
+msgstr "Registracija sėkminga"
+
+msgid "Here are your login details. Please write them down."
+msgstr "Žemiau pateikti tavo prisijungimo dumenys. Prašome juos užsirašyti."
+
+msgid "Please register"
+msgstr "Prašome užsiregistruoti"
+
+msgid "First name"
+msgstr "Vardas"
+
+msgid "Last name"
+msgstr "Pavardė"
+
+msgid "Email"
+msgstr "El. paštas"

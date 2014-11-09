@@ -102,6 +102,10 @@
       <td>Active</td>
       <td><input type="checkbox" name="active" {% if contest.active %}checked{% end %}></td>
     </tr>
+    <tr>
+      <td>Allow registration</td>
+      <td><input type="checkbox" name="allow_registration" {% if contest.allow_registration %}checked{% end %}></td>
+    </tr>
   </table>
   <input type="submit" value="Update">
   <input type="reset" value="Reset">

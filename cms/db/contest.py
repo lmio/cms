@@ -196,6 +196,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Whether to allow participant self-registration
+    allow_registration = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)
