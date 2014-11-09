@@ -38,17 +38,20 @@ from future.builtins import *  # noqa
 import ipaddress
 import json
 import logging
+import random
+import re
 
 import tornado.web
 
 from cms import config
-from cms.db import PrintJob
+from cms.db import PrintJob, User, Participation
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
+from cmscommon.crypto import build_password, parse_authentication
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -118,6 +121,85 @@ class LoginHandler(ContestHandler):
             self.redirect(error_page)
         else:
             self.redirect(next_page)
+
+
+class RegisterHandler(ContestHandler):
+
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+        self.render("register.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        errors = []
+        if not first_name:
+            errors.append("first_name")
+        if not last_name:
+            errors.append("last_name")
+        if not email or not self.email_re.match(email):
+            errors.append("email")
+
+        if errors:
+            self.render("register.html", errors=errors, **self.r_params)
+            return
+
+        password = build_password(self.generate_password())
+        for _i in range(10):
+            username = self.generate_username(first_name, last_name, email)
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                break
+        else:
+            raise Exception  # TODO: show some error message
+
+        # Everything's ok. Create the user and participation.
+        # Set password on both.
+        user = User(first_name=first_name, last_name=last_name, email=email,
+                    username=username, password=password)
+        participation = Participation(contest=self.contest, user=user,
+                                      password=password)
+        self.sql_session.add(user)
+        self.sql_session.add(participation)
+        self.sql_session.commit()
+
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, username,
+                    self.contest.name, self.timestamp)
+
+        # TODO: send email
+
+        method, password = parse_authentication(user.password)
+        assert method == 'plaintext'
+        self.render("register.html", new_user=user, password=password, **self.r_params)
+
+    def generate_username(self, first_name, last_name, email):
+        return "%s%s%04d" % (first_name[:3], last_name[:3],
+                             random.randint(0, 9999))
+
+    def generate_password(self):
+        chars = "abcdefghijkmnopqrstuvwxyz23456789"
+        return "".join(random.choice(chars)
+                       for _i in range(8))
 
 
 class StartHandler(ContestHandler):

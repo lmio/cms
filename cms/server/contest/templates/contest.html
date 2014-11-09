@@ -78,6 +78,7 @@ $(document).ready(function () {
             </div>
         </div>
 {% if participation is undefined %}
+    {% block login %}
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
@@ -115,10 +116,18 @@ $(document).ready(function () {
                                 <button type="reset" class="btn btn-large">{% trans %}Reset{% endtrans %}</button>
                             </div>
                         </div>
+        {% if contest.allow_registration %}
+                        <div class="control-group">
+                            <div class="controls">
+                                <a class="btn btn-warning btn-large" href="{{ contest_url("register") }}">{% trans %}Register{% endtrans %}</a>
+                            </div>
+                        </div>
+        {% endif %}
                     </fieldset>
                 </form>
             </div>
         </div>
+    {% endblock login %}
 {% else %}
         <div id="notifications" class="notifications"></div>
         <!-- Some hidden divs to provide translations of strings used by JS -->

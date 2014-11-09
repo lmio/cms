@@ -268,6 +268,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Whether to allow participant self-registration
+    allow_registration = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 

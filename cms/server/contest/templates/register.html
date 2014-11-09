@@ -1,0 +1,63 @@
+{% extends "contest.html" %}
+
+{% block login %}
+<div class="login_container">
+    <div class="login_box hero-unit">
+{% if new_user is defined %}
+        <h2>{% trans %}Registration successful{% endtrans %}</h2>
+        <p>{% trans %}Here are your login details. Please write them down.{% endtrans %}</p>
+        <div class="form-horizontal">
+            <div class="control-group" style="margin-bottom:0">
+                <span class="control-label">{% trans %}Username{% endtrans %}</span>
+                <div class="controls">
+                    <p style="margin-bottom:0">{{ new_user.username }}</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <span class="control-label">{% trans %}Password{% endtrans %}</span>
+                <div class="controls">
+                    <p>{{ password }}</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <a class="btn btn-primary btn-large" href="{{ contest_url() }}">{% trans %}Login{% endtrans %}</a>
+                </div>
+            </div>
+        </div>
+{% else %}
+        <h1>{% trans %}Welcome{% endtrans %}</h1>
+        <p>{% trans %}Please register{% endtrans %}</p>
+        <form class="form-horizontal" action="{{ contest_url("register") }}" method="POST">
+            {{ xsrf_form_html|safe }}
+            <fieldset>
+                <div class="control-group{% if errors is defined and "first_name" in errors %} error{% endif %}">
+                    <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="first_name" value="{{ handler.get_argument("first_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors is defined and "last_name" in errors %} error{% endif %}">
+                    <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors is defined and "email" in errors %} error{% endif %}">
+                    <label class="control-label" for="email">{% trans %}Email{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
+                        <button type="reset" class="btn btn-large">{% trans %}Reset{% endtrans %}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+{% endif %}
+    </div>
+</div>
+{% endblock login %}

@@ -231,6 +231,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "languages")
         load(conf, args, "allowed_localizations")
 
+        load(conf, args, "allow_registration")
+
         args["attachments"] = {}
         for filename in load(conf, None, "attachments", conv=lambda val: val or []):
             path = os.path.join(self.path, filename)
