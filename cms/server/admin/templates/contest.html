@@ -111,6 +111,15 @@
       <td><input type="checkbox" name="active" {{ "checked" if contest.active else "" }}></td>
     </tr>
 
+    <tr><td colspan=2><h2>Registration</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="Whether to allow participant self-registration."></span>
+        Allow registration
+      </td>
+      <td><input type="checkbox" name="allow_registration" {{ "checked" if contest.allow_registration else "" }}></td>
+    </tr>
+
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>
       <td>

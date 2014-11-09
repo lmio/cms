@@ -130,6 +130,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_int(attrs, "score_precision")
 
             self.get_bool(attrs, "active")
+            self.get_bool(attrs, "allow_registration")
 
             # Update the contest.
             contest.set_attrs(attrs)

@@ -1,0 +1,62 @@
+{% extends base.html %}
+{% block login %}
+<div class="login_container">
+    <div class="login_box hero-unit">
+{% if new_user %}
+        <h2>{{ _("Registration successful") }}</h2>
+        <p>{{ _("Here are your login details. Please write them down.") }}</p>
+        <div class="form-horizontal">
+            <div class="control-group" style="margin-bottom:0">
+                <span class="control-label">{{ _("Username") }}</span>
+                <div class="controls">
+                    <p style="margin-bottom:0">{{ new_user.username }}</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <span class="control-label">{{ _("Password") }}</span>
+                <div class="controls">
+                    <p>{{ new_user.password }}</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <a class="btn btn-primary btn-large" href="{{ url_root }}/">{{ _("Login") }}</a>
+                </div>
+            </div>
+        </div>
+{% else %}
+        <h1>{{ _("Welcome") }}</h1>
+        <p>{{ _("Please register") }}</p>
+        <form class="form-horizontal" action="{{ url_root }}/register" method="POST">
+            {% module xsrf_form_html() %}
+            <fieldset>
+                <div class="control-group{% if errors and "first_name" in errors %} error{% end %}">
+                    <label class="control-label" for="first_name">{{ _("First name") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="first_name" value="{{ handler.get_argument("first_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "last_name" in errors %} error{% end %}">
+                    <label class="control-label" for="last_name">{{ _("Last name") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "email" in errors %} error{% end %}">
+                    <label class="control-label" for="email">{{ _("Email") }}</label>
+                    <div class="controls">
+                        <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{{ _("Register") }}</button>
+                        <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+{% end %}
+    </div>
+</div>
+{% end %}
