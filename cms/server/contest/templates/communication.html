@@ -10,8 +10,8 @@
     <h1>{% trans %}Communication{% endtrans %}</h1>
 </div>
 
-{% if contest.announcements|length > 0 %}
 <h2>{% trans %}Announcements{% endtrans %}</h2>
+{% if contest.announcements|length > 0 %}
 <div class="announcement_list">
     {% for msg in contest.announcements|reverse %}
     <div class="announcement">
@@ -27,6 +27,8 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<p>{% trans %}There are no announcements yet.{% endtrans %}</p>
 {% endif %}
 
 

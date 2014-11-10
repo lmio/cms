@@ -1145,3 +1145,6 @@ msgstr "Per daug puslapių"
 
 msgid "Sent to printer"
 msgstr "Išsiųsta į spausdintuvą"
+
+msgid "There are no announcements yet."
+msgstr "Kol kas nėra jokių pranešimų."

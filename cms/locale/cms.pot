@@ -1076,3 +1076,5 @@ msgstr ""
 msgid "Sent to printer"
 msgstr ""
 
+msgid "There are no announcements yet."
+msgstr ""
