@@ -1042,3 +1042,9 @@ msgstr ""
 
 msgid "There are no announcements yet."
 msgstr ""
+
+msgid "Input file"
+msgstr ""
+
+msgid "Output file"
+msgstr ""

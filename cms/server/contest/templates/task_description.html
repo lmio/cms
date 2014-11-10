@@ -114,6 +114,21 @@
             <td colspan="2">{{ _("%(mb)d MiB") % {"mb": task.active_dataset.memory_limit} }}</td>
         </tr>
 {% end %}
+{% if task.active_dataset.task_type == 'Batch' and task.active_dataset.task_type_parameters != '' %}
+{% set parameters = json.loads(task.active_dataset.task_type_parameters) %}
+    {% if parameters[1][0] != '' %}
+        <tr>
+            <th>{{ _("Input file") }}</th>
+            <td colspan="2">{{ parameters[1][0] }}</td>
+        </tr>
+    {% end %}
+    {% if parameters[1][1] != '' %}
+        <tr>
+            <th>{{ _("Output file") }}</th>
+            <td colspan="2">{{ parameters[1][1] }}</td>
+        </tr>
+    {% end %}
+{% end %}
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
 {% if compilation_commands is not None %}
 {% set compilation_commands = {lang: compilation_commands[lang] for lang in contest.languages} %}
