@@ -8,8 +8,8 @@
     <h1>{{ _("Communication") }}</h1>
 </div>
 
-{% if len (contest.announcements) > 0 %}
 <h2>{{ _("Announcements") }}</h2>
+{% if len (contest.announcements) > 0 %}
 <div class="announcement_list">
     {% for msg in reversed(contest.announcements) %}
     <div class="announcement">
@@ -25,6 +25,8 @@
     </div>
     {% end %}
 </div>
+{% else %}
+<p>{{ _("There are no announcements yet.") }}</p>
 {% end %}
 
 

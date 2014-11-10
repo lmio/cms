@@ -888,3 +888,6 @@ msgstr ""
 
 msgid "Email"
 msgstr ""
+
+msgid "There are no announcements yet."
+msgstr ""
