@@ -919,3 +919,5 @@ msgstr ""
 msgid "Evaluation outcome"
 msgstr ""
 
+msgid "There are no announcements yet."
+msgstr ""

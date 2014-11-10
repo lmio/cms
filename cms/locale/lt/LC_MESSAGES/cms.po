@@ -1064,3 +1064,5 @@ msgstr "Testo detalės"
 msgid "Evaluation outcome"
 msgstr "Vertinimo išeiga"
 
+msgid "There are no announcements yet."
+msgstr "Kol kas nėra jokių pranešimų."
