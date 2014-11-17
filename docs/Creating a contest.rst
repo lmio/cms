@@ -28,6 +28,8 @@ Out of the box, CMS offers loaders for two formats:
 
 CMS also has several convenience scripts to add data to the database specifying it on the command line, or to remove data from the database. Look in :file:`cmscontrib` or at commands starting with ``cmsAdd`` or ``cmsRemove``.
 
+.. _creating_contest_exportedcontest:
+
 Creating a contest from an exported contest
 ===========================================
 
