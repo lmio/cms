@@ -25,6 +25,8 @@ In order to make these tools compatible with your filesystem format, you have to
 You can also use the Italian filesystem format, which is supported out-of-the-box by CMS. This is discouraged, though, because it evolved in a rather messy way and is now full of legacy behaviors and shortcomings. No compatibility in time is guaranteed with this format. If you want to use it anyway, an example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
 
 
+.. _creating_contest_exportedcontest:
+
 Creating a contest from an exported contest
 ===========================================
 

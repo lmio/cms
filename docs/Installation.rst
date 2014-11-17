@@ -162,3 +162,35 @@ You can then update CMS and reset the database schema by running:
 
 To load the previous data back into the database you can use ``cmsContestImporter``: it will adapt the data model automatically on-the-fly (you can use ``cmsDumpUpdater`` to store the updated version back on disk and speed up future imports).
 
+Using Docker
+============
+
+It is possible to avoid the installation steps above by using a (pre-built)
+Docker_ container_. Running with Docker means the following steps:
+
+1. In current directory, create ``cms.conf`` and ``cms.ranking.conf`` as
+   outlined in :ref:`running-cms_configuring-cms`.
+2. Set up the database (if not done yet)::
+
+    docker run lmio/cms:lmio2015 \
+        -v ${PWD}/cms.conf:/usr/local/etc/cms.conf \
+        cmsInitDB
+3. For existing contest, see :ref:`creating_contest_exportedcontest`. In this
+   example we are creating the initial contest. Run ``cmsAdminService``::
+
+    docker run lmio/cms:lmio2015 \
+        -v ${PWD}/cms.conf:/usr/local/etc/cms.conf \
+        cmsAdminService
+
+   Create a contest in the admin interface.
+4. Once the database is set up, start all the necessary services to run the contest::
+
+    docker run lmio/cms:lmio2015 \
+        -v ${PWD}/cms.conf:/usr/local/etc/cms.conf \
+        cmsResourceService -a
+
+It is important to note that only the last step is needed if the contest system is already pre-filled
+(which makes sense to do before a real-world event).
+
+.. _Docker: https://docker.com/
+.. _container: https://registry.hub.docker.com/u/lmio/cms/

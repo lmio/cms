@@ -18,3 +18,4 @@ Welcome to CMS's documentation!
    Localization
    Troubleshooting
    Internals
+   AWS
