@@ -954,3 +954,12 @@ msgstr ""
 
 msgid "Email"
 msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "School"
+msgstr ""
+
+msgid "Grade"
+msgstr ""

@@ -1,9 +1,38 @@
 {% extends "contest.html" %}
 
+{% block additional_js %}
+{% if contest.require_school_details %}
+$(document).ready(function () {
+    var $select_district = $('select[name="district"]');
+    var $select_school = $('select[name="school"]');
+    var $no_school = $select_school.children('option[value=""]').clone();
+    var schools_by_district = {};
+    $select_school.find('optgroup').each(function (i, og) {
+        schools_by_district[$(og).data('district-id')] = $(og).find('option').clone();
+    });
+
+    function district_changed () {
+        var val = $select_district.val();
+        $select_school.children().remove();
+        $select_school.append($no_school.clone());
+        if (val && schools_by_district.hasOwnProperty(val)) {
+            $select_school.append(schools_by_district[$select_district.val()].clone());
+        }
+        $select_school.val('');
+    }
+    $select_district.change(district_changed);
+    district_changed();
+    {% if handler.get_argument("school", "") %}
+    $select_school.val('{{ handler.get_argument("school", "") }}');
+    {% endif %}
+});
+{% endif %}
+{% endblock additional_js %}
+
 {% block login %}
 <div class="login_container">
-    <div class="login_box hero-unit">
 {% if new_user is defined %}
+    <div class="login_box hero-unit">
         <h2>{% trans %}Registration successful{% endtrans %}</h2>
         <p>{% trans %}Here are your login details. Please write them down.{% endtrans %}</p>
         <div class="form-horizontal">
@@ -25,7 +54,9 @@
                 </div>
             </div>
         </div>
+    </div>
 {% else %}
+    <div class="login_box hero-unit{% if contest.require_school_details %} school-details{% endif %}">
         <h1>{% trans %}Welcome{% endtrans %}</h1>
         <p>{% trans %}Please register{% endtrans %}</p>
         <form class="form-horizontal" action="{{ contest_url("register") }}" method="POST">
@@ -49,6 +80,54 @@
                         <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
+    {% if contest.require_school_details %}
+                <div class="control-group{% if errors is defined and "district" in errors %} error{% endif %}">
+                    <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
+                    <div class="controls">
+                        <select name="district" class="form-control">
+                            <option value="">---</option>
+        {% set selected_district = handler.get_argument("district", "") %}
+        {% for d in district_list %}
+                            <option value="{{ d.id }}"{% if d.id|string == selected_district %} selected{% endif %}>{{ d.name }}</option>
+        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group{% if errors is defined and "city" in errors %} error{% endif %}">
+                    <label class="control-label" for="city">{% trans %}City{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="city" value="{{ handler.get_argument("city", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors is defined and "school" in errors %} error{% endif %}">
+                    <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
+                    <div class="controls">
+                        <select name="school" class="form-control">
+                            <option value="">---</option>
+        {% set selected_school = handler.get_argument("school", "") %}
+        {% for d in district_list %}
+                            <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
+            {% for s in d.schools %}
+                                <option value="{{ s.id }}"{% if s.id|string == selected_school %} selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+                            </optgroup>
+        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group{% if errors is defined and "grade" in errors %} error{% endif %}">
+                    <label class="control-label" for="grade">{% trans %}Grade{% endtrans %}</label>
+                    <div class="controls">
+                        <select name="grade" class="form-control">
+                            <option value="">--</option>
+        {% set selected_grade = handler.get_argument("grade", "") %}
+        {% for i in contest.allowed_grades or range(1, 13) %}
+                            <option value="{{ i }}"{% if i|string == selected_grade %} selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+    {% endif %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
@@ -57,7 +136,7 @@
                 </div>
             </fieldset>
         </form>
-{% endif %}
     </div>
+{% endif %}
 </div>
 {% endblock login %}

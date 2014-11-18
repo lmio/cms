@@ -43,14 +43,17 @@ import re
 
 import tornado.web
 
+from sqlalchemy.orm import subqueryload
+
 from cms import config
-from cms.db import PrintJob, User, Participation
+from cms.db import PrintJob, User, Participation, District, School
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
+from cms.util import lt_sort_key
 from cmscommon.crypto import build_password, parse_authentication
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -127,6 +130,17 @@ class RegisterHandler(ContestHandler):
 
     email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        district_list = (self.sql_session.query(District)
+                         .options(subqueryload(District.schools))
+                         .all())
+        district_list.sort(key=lambda d: lt_sort_key(d.name))
+        for d in district_list:
+            d.schools.sort(key=lambda s: lt_sort_key(s.name))
+        params["district_list"] = district_list
+        return params
+
     @multi_contest
     def get(self):
         if not self.contest.allow_registration:
@@ -141,6 +155,10 @@ class RegisterHandler(ContestHandler):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
+        district_id = self.get_argument("district", "")
+        city = self.get_argument("city", "")
+        school_id = self.get_argument("school", "")
+        grade = self.get_argument("grade", None)
 
         try:
             # In py2 Tornado gives us the IP address as a native binary
@@ -159,6 +177,41 @@ class RegisterHandler(ContestHandler):
         if not email or not self.email_re.match(email):
             errors.append("email")
 
+        if self.contest.require_school_details:
+            try:
+                district_id = int(district_id)
+            except ValueError:
+                errors.append("district")
+                district = None
+            else:
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    errors.append("district")
+            if not city:
+                errors.append("city")
+            try:
+                school_id = int(school_id)
+            except ValueError:
+                errors.append("school")
+                school = None
+            else:
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is not None and district is not None and school.district != district:
+                    school = None
+                if school is None:
+                    errors.append("school")
+            try:
+                grade = int(grade)
+            except ValueError:
+                errors.append("grade")
+            else:
+                if self.contest.allowed_grades:
+                    if grade not in self.contest.allowed_grades:
+                        errors.append("grade")
+                else:
+                    if not 1 <= grade <= 12:
+                        errors.append("grade")
+
         if errors:
             self.render("register.html", errors=errors, **self.r_params)
             return
@@ -175,7 +228,8 @@ class RegisterHandler(ContestHandler):
         # Everything's ok. Create the user and participation.
         # Set password on both.
         user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password)
+                    username=username, password=password, district=district,
+                    city=city, school=school, grade=grade)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)

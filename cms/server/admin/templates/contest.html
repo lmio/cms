@@ -118,6 +118,20 @@
       </td>
       <td><input type="checkbox" name="allow_registration" {{ "checked" if contest.allow_registration else "" }}></td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Should registration include school related fields."></span>
+        Require school details
+      </td>
+      <td><input type="checkbox" name="require_school_details" {{ "checked" if contest.require_school_details else "" }}></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="Comma separated list of grades allowed in registration, or empty for 1-12."></span>
+        Allowed grades
+      </td>
+      <td><input type="text" name="allowed_grades" value="{{ contest.allowed_grades|join(",") }}"/></td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>

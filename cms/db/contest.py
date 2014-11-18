@@ -274,6 +274,20 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Should registration include school related fields. Useful only if
+    # allow_registration is True.
+    require_school_details = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Allowed grades in registration. Useful only if allow_registration
+    # and require_school_details are True.
+    allowed_grades = Column(
+        ARRAY(Integer),
+        nullable=False,
+        default=[])
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
