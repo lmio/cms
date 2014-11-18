@@ -40,7 +40,7 @@ from cms import ConfigError
 from . import SessionGen, Digest, Contest, Participation, Statement, \
     Attachment, Task, Manager, Dataset, Testcase, Submission, File, \
     SubmissionResult, Executable, UserTest, UserTestFile, UserTestManager, \
-    UserTestResult, UserTestExecutable, PrintJob
+    UserTestResult, UserTestExecutable, PrintJob, ContestAttachment
 
 
 def test_db_connection():
@@ -291,6 +291,8 @@ def enumerate_files(
         contest_q = contest_q.filter(Contest.id == contest.id)
 
     queries = list()
+    queries.append(contest_q.join(Contest.attachments)
+                   .with_entities(ContestAttachment.digest))
 
     task_q = contest_q.join(Contest.tasks)
     queries.append(task_q.join(Task.statements).with_entities(Statement.digest))
