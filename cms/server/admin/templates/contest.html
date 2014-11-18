@@ -147,6 +147,20 @@
         <input type="checkbox" id="registration_auto_credentials" name="registration_auto_credentials" {{ "checked" if contest.registration_auto_credentials else "" }}/>
       </td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Should registration include school related fields."></span>
+        <label for="registration_require_school_details">Require school details</label>
+      </td>
+      <td><input type="checkbox" id="registration_require_school_details" name="registration_require_school_details" {{ "checked" if contest.registration_require_school_details else "" }}></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="Comma separated list of grades allowed in registration, or empty for 1-12."></span>
+        <label for="registration_allowed_grades">Allowed grades</label>
+      </td>
+      <td><input type="text" id="registration_allowed_grades" name="registration_allowed_grades" value="{{ contest.registration_allowed_grades|join(",") }}"/></td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>

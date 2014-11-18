@@ -138,6 +138,20 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Should registration include school related fields. Useful only if
+    # allow_registration is True.
+    registration_require_school_details = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Allowed grades in registration. Useful only if allow_registration
+    # and registration_require_school_details are True.
+    registration_allowed_grades = Column(
+        ARRAY(Integer),
+        nullable=False,
+        default=[])
+
     # Whether to enforce that the IP address of the request matches
     # the IP address or subnet specified for the participation (if
     # present).

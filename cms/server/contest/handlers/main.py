@@ -39,17 +39,19 @@ try:
     import tornado4.web as tornado_web
 except ImportError:
     import tornado.web as tornado_web
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.orm.exc import NoResultFound
 from unidecode import unidecode
 
 from cms import config
-from cms.db import PrintJob, User, Participation, Team
+from cms.db import PrintJob, User, Participation, Team, District, School
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
+from cms.util import lt_sort_key
 from cmscommon.crypto import hash_password, validate_password, generate_random_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -148,6 +150,15 @@ class RegistrationHandler(ContestHandler):
             self.r_params["teams"] = self.sql_session.query(Team)\
                                          .order_by(Team.name).all()
 
+        if self.contest.registration_require_school_details:
+            district_list = (self.sql_session.query(District)
+                             .options(subqueryload(District.schools))
+                             .all())
+            district_list.sort(key=lambda d: lt_sort_key(d.name))
+            for d in district_list:
+                d.schools.sort(key=lambda s: lt_sort_key(s.name))
+            self.r_params["district_list"] = district_list
+
         self.render("register.html", **self.r_params)
 
     def _create_user(self):
@@ -163,6 +174,34 @@ class RegistrationHandler(ContestHandler):
             if not 1 <= len(email) <= self.MAX_INPUT_LENGTH \
                     or not self.email_re.match(email):
                 raise ValueError()
+
+            if self.contest.registration_require_school_details:
+                district_id = self.get_argument("district")
+                city = self.get_argument("city")
+                school_id = self.get_argument("school")
+                grade = self.get_argument("grade")
+
+                district_id = int(district_id)
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    raise ValueError()
+                if not 1 <= len(city) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+                school_id = int(school_id)
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is None:
+                    raise ValueError()
+                if school.district != district:
+                    raise ValueError()
+                grade = int(grade)
+                if self.contest.registration_allowed_grades:
+                    if grade not in self.contest.registration_allowed_grades:
+                        raise ValueError()
+                else:
+                    if not 1 <= grade <= 12:
+                        raise ValueError()
+            else:
+                district = city = school = grade = None
 
             if self.contest.registration_auto_credentials:
                 username = self._generate_username(first_name, last_name)
@@ -198,7 +237,8 @@ class RegistrationHandler(ContestHandler):
             raise tornado_web.HTTPError(409)
 
         # Store new user
-        user = User(first_name, last_name, username, password, email=email)
+        user = User(first_name, last_name, username, password, email=email,
+                    district=district, city=city, school=school, grade=grade)
         self.sql_session.add(user)
 
         return user, ret_password

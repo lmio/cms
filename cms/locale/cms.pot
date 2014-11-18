@@ -1096,3 +1096,15 @@ msgstr ""
 
 msgid "Your password is:"
 msgstr ""
+
+msgid "District"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "School"
+msgstr ""
+
+msgid "Grade"
+msgstr ""

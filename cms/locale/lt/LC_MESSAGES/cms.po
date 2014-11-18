@@ -1166,3 +1166,15 @@ msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti.
 
 msgid "Your password is:"
 msgstr "Tavo slaptažodis yra:"
+
+msgid "District"
+msgstr "Savivaldybė"
+
+msgid "City"
+msgstr "Miestas"
+
+msgid "School"
+msgstr "Mokykla"
+
+msgid "Grade"
+msgstr "Klasė"
