@@ -255,11 +255,7 @@ class Reimporter(object):
                         logger.info("Deleting user %s" % username)
                         old_contest.users.remove(old_user)
                     else:
-                        logger.critical(
-                            "User %s exists in old contest, but "
-                            "not in the new one. Use -f to force." %
-                            username)
-                        return False
+                        logger.info("Skipping user %s" % username)
 
             # The same for tasks. Setting num for tasks requires a bit
             # of trickery, since we have to avoid triggering a
