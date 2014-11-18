@@ -600,10 +600,9 @@ class RegisterHandler(BaseHandler):
                              random.randint(0, 9999))
 
     def generate_password(self):
-        consonants = "bcdfghjklmnpqrstvwxyz"
-        vowels = "aeiou"
-        return "".join(random.choice(consonants) + random.choice(vowels)
-                       for _i in xrange(4))
+        chars = "abcdefghijkmnopqrstuvwxyz23456789"
+        return "".join(random.choice(chars)
+                       for _i in xrange(8))
 
 
 class StartHandler(BaseHandler):
