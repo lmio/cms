@@ -288,6 +288,9 @@ class Contest(Base):
                     files.add(testcase.input)
                     files.add(testcase.output)
 
+        for file_ in self.attachments.itervalues():
+            files.add(file_.digest)
+
         if not skip_submissions:
             for submission in self.get_submissions():
 
