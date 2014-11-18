@@ -82,6 +82,27 @@
       </td>
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Attachments for this contest. Contestants can view and download attachments from the overview page."></span>
+        Attachments
+{% if current_user.permission_all %}
+        [<a href="{{ url_root }}/contest/{{ contest.id }}/attachments/add">add</a>]
+{% end %}
+      </td>
+      <td>
+        {% if len(contest.attachments) == 0 %}
+          No attachments.
+        {% else %}
+          {% for attachment in contest.attachments.values() %}
+            <div class="attachment">
+              <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+              - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/contest/{{ contest.id }}/attachment/{{ attachment.id }}'); ">Delete</a>
+            </div>
+          {% end %}
+        {% end %}
+      </td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>

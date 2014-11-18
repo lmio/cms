@@ -42,8 +42,9 @@ from cms import config
 from cms.db import Participation, PrintJob, User
 from cms.server import actual_phase_required, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
+from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, check_ip, \
+from .base import BaseHandler, FileHandler, check_ip, \
     NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
@@ -149,6 +150,26 @@ class LogoutHandler(BaseHandler):
     def post(self):
         self.clear_cookie("login")
         self.redirect("/")
+
+
+class ContestAttachmentViewHandler(FileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self, filename):
+        if filename not in self.contest.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = self.contest.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
 
 
 class NotificationsHandler(BaseHandler):

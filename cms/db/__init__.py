@@ -54,7 +54,7 @@ __all__ = [
     # types
     "RepeatedUnicode",
     # contest
-    "Contest", "Announcement",
+    "Contest", "Announcement", "ContestAttachment",
     # user
     "User", "Team", "Participation", "Message", "Question",
     # admin
@@ -95,7 +95,7 @@ from .session import Session, ScopedSession, SessionGen, \
 
 from .types import RepeatedUnicode
 from .base import metadata, Base
-from .contest import Contest, Announcement
+from .contest import Contest, Announcement, ContestAttachment
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
