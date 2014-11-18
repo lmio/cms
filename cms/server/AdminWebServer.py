@@ -613,7 +613,8 @@ class AddContestHandler(BaseHandler):
             self.get_int(attrs, "score_precision")
 
             self.get_bool(attrs, "active")
-            self.get_bool(attrs, "get_registration")
+            self.get_bool(attrs, "allow_registration")
+            self.get_bool(attrs, "require_school_details")
 
             # Create the contest.
             contest = Contest(**attrs)
@@ -684,6 +685,7 @@ class ContestHandler(BaseHandler):
 
             self.get_bool(attrs, "active")
             self.get_bool(attrs, "allow_registration")
+            self.get_bool(attrs, "require_school_details")
 
             # Update the contest.
             contest.set_attrs(attrs)
@@ -1775,6 +1777,10 @@ class UserViewHandler(BaseHandler):
             self.get_bool(attrs, "hidden")
             self.get_string(attrs, "primary_statements")
 
+            self.get_string(attrs, "city")
+            self.get_string(attrs, "school")
+            self.get_int(attrs, "grade")
+
             # Update the user.
             user.set_attrs(attrs)
 
@@ -1815,6 +1821,10 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
             self.get_bool(attrs, "hidden")
             self.get_string(attrs, "primary_statements")
+
+            self.get_string(attrs, "city")
+            self.get_string(attrs, "school")
+            self.get_int(attrs, "grade")
 
             # Create the user.
             attrs["contest"] = self.contest

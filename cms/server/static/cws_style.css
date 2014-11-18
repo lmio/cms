@@ -176,7 +176,8 @@ div.login_box {
 }
 
 @media (min-width: 768px) {
-    div.login_box fieldset div.control-group div.controls input {
+    div.login_box fieldset div.control-group div.controls input,
+    div.login_box fieldset div.control-group div.controls select {
         width: 280px;
     }
 }
@@ -214,6 +215,11 @@ div.login_box {
         /* The total height of the box is 2*60 (padding) + 60 (h2) +
            (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
         margin-top: -174px;
+    }
+
+    div.login_box.school-details {
+        /* Close enough */
+        margin-top: -250px;
     }
 }
 
@@ -958,3 +964,7 @@ td.token_rules p:last-child {
 #lang {
     width: 100px;
 }
+
+
+/* Missing style from bootstrap.css */
+select{background-color:#ffffff;border:1px solid #cccccc;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);-moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);-webkit-transition:border linear 0.2s,box-shadow linear 0.2s;-moz-transition:border linear 0.2s,box-shadow linear 0.2s;-ms-transition:border linear 0.2s,box-shadow linear 0.2s;-o-transition:border linear 0.2s,box-shadow linear 0.2s;transition:border linear 0.2s,box-shadow linear 0.2s;}

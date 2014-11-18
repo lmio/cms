@@ -147,6 +147,21 @@ class User(Base):
         nullable=False,
         default=timedelta())
 
+
+    # School details, required for registration if
+    # contest.require_school_details is True.
+    city = Column(
+        Unicode,
+        nullable=True)
+
+    school = Column(
+        Unicode,
+        nullable=True)
+
+    grade = Column(
+        Integer,
+        nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # messages (list of Message objects)

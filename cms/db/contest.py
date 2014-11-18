@@ -202,6 +202,13 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Should registration include school related fields. Useful only if
+    # allow_registration is True.
+    require_school_details = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)

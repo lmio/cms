@@ -1,8 +1,8 @@
 {% extends base.html %}
 {% block login %}
 <div class="login_container">
-    <div class="login_box hero-unit">
 {% if new_user %}
+    <div class="login_box hero-unit">
         <h2>{{ _("Registration successful") }}</h2>
         <p>{{ _("Here are your login details. Please write them down.") }}</p>
         <div class="form-horizontal">
@@ -24,7 +24,9 @@
                 </div>
             </div>
         </div>
+    </div>
 {% else %}
+    <div class="login_box hero-unit{% if contest.require_school_details %} school-details{% end %}">
         <h1>{{ _("Welcome") }}</h1>
         <p>{{ _("Please register") }}</p>
         <form class="form-horizontal" action="{{ url_root }}/register" method="POST">
@@ -47,6 +49,32 @@
                         <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
+    {% if contest.require_school_details %}
+                <div class="control-group{% if errors and "city" in errors %} error{% end %}">
+                    <label class="control-label" for="city">{{ _("City") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="city" value="{{ handler.get_argument("city", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "school" in errors %} error{% end %}">
+                    <label class="control-label" for="school">{{ _("School") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="school" value="{{ handler.get_argument("school", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "grade" in errors %} error{% end %}">
+                    <label class="control-label" for="grade">{{ _("Grade") }}</label>
+                    <div class="controls">
+                        <select name="grade" class="form-control">
+                            <option value="">--</option>
+        {% set selected_grade = handler.get_argument("grade", "") %}
+        {% for i in xrange(1, 13) %}
+                            <option value="{{ i }}"{% if str(i) == selected_grade %} selected="selected"{% end %}>{{ i }}</option>
+        {% end %}
+                        </select>
+                    </div>
+                </div>
+    {% end %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-primary btn-large">{{ _("Register") }}</button>
@@ -55,7 +83,7 @@
                 </div>
             </fieldset>
         </form>
-{% end %}
     </div>
+{% end %}
 </div>
 {% end %}

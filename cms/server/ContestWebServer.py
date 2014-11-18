@@ -534,9 +534,15 @@ class RegisterHandler(BaseHandler):
         self.render("register.html", errors=[], new_user=None, **self.r_params)
 
     def post(self):
-        first_name = self.get_argument("first_name")
-        last_name = self.get_argument("last_name")
-        email = self.get_argument("email")
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        city = self.get_argument("city", "")
+        school = self.get_argument("school", "")
+        grade = self.get_argument("grade", "")
 
         errors = []
         if not first_name:
@@ -545,6 +551,19 @@ class RegisterHandler(BaseHandler):
             errors.append("last_name")
         if not email or not self.email_re.match(email):
             errors.append("email")
+
+        if self.contest.require_school_details:
+            if not city:
+                errors.append("city")
+            if not school:
+                errors.append("school")
+            try:
+                grade = int(grade)
+            except ValueError:
+                errors.append("grade")
+            else:
+                if not 1 <= grade <= 12:
+                    errors.append("grade")
 
         if errors:
             self.render("register.html", errors=errors, new_user=None, **self.r_params)
@@ -562,7 +581,8 @@ class RegisterHandler(BaseHandler):
 
 
         user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password, contest=self.contest)
+                    username=username, password=password, contest=self.contest,
+                    city=city, school=school, grade=grade)
         self.sql_session.add(user)
         self.sql_session.commit()
 
