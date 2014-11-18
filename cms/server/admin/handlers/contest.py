@@ -7,6 +7,7 @@
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -28,8 +29,14 @@
 
 """
 
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
+
 from cms import ServiceCoord, get_service_shards, get_service_address
-from cms.db import Contest, Participation, Submission
+from cms.db import Contest, Participation, Session, Submission, \
+    ContestAttachment
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleContestHandler, SimpleHandler, \
@@ -140,6 +147,76 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             # Update the contest on RWS.
             self.service.proxy_service.reinitialize()
         self.redirect(self.url("contest", contest_id))
+
+
+class AddContestAttachmentHandler(BaseHandler):
+    """Add an attachment to a contest.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.render("add_contest_attachment.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, contest_id):
+        fallback_page = self.url("contest", contest_id, "attachments", "add")
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        attachment = self.request.files["attachment"][0]
+        contest_name = self.contest.name
+        self.sql_session.close()
+
+        try:
+            digest = self.service.file_cacher.put_file_content(
+                attachment["body"],
+                "Contest attachment for %s" % contest_name)
+        except Exception as error:
+            self.service.add_notification(
+                make_datetime(),
+                "Attachment storage failed",
+                repr(error))
+            self.redirect(fallback_page)
+            return
+
+        # TODO verify that there's no other Attachment with that filename
+        # otherwise we'd trigger an IntegrityError for constraint violation
+
+        self.sql_session = Session()
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        attachment = ContestAttachment(attachment["filename"], digest, contest=self.contest)
+        self.sql_session.add(attachment)
+
+        if self.try_commit():
+            self.redirect(self.url("contest", contest_id))
+        else:
+            self.redirect(fallback_page)
+
+
+class ContestAttachmentHandler(BaseHandler):
+    """Delete an attachment.
+
+    """
+    # No page for single attachments.
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, contest_id, attachment_id):
+        attachment = self.safe_get_item(ContestAttachment, attachment_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        # Protect against URLs providing incompatible parameters.
+        if attachment.contest is not self.contest:
+            raise tornado_web.HTTPError(404)
+
+        self.sql_session.delete(attachment)
+        self.try_commit()
+
+        # Page to redirect to.
+        self.write("%s" % self.contest.id)
 
 
 class OverviewHandler(BaseHandler):

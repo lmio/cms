@@ -5,6 +5,7 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,6 +31,8 @@ from .base import \
 from .contest import \
     AddContestHandler, \
     ContestHandler, \
+    AddContestAttachmentHandler, \
+    ContestAttachmentHandler, \
     OverviewHandler, \
     ResourcesListHandler, \
     ContestListHandler, \
@@ -120,6 +123,8 @@ HANDLERS = [
     (r"/contests/([0-9]+)/remove", RemoveContestHandler),
     (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
+    (r"/contest/([0-9]+)/attachments/add", AddContestAttachmentHandler),
+    (r"/contest/([0-9]+)/attachment/([0-9]+)", ContestAttachmentHandler),
     (r"/contest/([0-9]+)/overview", OverviewHandler),
     (r"/contest/([0-9]+)/resourceslist", ResourcesListHandler),
 

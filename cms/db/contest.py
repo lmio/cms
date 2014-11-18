@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -32,12 +33,14 @@ from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
     Boolean, String
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
-from . import Codename, Base, Admin
+from . import Codename, Filename, Digest, Base, Admin
 
 
 class Contest(Base):
@@ -276,6 +279,13 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
+    attachments = relationship(
+        "ContestAttachment",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
+
     participations = relationship(
         "Participation",
         cascade="all, delete-orphan",
@@ -305,6 +315,40 @@ class Contest(Base):
             elif timestamp <= self.analysis_stop:
                 return 2
         return 3
+
+
+class ContestAttachment(Base):
+    """Class to store contest related files to give to the user.
+
+    """
+    __tablename__ = 'contest_attachments'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Contest (id and object) owning the attachment.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    contest = relationship(
+        Contest,
+        back_populates="attachments")
+
+    # Filename and digest of the provided attachment.
+    filename = Column(
+        Filename,
+        nullable=False)
+    digest = Column(
+        Digest,
+        nullable=False)
 
 
 class Announcement(Base):

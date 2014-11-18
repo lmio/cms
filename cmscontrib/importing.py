@@ -4,6 +4,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -304,4 +305,6 @@ def update_contest(old_contest, new_contest, parent=None):
         # must be handled differently.
         Contest.tasks: False,
         Contest.participations: False,
+        # Relationships to update.
+        Contest.attachments: True,
     }, parent=parent)
