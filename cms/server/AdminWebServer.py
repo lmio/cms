@@ -50,7 +50,7 @@ from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
-    Testcase, SubmissionFormatElement, Statement
+    Testcase, SubmissionFormatElement, Statement, ContestAttachment
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -700,6 +700,64 @@ class ContestHandler(BaseHandler):
             # Update the contest on RWS.
             self.application.service.proxy_service.reinitialize()
         self.redirect("/contest/%s" % contest_id)
+
+
+class AddContestAttachmentHandler(BaseHandler):
+    """Add an attachment to a contest.
+
+    """
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.render("add_contest_attachment.html", **self.r_params)
+
+    def post(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        attachment = self.request.files["attachment"][0]
+        contest_name = self.contest.name
+        self.sql_session.close()
+
+        try:
+            digest = self.application.service.file_cacher.put_file_content(
+                attachment["body"],
+                "Contest attachment for %s" % contest_name)
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Attachment storage failed",
+                repr(error))
+            self.redirect("/add_contest_attachment/%s" % contest_id)
+            return
+
+        # TODO verify that there's no other Attachment with that filename
+        # otherwise we'd trigger an IntegrityError for constraint violation
+
+        self.sql_session = Session()
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        attachment = ContestAttachment(attachment["filename"], digest, contest=self.contest)
+        self.sql_session.add(attachment)
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/contest/%s" % contest_id)
+        else:
+            self.redirect("/add_contest_attachment/%s" % contest_id)
+
+
+class DeleteContestAttachmentHandler(BaseHandler):
+    """Delete an attachment.
+
+    """
+    def get(self, attachment_id):
+        attachment = self.safe_get_item(ContestAttachment, attachment_id)
+        self.contest = attachment.contest
+
+        self.sql_session.delete(attachment)
+
+        try_commit(self.sql_session, self)
+        self.redirect("/contest/%s" % self.contest.id)
 
 
 class AddStatementHandler(BaseHandler):
@@ -2035,6 +2093,8 @@ _aws_handlers = [
     (r"/userlist/([0-9]+)", SimpleContestHandler("userlist.html")),
     (r"/tasklist/([0-9]+)", SimpleContestHandler("tasklist.html")),
     (r"/contest/add", AddContestHandler),
+    (r"/add_contest_attachment/([0-9]+)", AddContestAttachmentHandler),
+    (r"/delete_contest_attachment/([0-9]+)", DeleteContestAttachmentHandler),
     (r"/ranking/([0-9]+)", RankingHandler),
     (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
     (r"/task/([0-9]+)", TaskHandler),

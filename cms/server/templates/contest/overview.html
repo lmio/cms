@@ -1,7 +1,7 @@
 {% extends base.html %}
 {% block core %}
 
-{% from cms.server import format_token_rules, format_datetime_smart %}
+{% from cms.server import format_token_rules, format_datetime_smart, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
 
 <div class="span9">
@@ -194,6 +194,42 @@
 {% end %}
     </tbody>
 </table>
+
+{% if contest.attachments != {} %}
+    <h2>{{ _("Attachments") }}</h2>
+    <div id="attachments">
+        <ul>
+    {% from cmscommon import mimetypes %}
+    {% for filename, attachment in sorted(contest.attachments.items()) %}
+        {% set mime_type = mimetypes.get_type_for_file_name(filename) %}
+        {% if mime_type is not None %}
+            {% set type_name = mimetypes.get_name_for_type(mime_type) %}
+            {% set type_icon = mimetypes.get_icon_for_type(mime_type) %}
+        {% else %}
+            {% set type_name = None %}
+            {% set type_icon = None %}
+        {% end %}
+        {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
+            <li>
+                <a href="{{ url_root }}/attachments/{{ encode_for_url(filename) }}" class="btn">
+            {% if type_icon is not None %}
+                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
+            {% else %}
+                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png"/>
+            {% end %}
+                    <span class="first_line">
+                        <span class="name">{{ filename }}</span>
+                        <span class="size">{{ format_size(file_size) }}</span>
+                    </span>
+            {% if type_icon is not None %}
+                    <span class="type">{{ _(type_name) }}</span>
+            {% end %}
+                </a>
+            </li>
+    {% end %}
+        </ul>
+    </div>
+{% end %}
 
 {% end %}
 
