@@ -153,6 +153,8 @@ def do_setup():
 
                   "cmsYamlImporter=cmscompat.YamlImporter:main",
                   "cmsYamlReimporter=cmscompat.YamlReimporter:main",
+
+                  "cmsStatsGraphite=cmscontrib.StatsGraphite:main",
               ]
           },
           keywords="ioi programming contest grader management system",
