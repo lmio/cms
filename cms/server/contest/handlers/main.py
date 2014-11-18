@@ -40,8 +40,10 @@ import re
 
 import tornado.web
 
+from sqlalchemy.orm import subqueryload
+
 from cms import config
-from cms.db import Participation, PrintJob, User
+from cms.db import Participation, PrintJob, User, District, School
 from cms.server import actual_phase_required, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -131,6 +133,13 @@ class RegisterHandler(BaseHandler):
 
     email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        params["district_list"] = (self.sql_session.query(District)
+                                   .options(subqueryload(District.schools))
+                                   .all())
+        return params
+
     def get(self):
         if not self.contest.allow_registration:
             raise tornado.web.HTTPError(404)
@@ -143,6 +152,10 @@ class RegisterHandler(BaseHandler):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
+        district_id = self.get_argument("district", "")
+        city = self.get_argument("city", "")
+        school_id = self.get_argument("school", "")
+        grade = self.get_argument("grade", None)
 
         errors = []
         if not first_name:
@@ -151,6 +164,41 @@ class RegisterHandler(BaseHandler):
             errors.append("last_name")
         if not email or not self.email_re.match(email):
             errors.append("email")
+
+        if self.contest.require_school_details:
+            try:
+                district_id = int(district_id)
+            except ValueError:
+                errors.append("district")
+                district = None
+            else:
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    errors.append("district")
+            if not city:
+                errors.append("city")
+            try:
+                school_id = int(school_id)
+            except ValueError:
+                errors.append("school")
+                school = None
+            else:
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is not None and district is not None and school.district != district:
+                    school = None
+                if school is None:
+                    errors.append("school")
+            try:
+                grade = int(grade)
+            except ValueError:
+                errors.append("grade")
+            else:
+                if self.contest.allowed_grades:
+                    if grade not in self.contest.allowed_grades:
+                        errors.append("grade")
+                else:
+                    if not 1 <= grade <= 12:
+                        errors.append("grade")
 
         if errors:
             self.render("register.html", errors=errors, new_user=None, **self.r_params)
@@ -168,7 +216,8 @@ class RegisterHandler(BaseHandler):
         # Everything's ok. Create the user and participation.
         # Set password on both.
         user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password)
+                    username=username, password=password, district=district,
+                    city=city, school=school, grade=grade)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)

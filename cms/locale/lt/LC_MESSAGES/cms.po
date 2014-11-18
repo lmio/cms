@@ -1147,3 +1147,12 @@ msgstr "Pavardė"
 
 msgid "Email"
 msgstr "El. paštas"
+
+msgid "City"
+msgstr "Miestas"
+
+msgid "School"
+msgstr "Mokykla"
+
+msgid "Grade"
+msgstr "Klasė"
