@@ -106,6 +106,10 @@
       <td>Allow registration</td>
       <td><input type="checkbox" name="allow_registration" {% if contest.allow_registration %}checked{% end %}></td>
     </tr>
+    <tr>
+      <td>Require school details for registration</td>
+      <td><input type="checkbox" name="require_school_details" {% if contest.require_school_details %}checked{% end %}></td>
+    </tr>
   </table>
   <input type="submit" value="Update">
   <input type="reset" value="Reset">

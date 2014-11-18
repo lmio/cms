@@ -103,11 +103,13 @@ $(document).ready(function () {
                                 <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
                             </div>
                         </div>
+        {% if contest.allow_registration %}
                         <div class="control-group">
                             <div class="controls">
                                 <a class="btn btn-warning btn-large" href="{{ url_root }}/register">{{ _("Register") }}</a>
                             </div>
                         </div>
+        {% end %}
                     </fieldset>
                 </form>
             </div>

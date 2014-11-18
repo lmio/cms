@@ -889,6 +889,15 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+msgid "City"
+msgstr ""
+
+msgid "School"
+msgstr ""
+
+msgid "Grade"
+msgstr ""
+
 msgid "There are no announcements yet."
 msgstr ""
 
