@@ -98,6 +98,22 @@
       <td>The number of decimal places the scores will be rounded to</td>
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
+    <tr>
+      <td>Attachments</td>
+      <td>
+        <a href="{{ url_root }}/add_contest_attachment/{{ contest.id }}" >Add attachment</a><br/>
+        {% if len(contest.attachments) == 0 %}
+          No attachments.
+        {% else %}
+          {% for attachment in contest.attachments.values() %}
+            <div class="attachment">
+              <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+              - <a href="{{ url_root }}/delete_contest_attachment/{{ attachment.id }}">Delete</a>
+            </div>
+          {% end %}
+        {% end %}
+      </td>
+    </tr>
   </table>
   <input type="submit" value="Update">
   <input type="reset" value="Reset">

@@ -550,6 +550,26 @@ class LogoutHandler(BaseHandler):
         self.redirect("/")
 
 
+class ContestAttachmentViewHandler(FileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self, filename):
+        if filename not in self.contest.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = self.contest.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
+
+
 class TaskDescriptionHandler(BaseHandler):
     """Shows the data of a task in the contest.
 
@@ -1840,6 +1860,7 @@ _cws_handlers = [
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/start", StartHandler),
+    (r"/attachments/(.*)", ContestAttachmentViewHandler),
     (r"/tasks/(.*)/description", TaskDescriptionHandler),
     (r"/tasks/(.*)/submissions", TaskSubmissionsHandler),
     (r"/tasks/(.*)/statements/(.*)", TaskStatementViewHandler),

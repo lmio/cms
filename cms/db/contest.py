@@ -31,11 +31,14 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
 
-from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    UniqueConstraint
+from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
+    String
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
+from .smartmappedcollection import smart_mapped_collection
 
 from cms import DEFAULT_LANGUAGES
 from cmscommon.datetime import make_datetime
@@ -194,6 +197,7 @@ class Contest(Base):
     # SQLAlchemy.
     # tasks (list of Task objects)
     # announcements (list of Announcement objects)
+    # attachments (dict of ContestAttachment objects indexed by filename)
     # users (list of User objects)
 
     # Moreover, we have the following methods.
@@ -580,6 +584,43 @@ class Contest(Base):
                            expiration)
 
         return res
+
+
+class ContestAttachment(Base):
+    """Class to store contest related files to give to the user.
+
+    """
+    __tablename__ = 'contest_attachments'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Contest (id and object) owning the attachment.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    contest = relationship(
+        Contest,
+        backref=backref('attachments',
+                        collection_class=smart_mapped_collection('filename'),
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Filename and digest of the provided attachment.
+    filename = Column(
+        Unicode,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
 
 class Announcement(Base):
