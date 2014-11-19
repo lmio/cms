@@ -456,7 +456,7 @@ msgid "Please log in"
 msgstr "Prašome prisijungti"
 
 msgid "Username"
-msgstr "Naudotojo vardas"
+msgstr "Vartotojo vardas"
 
 msgid "Password"
 msgstr "Slaptažodis"
@@ -926,7 +926,7 @@ msgid "Registration successful"
 msgstr "Registracija sėkminga"
 
 msgid "Here are your login details. Please write them down."
-msgstr "Žemiau pateikti tavo prisijungimo dumenys. Prašome juos užsirašyti."
+msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti."
 
 msgid "Please register"
 msgstr "Prašome užsiregistruoti"
