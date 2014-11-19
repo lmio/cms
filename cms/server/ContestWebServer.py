@@ -542,7 +542,7 @@ class RegisterHandler(BaseHandler):
         email = self.get_argument("email", "")
         city = self.get_argument("city", "")
         school = self.get_argument("school", "")
-        grade = self.get_argument("grade", "")
+        grade = self.get_argument("grade", None)
 
         errors = []
         if not first_name:
