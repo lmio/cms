@@ -298,9 +298,10 @@ class RegisterHandler(ContestHandler):
             raise Exception  # TODO: show some error message
 
     def generate_password(self):
-        chars = "abcdefghijkmnopqrstuvwxyz23456789"
-        return "".join(random.choice(chars)
-                       for _i in range(8))
+        consonants = "bcdfghjklmnpqrstvwxyz"
+        vowels = "aeiou"
+        return "".join(random.choice(consonants) + random.choice(vowels)
+                       for _i in range(4))
 
 
 class RegisterByParentHandler(RegisterHandler):
