@@ -155,6 +155,7 @@ class RegisterHandler(ContestHandler):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
+        role = self.get_argument("role", "")
         district_id = self.get_argument("district", "")
         city = self.get_argument("city", "")
         school_id = self.get_argument("school", "")
@@ -177,7 +178,10 @@ class RegisterHandler(ContestHandler):
         if not email or not self.email_re.match(email):
             errors.append("email")
 
-        if self.contest.require_school_details:
+        if self.contest.require_school_details and not role:
+            errors.append("role")
+
+        if self.contest.require_school_details and role == "student":
             try:
                 district_id = int(district_id)
             except ValueError:
@@ -211,6 +215,11 @@ class RegisterHandler(ContestHandler):
                 else:
                     if not 1 <= grade <= 12:
                         errors.append("grade")
+        else:
+            district = None
+            city = ""
+            school = None
+            grade = None
 
         if errors:
             self.render("register.html", errors=errors, **self.r_params)

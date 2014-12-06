@@ -3,6 +3,17 @@
 {% block additional_js %}
 {% if contest.require_school_details %}
 $(document).ready(function () {
+    $('input[name="role"]:radio').change(function(ev) {
+        if (ev.target.value == 'student') {
+            $('.students-only').show();
+        } else {
+            $('.students-only').hide();
+        }
+    });
+    {% if handler.get_argument("role", "") != "student" %}
+    $('.students-only').hide();
+    {% endif %}
+
     var $select_district = $('select[name="district"]');
     var $select_school = $('select[name="school"]');
     var $no_school = $select_school.children('option[value=""]').clone();
@@ -81,7 +92,17 @@ $(document).ready(function () {
                     </div>
                 </div>
     {% if contest.require_school_details %}
-                <div class="control-group{% if errors is defined and "district" in errors %} error{% endif %}">
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="inline"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% endif %} />
+                            <span>{% trans %}Student{% endtrans %}</span>
+                        </label>
+                        <label class="inline"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% endif %} />
+                            <span>{% trans %}Guest{% endtrans %}</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-group students-only{% if errors is defined and "district" in errors %} error{% endif %}">
                     <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
                     <div class="controls">
                         <select name="district" class="form-control">
@@ -93,13 +114,13 @@ $(document).ready(function () {
                         </select>
                     </div>
                 </div>
-                <div class="control-group{% if errors is defined and "city" in errors %} error{% endif %}">
+                <div class="control-group students-only{% if errors is defined and "city" in errors %} error{% endif %}">
                     <label class="control-label" for="city">{% trans %}City{% endtrans %}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="city" value="{{ handler.get_argument("city", "") }}">
                     </div>
                 </div>
-                <div class="control-group{% if errors is defined and "school" in errors %} error{% endif %}">
+                <div class="control-group students-only{% if errors is defined and "school" in errors %} error{% endif %}">
                     <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
                     <div class="controls">
                         <select name="school" class="form-control">
@@ -115,7 +136,7 @@ $(document).ready(function () {
                         </select>
                     </div>
                 </div>
-                <div class="control-group{% if errors is defined and "grade" in errors %} error{% endif %}">
+                <div class="control-group students-only{% if errors is defined and "grade" in errors %} error{% endif %}">
                     <label class="control-label" for="grade">{% trans %}Grade{% endtrans %}</label>
                     <div class="controls">
                         <select name="grade" class="form-control">
