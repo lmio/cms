@@ -1108,3 +1108,9 @@ msgstr ""
 
 msgid "Grade"
 msgstr ""
+
+msgid "Student"
+msgstr ""
+
+msgid "Guest"
+msgstr ""

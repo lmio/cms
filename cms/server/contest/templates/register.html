@@ -15,10 +15,8 @@ const registerFields = [
     "password-confirm",
     {% endif %}
     {% if contest.registration_require_school_details %}
-    "district",
-    "city",
-    "school",
-    "grade",
+    "role-student",
+    "role-guest",
     {% endif %}
 ];
 const joinFields = [
@@ -27,6 +25,14 @@ const joinFields = [
     "password",
     {% endif %}
 ];
+{% if contest.registration_require_school_details %}
+const schoolFields = [
+    "district",
+    "city",
+    "school",
+    "grade",
+];
+{% endif %}
 
 function clearErrors() {
     // Reset error text
@@ -39,9 +45,6 @@ function clearErrors() {
 }
 
 $(document).ready(function() {
-    {% if contest.registration_allow_join %}
-    const passwordHelp = $("#password-input span.help-block").text();
-
     function showField(fieldName) {
         $(`#${fieldName}`).prop("disabled", false);
         $(`#${fieldName}`).closest(".control-group").show();
@@ -52,12 +55,20 @@ $(document).ready(function() {
         $(`#${fieldName}`).closest(".control-group").hide();
     }
 
+    {% if contest.registration_allow_join %}
+    const passwordHelp = $("#password-input span.help-block").text();
+
     $("#register-pill").click(function(e) {
         clearErrors();
         $("#password-input span.help-block").show().text(passwordHelp);
         $('input[name=new_user]').val(true);
         joinFields.forEach(hideField);
         registerFields.forEach(showField);
+        {% if contest.registration_require_school_details %}
+        if ($('input[type=radio][name="role"]:checked').val() === 'student') {
+            schoolFields.forEach(showField);
+        }
+        {% endif %}
         $("#profile").after($("#participation"));
         $("#form-divider").show();
     });
@@ -66,6 +77,9 @@ $(document).ready(function() {
         clearErrors();
         $('input[name=new_user]').val(false);
         registerFields.forEach(hideField);
+        {% if contest.registration_require_school_details %}
+        schoolFields.forEach(hideField);
+        {% endif %}
         joinFields.forEach(showField);
         $("#credentials").after($("#participation"));
         $("#form-divider").hide();
@@ -73,6 +87,14 @@ $(document).ready(function() {
     {% endif %}
 
     {% if contest.registration_require_school_details %}
+    $('input[type=radio][name="role"]').change(function(ev) {
+        if (ev.target.value === 'student') {
+            schoolFields.forEach(showField);
+        } else {
+            schoolFields.forEach(hideField);
+        }
+    });
+
     let $select_district = $('select[name="district"]');
     let $select_school = $('select[name="school"]');
     let $no_school = $select_school.children('option[value=""]').clone();
@@ -190,9 +212,19 @@ $(document).ready(function() {
                     </div>
                     {% if contest.registration_require_school_details %}
                     <div class="control-group">
+                        <div class="controls">
+                            <label class="inline radio"><input required type="radio" name="role" value="student" id="role-student" />
+                                <span>{% trans %}Student{% endtrans %}</span>
+                            </label>
+                            <label class="inline radio"><input required type="radio" name="role" value="guest" id="role-guest" />
+                                <span>{% trans %}Guest{% endtrans %}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="control-group" style="display: none">
                         <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="district" name="district" class="form-control">
+                            <select required id="district" name="district" class="form-control" disabled>
                                 <option value="">---</option>
                                 {% for d in district_list %}
                                 <option value="{{ d.id }}">{{ d.name }}</option>
@@ -200,16 +232,16 @@ $(document).ready(function() {
                             </select>
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="display: none">
                         <label class="control-label" for="city">{% trans %}City{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="city" id="city">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="city" id="city" disabled>
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="display: none">
                         <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="school" name="school" class="form-control">
+                            <select required id="school" name="school" class="form-control" disabled>
                                 <option value="">---</option>
                                 {% for d in district_list %}
                                 <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
@@ -221,10 +253,10 @@ $(document).ready(function() {
                             </select>
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="display: none">
                         <label class="control-label" for="grade">{% trans %}Grade{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="grade" name="grade" class="form-control">
+                            <select required id="grade" name="grade" class="form-control" disabled>
                                 <option value="">--</option>
                                 {% for i in contest.registration_allowed_grades or range(1, 13) %}
                                 <option value="{{ i }}">{{ i }}</option>

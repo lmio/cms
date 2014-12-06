@@ -175,7 +175,8 @@ class RegistrationHandler(ContestHandler):
                     or not self.email_re.match(email):
                 raise ValueError()
 
-            if self.contest.registration_require_school_details:
+            if self.contest.registration_require_school_details \
+                    and self.get_argument("role") == 'student':
                 district_id = self.get_argument("district")
                 city = self.get_argument("city")
                 school_id = self.get_argument("school")
