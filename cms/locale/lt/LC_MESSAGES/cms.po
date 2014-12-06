@@ -1156,3 +1156,9 @@ msgstr "Mokykla"
 
 msgid "Grade"
 msgstr "Klasė"
+
+msgid "Student"
+msgstr "Mokinys"
+
+msgid "Guest"
+msgstr "Svečias"
