@@ -35,7 +35,7 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, Boolean
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, RepeatedUnicode
+from . import Base, RepeatedUnicode, RepeatedInteger
 
 from cms import DEFAULT_LANGUAGES
 from cmscommon.datetime import make_datetime
@@ -208,6 +208,13 @@ class Contest(Base):
         Boolean,
         nullable=False,
         default=False)
+
+    # Allowed grades in registration. Useful only if allow_registration
+    # and require_school_details are True.
+    allowed_grades = Column(
+        RepeatedInteger(),
+        nullable=False,
+        default=[])
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

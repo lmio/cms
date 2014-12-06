@@ -97,7 +97,7 @@ $(document).ready(function () {
                         <select name="grade" class="form-control">
                             <option value="">--</option>
         {% set selected_grade = handler.get_argument("grade", "") %}
-        {% for i in xrange(1, 13) %}
+        {% for i in contest.allowed_grades or xrange(1, 13) %}
                             <option value="{{ i }}"{% if str(i) == selected_grade %} selected="selected"{% end %}>{{ i }}</option>
         {% end %}
                         </select>

@@ -566,8 +566,12 @@ class RegisterHandler(BaseHandler):
             except ValueError:
                 errors.append("grade")
             else:
-                if not 1 <= grade <= 12:
-                    errors.append("grade")
+                if self.contest.allowed_grades:
+                    if grade not in self.contest.allowed_grades:
+                        errors.append("grade")
+                else:
+                    if not 1 <= grade <= 12:
+                        errors.append("grade")
         else:
             city = ""
             school = ""
