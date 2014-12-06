@@ -1,4 +1,23 @@
 {% extends base.html %}
+{% block extrahead %}
+{% if contest.require_school_details %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $('input[name="role"]:radio').change(function(ev) {
+        if (ev.target.value == 'student') {
+            $('.students-only').show();
+        } else {
+            $('.students-only').hide();
+        }
+    });
+    {% if handler.get_argument("role", "") != "student" %}
+    $('.students-only').hide();
+    {% end %}
+});
+</script>
+{% end %}
+{% end %}
+
 {% block login %}
 <div class="login_container">
 {% if new_user %}
@@ -50,19 +69,29 @@
                     </div>
                 </div>
     {% if contest.require_school_details %}
-                <div class="control-group{% if errors and "city" in errors %} error{% end %}">
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="inline"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% end %} />
+                            <span>{{ _("Student") }}</span>
+                        </label>
+                        <label class="inline"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% end %} />
+                            <span>{{ _("Guest") }}</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-group students-only{% if errors and "city" in errors %} error{% end %}">
                     <label class="control-label" for="city">{{ _("City") }}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="city" value="{{ handler.get_argument("city", "") }}">
                     </div>
                 </div>
-                <div class="control-group{% if errors and "school" in errors %} error{% end %}">
+                <div class="control-group students-only{% if errors and "school" in errors %} error{% end %}">
                     <label class="control-label" for="school">{{ _("School") }}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="school" value="{{ handler.get_argument("school", "") }}">
                     </div>
                 </div>
-                <div class="control-group{% if errors and "grade" in errors %} error{% end %}">
+                <div class="control-group students-only{% if errors and "grade" in errors %} error{% end %}">
                     <label class="control-label" for="grade">{{ _("Grade") }}</label>
                     <div class="controls">
                         <select name="grade" class="form-control">
