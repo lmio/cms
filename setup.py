@@ -53,6 +53,7 @@ PACKAGE_DATA = {
         "contest/static/js/*.*",
         "contest/templates/*.*",
         "contest/templates/macro/*.*",
+        "teacher/templates/*.*",
     ],
     "cms.service": [
         "templates/printing/*.*",
@@ -136,6 +137,7 @@ setup(
              "scripts/cmsChecker",
              "scripts/cmsContestWebServer",
              "scripts/cmsAdminWebServer",
+             "scripts/cmsTeacherWebServer",
              "scripts/cmsProxyService",
              "scripts/cmsPrintingService",
              "scripts/cmsRankingWebServer",
