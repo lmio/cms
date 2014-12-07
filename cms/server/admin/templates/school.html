@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1><a href="{{ url("district", school.district.id) }}">{{ school.district.name }}</a> - School information</h1>
+</div>
+
+<h2 id="title_general_info" class="toggling_on">General information</h2>
+<div id="general_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url("school", school.id) }}" method="POST">
+    {{ xsrf_form_html|safe }}
+    <table>
+      <tr>
+        <td>District</td>
+        <td><select name="district">
+          {% for d in district_list %}
+          <option value="{{ d.id }}" {% if school.district_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+          {% endfor %}
+        </select></td>
+      </tr>
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name" value="{{ school.name }}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update">
+    <input type="reset" value="Reset">
+  </form>
+  <div class="hr"></div>
+</div>
+
+{% endblock core %}
