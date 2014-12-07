@@ -36,7 +36,7 @@ from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, Contest
+from . import Base, Contest, District
 
 
 def generate_random_password():
@@ -146,6 +146,18 @@ class User(Base):
         CheckConstraint("extra_time >= '0 seconds'"),
         nullable=False,
         default=timedelta())
+
+    # District (id and object) this user belongs to.
+    district_id = Column(
+        Integer,
+        ForeignKey(District.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    district = relationship(
+        District,
+        backref=backref("users",
+                        passive_deletes=True))
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

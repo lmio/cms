@@ -1745,6 +1745,7 @@ class UserViewHandler(BaseHandler):
         self.r_params = self.render_params()
         self.r_params["selected_user"] = user
         self.r_params["submissions"] = user.submissions
+        self.r_params["district_list"] = self.sql_session.query(District).all()
         self.render("user.html", **self.r_params)
 
     def post(self, user_id):
@@ -1773,6 +1774,10 @@ class UserViewHandler(BaseHandler):
             self.get_bool(attrs, "hidden")
             self.get_string(attrs, "primary_statements")
 
+            self.get_int(attrs, "district")
+            if attrs.get("district") is not None:
+                attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
+
             # Update the user.
             user.set_attrs(attrs)
 
@@ -1788,7 +1793,14 @@ class UserViewHandler(BaseHandler):
         self.redirect("/user/%s" % user_id)
 
 
-class AddUserHandler(SimpleContestHandler("add_user.html")):
+class AddUserHandler(BaseHandler):
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.r_params["district_list"] = self.sql_session.query(District).all()
+        self.render("add_user.html", **self.r_params)
+
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -1813,6 +1825,10 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
             self.get_bool(attrs, "hidden")
             self.get_string(attrs, "primary_statements")
+
+            self.get_int(attrs, "district")
+            if attrs.get("district") is not None:
+                attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
 
             # Create the user.
             attrs["contest"] = self.contest

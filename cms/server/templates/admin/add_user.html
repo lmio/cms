@@ -58,6 +58,15 @@
         <td>Primary statements (JSON-encoded dict whose keys are task names and whose values are lists of language codes)</td>
         <td><input type="text" name="primary_statements" value="{}"></td>
       </tr>
+      <tr>
+        <td>District</td>
+        <td><select name="district">
+          <option value="">---</option>
+          {% for d in district_list %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+          {% end %}
+        </select></td>
+      </tr>
     </table>
     <input type="submit"/>
     <input type="reset" value="Reset" />

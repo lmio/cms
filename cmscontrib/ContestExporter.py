@@ -50,7 +50,7 @@ from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
     Submission, UserTest, SubmissionResult, UserTestResult, \
-    RepeatedUnicode
+    RepeatedUnicode, District
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -301,6 +301,9 @@ class ContestExporter(object):
             val = getattr(obj, prp.key)
             if val is None:
                 data[prp.key] = None
+            elif other_cls == District:
+                # Export districts by name
+                data[prp.key] = val.name
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):

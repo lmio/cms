@@ -92,6 +92,7 @@ from .session import Session, ScopedSession, SessionGen, \
 from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement
+from .school import District
 from .user import User, Message, Question
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
@@ -100,7 +101,6 @@ from .submission import Submission, File, Token, SubmissionResult, \
 from .usertest import UserTest, UserTestFile, UserTestManager, \
     UserTestResult, UserTestExecutable
 from .fsobject import FSObject
-from .school import District
 
 from .init import init_db
 from .drop import drop_db
