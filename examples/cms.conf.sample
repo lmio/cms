@@ -25,6 +25,7 @@
         "Worker":            [["localhost", 26000], ["localhost", 26001]],
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
+        "TeacherWebServer":  [["localhost", 21200]],
         "ProxyService":      [["localhost", 28600]]
         },
 
@@ -125,6 +126,16 @@
     "_help": "127.0.0.1 here for additional security.",
     "admin_listen_address": "",
     "admin_listen_port":    8889,
+
+
+
+    "_section": "TeacherWebServer",
+
+    "_help": "Listening HTTP address and port for the TWS. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "teacher_listen_address": "",
+    "teacher_listen_port":    8890,
 
 
 
