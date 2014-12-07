@@ -65,6 +65,8 @@ __all__ = [
     "UserTestExecutable",
     # fsobject
     "FSObject",
+    # school
+    "District",
     # init
     "init_db",
     # drop
@@ -98,6 +100,7 @@ from .submission import Submission, File, Token, SubmissionResult, \
 from .usertest import UserTest, UserTestFile, UserTestManager, \
     UserTestResult, UserTestExecutable
 from .fsobject import FSObject
+from .school import District
 
 from .init import init_db
 from .drop import drop_db

@@ -1,0 +1,22 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Districts list</h1>
+</div>
+<a href="{{ url_root }}/district/add{% if contest is not None %}/{{ contest.id }}{% end %}">Add a new district</a>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in district_list %}
+    <tr>
+      <td><a href="{{ url_root }}/district/{{ d.id }}{% if contest is not None %}/{{ contest.id }}{% end %}">{{ d.name }}</a></td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+{% end %}

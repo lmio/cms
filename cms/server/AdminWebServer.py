@@ -50,7 +50,7 @@ from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
-    Testcase, SubmissionFormatElement, Statement
+    Testcase, SubmissionFormatElement, Statement, District
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -2015,6 +2015,104 @@ class NotificationsHandler(BaseHandler):
         self.write(json.dumps(res))
 
 
+class DistrictListHandler(BaseHandler):
+    """Displays the list of districts.
+
+    """
+    def get(self, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.r_params["district_list"] = self.sql_session.query(District).all()
+        self.render("districtlist.html", **self.r_params)
+
+
+class DistrictHandler(BaseHandler):
+    def get(self, district_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        district = self.safe_get_item(District, district_id)
+
+        self.r_params = self.render_params()
+        self.r_params["district"] = district
+        self.render("district.html", **self.r_params)
+
+    def post(self, district_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+            url_suffix = "/%s" % contest_id
+        else:
+            url_suffix = ""
+
+        district = self.safe_get_item(District, district_id)
+
+        try:
+            attrs = district.get_attrs()
+
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
+
+            assert attrs.get("name") is not None, "No district name specified."
+
+            # Update the district.
+            district.set_attrs(attrs)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s).", repr(error))
+            self.redirect("/district/%s%s" % (district_id, url_suffix))
+            return
+
+        if try_commit(self.sql_session, self):
+            pass
+        self.redirect("/district/%s%s" % (district_id, url_suffix))
+
+
+class AddDistrictHandler(BaseHandler):
+    """Adds a new contest.
+
+    """
+    def get(self, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.render("add_district.html", **self.r_params)
+
+    def post(self, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        url_suffix = ""
+        if self.contest is not None:
+            url_suffix = "/%s" % self.contest.id
+
+        try:
+            attrs = dict()
+
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
+
+            assert attrs.get("name") is not None, "No district name specified."
+
+            # Create the district.
+            district = District(**attrs)
+            self.sql_session.add(district)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s).", repr(error))
+            self.redirect("/district/add%s" % url_suffix)
+            return
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/district/%s%s" % (district.id, url_suffix))
+        else:
+            self.redirect("/district/add%s" % url_suffix)
+
+
 _aws_handlers = [
     (r"/", MainHandler),
     (r"/([0-9]+)", MainHandler),
@@ -2059,4 +2157,10 @@ _aws_handlers = [
     (r"/resources/([0-9]+|all)", ResourcesHandler),
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
     (r"/notifications", NotificationsHandler),
+    (r"/districtlist", DistrictListHandler),
+    (r"/districtlist/([0-9]+)", DistrictListHandler),
+    (r"/district/([0-9]+)", DistrictHandler),
+    (r"/district/([0-9]+)/([0-9]+)", DistrictHandler),
+    (r"/district/add", AddDistrictHandler),
+    (r"/district/add/([0-9]+)", AddDistrictHandler),
 ]

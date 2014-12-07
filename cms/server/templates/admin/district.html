@@ -1,0 +1,24 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>District information</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/district/{{ district.id }}{% if contest is not None %}/{{ contest.id }}{% end %}" method="POST" name="edit_district">
+  <table class="sub_table">
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name" value="{{ district.name }}"></td>
+    </tr>
+    <tr>
+      <td>Password</td>
+      <td><input type="text" name="password" value="{{ district.password }}"></td>
+    </tr>
+  </table>
+  <input type="submit" value="Update">
+  <input type="reset" value="Reset">
+</form>
+
+{% end %}
