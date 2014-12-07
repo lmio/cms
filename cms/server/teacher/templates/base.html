@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript">
+        </script>
+        <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+        <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="{{ url_root }}/static/js/bootstrap.js"></script>
+        <script type="text/javascript" src="{{ url_root }}/static/cws_utils.js"></script>
+        <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
+        <link rel="stylesheet" href="{{ url_root }}/static/cws_style.css">
+
+        <title>{{ _("Teacher web server") }}</title>
+
+{% if current_user is not None %}
+        <script type="text/javascript">
+$(document).ready(function () {
+    $('#main').css('top', $('#navigation_bar').outerHeight());
+});
+        </script>
+{% end %}
+
+{% block extrahead %}{% end %}
+
+    </head>
+    <body id="body">
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{ url_root }}/">{{ _("Teacher web server") }}</a>
+{% if current_user is not None %}
+                    <p class="navbar-text pull-right">
+                        {% raw _("Logged in as <strong>%s</strong>") % current_user.name %}
+                        <a class="btn btn-warning" href="{{ url_root }}/logout">{{ _("Logout") }}</a>
+                    </p>
+{% end %}
+                </div>
+            </div>
+        </div>
+{% block body %}
+{% if current_user is not None %}
+        <div id="notifications" class="notifications"></div>
+        <div id="main" class="container">
+            <div class="row">
+    {% block core %}{% end %}
+            </div>
+        </div>
+
+{% end %}
+{% end %}
+    </body>
+</html>

@@ -110,6 +110,11 @@ class Config(object):
         self.admin_listen_port = 8889
         self.admin_cookie_duration = 10 * 60 * 60  # 10 hours
 
+        # TeacherWebServer.
+        self.teacher_listen_address = ""
+        self.teacher_listen_port = 8890
+        self.teacher_login_kind = "district"  # "district" or "school"
+
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
