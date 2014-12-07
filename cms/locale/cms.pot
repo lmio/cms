@@ -933,3 +933,16 @@ msgstr ""
 
 msgid "Output file"
 msgstr ""
+
+msgid "Teacher web server"
+msgstr ""
+
+#, python-format
+msgid "Logged in as <strong>%(user_name)s</strong>"
+msgstr ""
+
+msgid "District"
+msgstr ""
+
+msgid "Contests"
+msgstr ""

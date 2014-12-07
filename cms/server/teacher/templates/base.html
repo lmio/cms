@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="{{ translation.identifier }}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{% block title %}{% endblock title %} - {% trans %}Teacher web server{% endtrans %}</title>
+
+        <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
+        <link rel="stylesheet" href="{{ url("static", "css", "bootstrap.css") }}">
+        <link rel="stylesheet" href="{{ url("static", "cws_style.css") }}">
+
+        <script src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
+        <script src="{{ url("static", "js", "bootstrap.js") }}"></script>
+        <script src="{{ url("static", "cws_utils.js") }}"></script>
+
+{% if current_user is defined %}
+        <script>
+            $(document).ready(function () {
+                $('#main').css('top', $('#navigation_bar').outerHeight());
+            });
+        </script>
+{% endif %}
+
+{% block extrahead %}{% endblock extrahead %}
+    </head>
+    <body id="body">
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{ url() }}">{% trans %}Teacher web server{% endtrans %}</a>
+{% if current_user is defined %}
+                    <form action="{{ url("logout") }}" method="POST" class="navbar-form pull-right">
+                        {{ xsrf_form_html|safe }}
+                        <button type="submit" class="btn btn-warning">{% trans %}Logout{% endtrans %}</button>
+                    </form>
+                    <p class="navbar-text pull-right">
+                        {% trans user_name=current_user.name %}
+                            Logged in as <strong>{{ user_name }}</strong>
+                        {% endtrans %}
+                    </p>
+{% endif %}
+                </div>
+            </div>
+        </div>
+{% block body %}
+{% if current_user is defined %}
+        <div id="notifications" class="notifications"></div>
+        <div id="main" class="container">
+            <div class="row">
+    {% block core %}{% endblock core %}
+            </div>
+        </div>
+
+{% endif %}
+{% endblock body %}
+    </body>
+</html>

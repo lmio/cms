@@ -1078,3 +1078,16 @@ msgstr "Duomenų failas"
 
 msgid "Output file"
 msgstr "Rezultatų failas"
+
+msgid "Teacher web server"
+msgstr "Mokytojų prieiga"
+
+#, python-format
+msgid "Logged in as <strong>%(user_name)s</strong>"
+msgstr "Prisijungta kaip <strong>%(user_name)s</strong>"
+
+msgid "District"
+msgstr "Savivaldybė"
+
+msgid "Contests"
+msgstr "Varžybos"

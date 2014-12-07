@@ -42,6 +42,7 @@
                               ["localhost", 26015]],
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
+        "TeacherWebServer":  [["localhost", 21200]],
         "ProxyService":      [["localhost", 28600]],
         "PrintingService":   [["localhost", 25123]]
         },
@@ -146,6 +147,21 @@
     "_help": "Login cookie duration for admins in seconds.",
     "_help": "The duration is refreshed on every manual request.",
     "admin_cookie_duration": 36000,
+
+
+    "_section": "TeacherWebServer",
+
+    "_help": "Listening HTTP address and port for the TWS. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "teacher_listen_address": "",
+    "teacher_listen_port":    8890,
+
+    "_help": "Language of the TWS.",
+    "teacher_locale": "en_US",
+
+    "_help": "The 'user' of the TWS. May be 'district' or 'school'.",
+    "teacher_login_kind": "district",
 
 
 

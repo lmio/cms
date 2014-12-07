@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{% trans %}Login{% endtrans %}{% endblock title %}
+
+{% block extrahead %}
+{% if login_kind == "school" %}
+<script type="text/javascript">
+$(document).ready(function () {
+    var $select_district = $('select[name="district"]');
+    var $select_school = $('select[name="school"]');
+    var $no_school = $select_school.children('option[value=""]').clone();
+    var schools_by_district = {};
+    $select_school.find('optgroup').each(function (i, og) {
+        schools_by_district[$(og).data('district-id')] = $(og).find('option').clone();
+    });
+
+    function district_changed () {
+        var val = $select_district.val();
+        $select_school.children().remove();
+        $select_school.append($no_school.clone());
+        if (val && schools_by_district.hasOwnProperty(val)) {
+            $select_school.append(schools_by_district[$select_district.val()].clone());
+        }
+        $select_school.val('');
+    }
+    $select_district.change(district_changed);
+    district_changed();
+});
+</script>
+{% endif %}
+{% endblock extrahead %}
+
+{% block body %}
+{% if handler.get_argument("error", "") != "" %}
+<div id="notifications" class="notifications">
+    <div class="alert alert-block alert-error notification">
+        <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+        <h4 class="alert-heading">{% trans %}Failed to log in.{% endtrans %}</h4>
+    </div>
+</div>
+{% endif %}
+<div class="login_container">
+    <div class="login_box hero-unit">
+        <h1>{% trans %}Welcome{% endtrans %}</h1>
+        <p>{% trans %}Please log in{% endtrans %}</p>
+        <form class="form-horizontal" action="{{ url("login") }}" method="POST">
+            {{ xsrf_form_html|safe }}
+            <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
+                    <div class="controls">
+                        <select name="district" class="form-control">
+                            <option value="">---</option>
+    {% for d in district_list %}
+                            <option value="{{ d.id }}">{{ d.name }}</option>
+    {% endfor %}
+                        </select>
+                    </div>
+                </div>
+    {% if login_kind == "school" %}
+                <div class="control-group">
+                    <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
+                    <div class="controls">
+                        <select name="school" class="form-control">
+                            <option value="">---</option>
+        {% for d in district_list %}
+                            <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
+            {% for s in d.schools %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+                            </optgroup>
+        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+    {% endif %}
+                <div class="control-group">
+                    <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="password" class="input-xlarge" name="password">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{% trans %}Login{% endtrans %}</button>
+                        <button type="reset" class="btn btn-large">{% trans %}Reset{% endtrans %}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock body %}
