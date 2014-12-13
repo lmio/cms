@@ -79,6 +79,18 @@ $(document).ready(function () {
                         </label>
                     </div>
                 </div>
+                <div class="control-group students-only{% if errors and "district" in errors %} error{% end %}">
+                    <label class="control-label" for="district">{{ _("District") }}</label>
+                    <div class="controls">
+                        <select name="district" class="form-control">
+                            <option value="">---</option>
+    {% set selected_district = handler.get_argument("district", "") %}
+    {% for d in district_list %}
+                            <option value="{{ d.id }}"{% if str(d.id) == selected_district %} selected{% end %}>{{ d.name }}</option>
+    {% end %}
+                        </select>
+                    </div>
+                </div>
                 <div class="control-group students-only{% if errors and "city" in errors %} error{% end %}">
                     <label class="control-label" for="city">{{ _("City") }}</label>
                     <div class="controls">
@@ -98,7 +110,7 @@ $(document).ready(function () {
                             <option value="">--</option>
         {% set selected_grade = handler.get_argument("grade", "") %}
         {% for i in contest.allowed_grades or xrange(1, 13) %}
-                            <option value="{{ i }}"{% if str(i) == selected_grade %} selected="selected"{% end %}>{{ i }}</option>
+                            <option value="{{ i }}"{% if str(i) == selected_grade %} selected{% end %}>{{ i }}</option>
         {% end %}
                         </select>
                     </div>
