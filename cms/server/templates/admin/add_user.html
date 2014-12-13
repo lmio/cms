@@ -59,6 +59,15 @@
         <td><input type="text" name="primary_statements" value="{}"></td>
       </tr>
       <tr>
+        <td>District</td>
+        <td><select name="district">
+          <option value="">---</option>
+          {% for d in district_list %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+          {% end %}
+        </select></td>
+      </tr>
+      <tr>
         <td>City</td>
         <td><input type="text" name="city" /></td>
       </tr>

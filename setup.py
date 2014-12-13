@@ -60,6 +60,7 @@ def do_setup():
             os.path.join("static", "*.*"),
             os.path.join("templates", "contest", "*.*"),
             os.path.join("templates", "admin", "*.*"),
+            os.path.join("templates", "teacher", "*.*"),
             os.path.join("templates", "ranking", "*.*"),
         ],
         "cmsranking": [
@@ -124,6 +125,7 @@ def do_setup():
                    "scripts/cmsChecker",
                    "scripts/cmsContestWebServer",
                    "scripts/cmsAdminWebServer",
+                   "scripts/cmsTeacherWebServer",
                    "scripts/cmsProxyService",
 
                    "scripts/cmsRankingWebServer",
@@ -148,6 +150,7 @@ def do_setup():
                   "cmsContestImporter=cmscontrib.ContestImporter:main",
                   "cmsDumpUpdater=cmscontrib.DumpUpdater:main",
                   "cmsRWSHelper=cmscontrib.RWSHelper:main",
+                  "cmsDistrictImporter=cmscontrib.DistrictImporter:main",
 
                   "cmsMake=cmstaskenv.cmsMake:main",
 

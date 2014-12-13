@@ -54,7 +54,7 @@ import cms.db as class_hook
 from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
-    SubmissionResult, UserTestResult, RepeatedUnicode
+    SubmissionResult, UserTestResult, RepeatedUnicode, District
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -220,6 +220,9 @@ class ContestImporter(object):
                     self.datas["_version"] = version + 1
 
                 assert self.datas["_version"] == model_version
+
+                districts = session.query(District).all()
+                self.districts = {d.name: d for d in districts}
 
                 self.objs = dict()
                 for id_, data in self.datas.iteritems():
@@ -405,6 +408,9 @@ class ContestImporter(object):
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
+            elif prp.mapper.class_ == District:
+                # Import districts by name
+                setattr(obj, prp.key, self.districts.get(val))
             elif type(val) == unicode:
                 setattr(obj, prp.key, self.objs[val])
             elif type(val) == list:

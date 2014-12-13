@@ -103,6 +103,13 @@ class Config(object):
         self.admin_listen_address = ""
         self.admin_listen_port = 8889
 
+        # TeacherWebServer.
+        self.teacher_listen_address = ""
+        self.teacher_listen_port = 8890
+        self.teacher_active_contests = [1]
+        self.teacher_contest_urls = ["http://localhost:8888/"]
+        self.teacher_locale = "en_US"
+
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None

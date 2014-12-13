@@ -209,6 +209,15 @@ function update_additional_answer(element, invoker)
         <td><input type="text" name="primary_statements" value="{{ selected_user.primary_statements }}"></td>
       </tr>
       <tr>
+        <td>District</td>
+        <td><select name="district">
+          <option value="" {% if selected_user.district_id is None %} selected {% end %}>---</option>
+          {% for d in district_list %}
+          <option value="{{ d.id }}" {% if selected_user.district_id == d.id %}selected{% end %}>{{ d.name }}</option>
+          {% end %}
+        </select></td>
+      </tr>
+      <tr>
         <td>City</td>
         <td><input type="text" name="city" value="{{ selected_user.city }}" /></td>
       </tr>

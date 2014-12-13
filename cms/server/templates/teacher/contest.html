@@ -1,0 +1,49 @@
+{% extends base.html %}
+{% block core %}
+{% from cms.grading import task_score %}
+
+<div class="span12">
+
+<div class="page-header">
+    <h1>{{ contest.description }}</h1>
+</div>
+
+<p><a href="{{ url_root }}/">{{ _("Back to contest list") }}</a></p>
+
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>{{ _("Username") }}</th>
+      <th>{{ _("Contestant") }}</th>
+      {% for task in contest.tasks %}
+      <th>{{ task.name }}</th>
+      {% end %}
+      <th>{{ _("Total") }}</th>
+      <th style="width: 1%"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in sorted(users, key=lambda u: u.username) %}
+      {% if not user.hidden %}
+    <tr>
+      {% set score = 0.0 %}
+      {% set partial = False %}
+      <td>{{ user.username }}</td>
+      <td>{{ "%s %s" % (user.first_name, user.last_name) }}</td>
+      {% for task in contest.tasks %}
+        {% set t_score, t_partial = task_score(user, task) %}
+        {% set t_score = round(t_score, task.score_precision) %}
+        {% set score += t_score %}
+        {% set partial = partial or t_partial %}
+      <td>{{ t_score }}{% if t_partial %}*{% end %}</td>
+      {% end %}
+      <td>{{ round(score, contest.score_precision) }}{% if partial %}*{% end %}</td>
+      <td style="white-space: nowrap"><a href="{{ url_root }}/impersonate/{{ user.id }}" class="btn" target="_blank">{{ _("Log in as contestant") }}</a></td>
+    </tr>
+      {% end %}
+    {% end %}
+  </tbody>
+</table>
+
+</div>
+{% end %}
