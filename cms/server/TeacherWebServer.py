@@ -37,7 +37,7 @@ import tornado.web
 
 from cms import config
 from cms.io import WebService
-from cms.db import Session, District
+from cms.db import Session, District, Contest, User
 from cms.server import CommonRequestHandler, get_url_root, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -179,6 +179,9 @@ class TeacherWebServer(WebService):
             shard=shard,
             listen_address=config.teacher_listen_address)
 
+        self.contest_url = dict(zip(config.teacher_active_contests,
+                                    config.teacher_contest_urls))
+
 
 class LoginHandler(BaseHandler):
     """Login handler.
@@ -236,11 +239,58 @@ class MainHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self):
-        self.render("overview.html", **self.r_params)
+        self.r_params["contest_list"] = self.sql_session.query(Contest)\
+                .filter(Contest.id.in_(config.teacher_active_contests)).all()
+        self.render("contestlist.html", **self.r_params)
+
+
+class ContestHandler(BaseHandler):
+    """Contest result list handler.
+
+    """
+    @tornado.web.authenticated
+    def get(self, contest_id):
+        if int(contest_id) not in config.teacher_active_contests:
+            raise tornado.web.HTTPError(404)
+        contest = Contest.get_from_id(contest_id, self.sql_session)
+        if contest is None:
+            raise tornado.web.HTTPError(404)
+
+        self.r_params["contest"] = contest
+        self.r_params["users"] = self.sql_session.query(User)\
+                .filter(User.contest == contest)\
+                .filter(User.district == self.current_user).all()
+        self.render("contest.html", **self.r_params)
+
+
+class ImpersonateHandler(BaseHandler):
+    """Impersonate a contestant.
+
+    """
+    @tornado.web.authenticated
+    def get(self, user_id):
+        user = User.get_from_id(user_id, self.sql_session)
+        if user is None:
+            raise tornado.web.HTTPError(404)
+        if (user.contest_id not in config.teacher_active_contests or
+            user.district != self.current_user):
+            raise tornado.web.HTTPError(403)
+
+        self.set_secure_cookie("login",
+                               pickle.dumps((user.username,
+                                             user.password,
+                                             make_timestamp())),
+                               expires_days=None)
+        # Bypass the overriden redirect because we are going outside
+        # this web server.
+        super(CommonRequestHandler, self).redirect(
+                self.application.service.contest_url[user.contest_id])
 
 
 _tws_handlers = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/contest/([0-9]+)", ContestHandler),
+    (r"/impersonate/([0-9]+)", ImpersonateHandler),
 ]
