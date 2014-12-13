@@ -119,6 +119,10 @@ class BaseHandler(CommonRequestHandler):
 
         return obj
 
+    def get_user_locale(self):
+        lang = config.teacher_locale.replace("-", "_")
+        return self.application.service.langs[lang]
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 

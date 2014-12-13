@@ -1048,3 +1048,31 @@ msgstr ""
 
 msgid "Output file"
 msgstr ""
+
+msgid "Teacher web server"
+msgstr ""
+
+#, python-format
+msgid "Logged in as <strong>%s</strong>"
+msgstr ""
+
+msgid "District"
+msgstr ""
+
+msgid "Contests"
+msgstr ""
+
+msgid "There are no active contests at this time."
+msgstr ""
+
+msgid "Back to contest list"
+msgstr ""
+
+msgid "Contestant"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Log in as contestant"
+msgstr ""

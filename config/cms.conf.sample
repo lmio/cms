@@ -149,6 +149,9 @@
     "_help": "List of urls where each of the active contests is accessible.",
     "teacher_contest_urls": ["http://localhost:8888/"],
 
+    "_help": "Language of the TWS.",
+    "teacher_locale": "en_US",
+
     "_help": "The 'user' of the TWS. May be 'district' or 'school'.",
     "teacher_login_kind": "district",
 

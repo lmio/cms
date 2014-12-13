@@ -115,6 +115,7 @@ class Config(object):
         self.teacher_listen_port = 8890
         self.teacher_active_contests = [1]
         self.teacher_contest_urls = ["http://localhost:8888/"]
+        self.teacher_locale = "en_US"
         self.teacher_login_kind = "district"  # "district" or "school"
 
         # ProxyService.

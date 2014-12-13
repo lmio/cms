@@ -32,6 +32,7 @@ import pkg_resources
 
 from cms import config
 from cms.io import WebService
+from cms.locale import get_translations, wrap_translations_for_tornado
 
 from .handlers import HANDLERS
 
@@ -66,3 +67,7 @@ class TeacherWebServer(WebService):
 
         self.contest_url = dict(zip(config.teacher_active_contests,
                                     config.teacher_contest_urls))
+
+        # Retrieve the available translations.
+        self.langs = {lang_code: wrap_translations_for_tornado(trans)
+                      for lang_code, trans in get_translations().iteritems()}
