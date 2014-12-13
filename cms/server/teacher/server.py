@@ -63,3 +63,6 @@ class TeacherWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=config.teacher_listen_address)
+
+        self.contest_url = dict(zip(config.teacher_active_contests,
+                                    config.teacher_contest_urls))

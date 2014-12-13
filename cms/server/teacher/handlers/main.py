@@ -32,7 +32,8 @@ import tornado.web
 
 from sqlalchemy.orm import subqueryload
 
-from cms.db import District
+from cms import config
+from cms.db import Contest, District
 from cms.server import filter_ascii
 from cmscommon.datetime import make_timestamp
 
@@ -103,4 +104,6 @@ class MainHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self):
+        self.r_params["contest_list"] = self.sql_session.query(Contest)\
+                .filter(Contest.id.in_(config.teacher_active_contests)).all()
         self.render("contestlist.html", **self.r_params)

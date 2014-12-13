@@ -143,6 +143,12 @@
     "teacher_listen_address": "",
     "teacher_listen_port":    8890,
 
+    "_help": "List of contest ids that will be accessible from the TWS.",
+    "teacher_active_contests": [1],
+
+    "_help": "List of urls where each of the active contests is accessible.",
+    "teacher_contest_urls": ["http://localhost:8888/"],
+
     "_help": "The 'user' of the TWS. May be 'district' or 'school'.",
     "teacher_login_kind": "district",
 
