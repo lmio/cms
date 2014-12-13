@@ -327,6 +327,9 @@ class ImpersonateHandler(BaseHandler):
             user.district != self.current_user):
             raise tornado.web.HTTPError(403)
 
+        filtered_username = filter_ascii(user.username)
+        logger.info("Teacher logged in as contestant: username=%s remote_ip=%s." %
+                    (filtered_username, self.request.remote_ip))
         self.set_secure_cookie("login",
                                pickle.dumps((user.username,
                                              user.password,
