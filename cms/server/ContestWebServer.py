@@ -932,9 +932,15 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        question = Question(self.timestamp,
-                            self.get_argument("question_subject", ""),
-                            self.get_argument("question_text", ""),
+        subject = self.get_argument("question_subject", "")
+        text = self.get_argument("question_text", "")
+
+        # Skip blank questions
+        if not subject and not text:
+            self.redirect("/communication")
+            return
+
+        question = Question(self.timestamp, subject, text,
                             user=self.current_user)
         self.sql_session.add(question)
         self.sql_session.commit()
