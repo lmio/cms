@@ -179,6 +179,7 @@ setup(
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
             "cmsCWSPrefetch=cmscontrib.CWSPrefetch:main",
+            "cmsDistrictImporter=cmscontrib.DistrictImporter:main",
             "cmsMake=cmstaskenv.cmsMake:main",
         ],
         "cms.grading.tasktypes": [
