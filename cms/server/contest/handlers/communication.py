@@ -67,11 +67,17 @@ class QuestionHandler(BaseHandler):
         if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        subject_length = len(self.get_argument("question_subject", ""))
-        text_length = len(self.get_argument("question_text", ""))
-        if subject_length > 50 or text_length > 2000:
+        subject = self.get_argument("question_subject", "")
+        text = self.get_argument("question_text", "")
+
+        # Skip blank questions
+        if not subject and not text:
+            self.redirect("/communication")
+            return
+
+        if len(subject) > 50 or len(text) > 2000:
             logger.warning("Long question (%d, %d) dropped for user %s.",
-                           subject_length, text_length,
+                           len(subject), len(text),
                            self.current_user.user.username)
             self.application.service.add_notification(
                 self.current_user.user.username,
@@ -82,9 +88,7 @@ class QuestionHandler(BaseHandler):
             self.redirect("/communication")
             return
 
-        question = Question(self.timestamp,
-                            self.get_argument("question_subject", ""),
-                            self.get_argument("question_text", ""),
+        question = Question(self.timestamp, subject, text,
                             participation=participation)
         self.sql_session.add(question)
         self.sql_session.commit()
