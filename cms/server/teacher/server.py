@@ -68,3 +68,6 @@ class TeacherWebServer(WebService):
         self.jinja2_environment = TWS_ENVIRONMENT
 
         self.translation = get_translations()[config.teacher_locale.replace("-", "_")]
+
+        self.contest_url = dict(zip(config.teacher_active_contests,
+                                    config.teacher_contest_urls))

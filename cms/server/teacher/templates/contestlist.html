@@ -8,5 +8,15 @@
     <h1>{% trans %}Contests{% endtrans %}</h1>
 </div>
 
+<div>
+{% if contest_list|length > 0 %}
+{% for c in contest_list %}
+<p><a href="{{ url("contest", c.id) }}" class="btn btn-large">{{ c.description }}</a></p>
+{% endfor %}
+{% else %}
+<p>{% trans %}There are no active contests at this time.{% endtrans %}</p>
+{% endif %}
+</div>
+
 </div>
 {% endblock core %}

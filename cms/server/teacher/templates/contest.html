@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ contest.description }}{% endblock title %}
+
+{% block core %}
+<div class="span12">
+
+<div class="page-header">
+    <h1>{{ contest.description }}</h1>
+</div>
+
+<p><a href="{{ url() }}">{% trans %}Back to contest list{% endtrans %}</a></p>
+
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      {% for head in header %}
+      <th>{{ head }}</th>
+      {% endfor %}
+      {% if allow_impersonate %}
+      <th style="width: 1%"></th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for p, row in table %}
+    <tr>
+      {% for item in row %}
+      <td>{{ item }}</td>
+      {% endfor %}
+      {% if allow_impersonate %}
+      <td style="white-space: nowrap"><a href="{{ url("impersonate", p.id) }}" class="btn" target="_blank">{% trans %}Log in as contestant{% endtrans %}</a></td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+</div>
+{% endblock core %}

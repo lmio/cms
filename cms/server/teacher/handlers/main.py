@@ -36,7 +36,7 @@ import tornado.web
 from sqlalchemy.orm import subqueryload
 
 from cms import config
-from cms.db import District
+from cms.db import Contest, District
 from cms.util import lt_sort_key
 
 from ..authentication import validate_login
@@ -117,4 +117,6 @@ class MainHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self):
+        self.r_params["contest_list"] = self.sql_session.query(Contest)\
+                .filter(Contest.id.in_(config.teacher_active_contests)).all()
         self.render("contestlist.html", **self.r_params)
