@@ -111,6 +111,10 @@
       <td><input type="checkbox" name="require_school_details" {% if contest.require_school_details %}checked{% end %}></td>
     </tr>
     <tr>
+      <td>Allowed grades (list of integers, leave empty for 1-12)</td>
+      <td><input type="text" name="allowed_grades" value="{{ ",".join(map(str, contest.allowed_grades)) }}"/></td>
+    </tr>
+    <tr>
       <td>Attachments</td>
       <td>
         <a href="{{ url_root }}/add_contest_attachment/{{ contest.id }}" >Add attachment</a><br/>

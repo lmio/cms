@@ -898,6 +898,12 @@ msgstr ""
 msgid "Grade"
 msgstr ""
 
+msgid "Student"
+msgstr ""
+
+msgid "Guest"
+msgstr ""
+
 msgid "There are no announcements yet."
 msgstr ""
 

@@ -949,6 +949,12 @@ msgstr "Mokykla"
 msgid "Grade"
 msgstr "Klasė"
 
+msgid "Student"
+msgstr "Mokinys"
+
+msgid "Guest"
+msgstr "Svečias"
+
 msgid "There are no announcements yet."
 msgstr "Kol kas nėra jokių pranešimų."
 
