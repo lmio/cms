@@ -17,10 +17,10 @@
             <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
             <fieldset>
                 <div class="control-group">
-                    <label class="control-label" for="district">{{ _("Username") }}</label>
+                    <label class="control-label" for="district">{{ _("District") }}</label>
                     <div class="controls">
                         <select name="district" class="form-control">
-                            <option value="" disabled>---</option>
+                            <option value="">---</option>
     {% for d in district_list %}
                             <option value="{{ d.id }}">{{ d.name }}</option>
     {% end %}

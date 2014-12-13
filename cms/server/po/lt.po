@@ -917,3 +917,31 @@ msgstr "Testo detalės"
 
 msgid "Evaluation outcome"
 msgstr "Vertinimo išeiga"
+
+msgid "Teacher web server"
+msgstr "Mokytojų prieiga"
+
+#, python-format
+msgid "Logged in as <strong>%s</strong>"
+msgstr "Prisijungta kaip <strong>%s</strong>"
+
+msgid "District"
+msgstr "Savivaldybė"
+
+msgid "Contests"
+msgstr "Varžybos"
+
+msgid "There are no active contests at this time."
+msgstr "Šiuo metu nėra aktyvių varžybų."
+
+msgid "Back to contest list"
+msgstr "Grįžti į varžybų sąrašą"
+
+msgid "Contestant"
+msgstr "Dalyvis"
+
+msgid "Total"
+msgstr "Iš viso"
+
+msgid "Log in as contestant"
+msgstr "Prisijungti dalyvio vardu"

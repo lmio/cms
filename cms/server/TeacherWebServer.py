@@ -27,13 +27,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
+import gettext
 import logging
+import os
 import pickle
 import pkg_resources
 import traceback
 from datetime import timedelta
 
 import tornado.web
+import tornado.locale
 
 from cms import config
 from cms.io import WebService
@@ -43,6 +46,51 @@ from cmscommon.datetime import make_datetime, make_timestamp
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_locale(lang):
+    if config.installed:
+        localization_dir = os.path.join(
+            "/", "usr", "local", "share", "locale")
+    else:
+        localization_dir = os.path.join(
+            os.path.dirname(__file__), "mo")
+
+    iso_639_locale = gettext.translation(
+        "iso_639",
+        os.path.join(config.iso_codes_prefix, "share", "locale"),
+        [lang],
+        fallback=True)
+    iso_3166_locale = gettext.translation(
+        "iso_3166",
+        os.path.join(config.iso_codes_prefix, "share", "locale"),
+        [lang],
+        fallback=True)
+    shared_mime_info_locale = gettext.translation(
+        "shared-mime-info",
+        os.path.join(
+            config.shared_mime_info_prefix, "share", "locale"),
+        [lang],
+        fallback=True)
+    cms_locale = gettext.translation(
+        "cms",
+        localization_dir,
+        [lang],
+        fallback=True)
+    cms_locale.add_fallback(iso_639_locale)
+    cms_locale.add_fallback(iso_3166_locale)
+    cms_locale.add_fallback(shared_mime_info_locale)
+
+    # Add translate method to simulate tornado.Locale's interface
+    def translate(message, plural_message=None, count=None):
+        if plural_message is not None:
+            assert count is not None
+            return cms_locale.ungettext(message, plural_message, count)
+        else:
+            return cms_locale.ugettext(message)
+    cms_locale.translate = translate
+
+    return cms_locale
 
 
 class BaseHandler(CommonRequestHandler):
@@ -107,6 +155,9 @@ class BaseHandler(CommonRequestHandler):
                                expires_days=None)
 
         return district
+
+    def get_user_locale(self):
+        return get_locale(config.teacher_locale)
 
     def render_params(self):
         """Return the default render params used by almost all handlers.

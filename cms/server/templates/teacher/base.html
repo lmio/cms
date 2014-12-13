@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
         <link rel="stylesheet" href="{{ url_root }}/static/cws_style.css">
 
-        <title>Teacher web server</title>
+        <title>{{ _("Teacher web server") }}</title>
 
 {% if current_user is not None %}
         <script type="text/javascript">
@@ -27,7 +27,7 @@ $(document).ready(function () {
         <div id="navigation_bar" class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="{{ url_root }}/">Teacher web server</a>
+                    <a class="brand" href="{{ url_root }}/">{{ _("Teacher web server") }}</a>
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%s</strong>") % current_user.name %}
