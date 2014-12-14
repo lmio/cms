@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 
 from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP
 from cms.db import Contest, User, Task, Statement, Attachment, \
-    SubmissionFormatElement, Dataset, Manager, Testcase
+    SubmissionFormatElement, Dataset, Manager, Testcase, ContestAttachment
 from cmscontrib.BaseLoader import Loader
 from cmscontrib import touch
 
@@ -206,6 +206,19 @@ class YamlLoader(Loader):
 
         load(conf, args, "languages")
         load(conf, args, "allowed_localizations")
+
+        load(conf, args, "allow_registration")
+        load(conf, args, "require_school_details")
+        load(conf, args, "allowed_grades")
+
+        args["attachments"] = []
+        for filename in load(conf, None, "attachments", conv=lambda val: val or []):
+            if os.path.isfile(os.path.join(self.path, filename)):
+                digest = self.file_cacher.put_file_from_path(
+                    os.path.join(self.path, filename),
+                    "Contest attachment for %s" % name)
+                args["attachments"].append(ContestAttachment(
+                    os.path.basename(filename), digest))
 
         logger.info("Contest parameters loaded.")
 

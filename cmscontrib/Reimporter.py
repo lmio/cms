@@ -232,6 +232,28 @@ class Reimporter(object):
             # Updates contest-global settings that are set in new_contest.
             self._update_columns(old_contest, new_contest)
 
+            # Update contest attachments.
+            old_attachments = old_contest.attachments
+            new_attachments = new_contest.attachments
+            for key in set(old_attachments.keys()) | set(new_attachments.keys()):
+                if key in new_attachments:
+                    if key not in old_attachments:
+                        # create
+                        # FIXME This hack is needed because of some
+                        # funny behavior of SQLAlchemy-instrumented
+                        # collections when copying values, that
+                        # resulted in new objects being added to
+                        # the session. We need to investigate it.
+                        temp = new_attachments[key]
+                        del new_attachments[key]
+                        old_attachments[key] = temp
+                    else:
+                        # update
+                        self._update_object(old_attachments[key], new_attachments[key])
+                else:
+                    # delete
+                    del old_attachments[key]
+
             # Do the actual merge: compare all users of the old and of
             # the new contest and see if we need to create, update or
             # delete them. Delete only if authorized, fail otherwise.
