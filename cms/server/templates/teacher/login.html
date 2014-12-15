@@ -1,5 +1,6 @@
 {% extends base.html %}
 {% block body %}
+{% from cms.util import lt_sort_key %}
 
 {% if handler.get_argument("error", "") != "" %}
 <div id="notifications" class="notifications">
@@ -21,7 +22,7 @@
                     <div class="controls">
                         <select name="district" class="form-control">
                             <option value="">---</option>
-    {% for d in sorted(district_list, key=lambda d: d.name) %}
+    {% for d in sorted(district_list, key=lambda d: lt_sort_key(d.name)) %}
                             <option value="{{ d.id }}">{{ d.name }}</option>
     {% end %}
                         </select>

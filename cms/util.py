@@ -294,3 +294,8 @@ def _get_shard_from_addresses(service, addrs):
         except KeyError:
             return None
         i += 1
+
+
+LT_ALPHABET = {c: i for i, c in enumerate(' aąbcčdeęėfghiįyjklmnoprsštuųūvzž')}
+def lt_sort_key(s):
+    return tuple(LT_ALPHABET.get(c.lower(), len(LT_ALPHABET) + ord(c)) for c in s)

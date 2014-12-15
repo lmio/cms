@@ -1,5 +1,7 @@
 {% extends base.html %}
 {% block extrahead %}
+{% from cms.util import lt_sort_key %}
+
 {% if contest.require_school_details %}
 <script type="text/javascript">
 $(document).ready(function () {
@@ -85,7 +87,7 @@ $(document).ready(function () {
                         <select name="district" class="form-control">
                             <option value="">---</option>
     {% set selected_district = handler.get_argument("district", "") %}
-    {% for d in sorted(district_list, key=lambda d: d.name) %}
+    {% for d in sorted(district_list, key=lambda d: lt_sort_key(d.name)) %}
                             <option value="{{ d.id }}"{% if str(d.id) == selected_district %} selected{% end %}>{{ d.name }}</option>
     {% end %}
                         </select>
