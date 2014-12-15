@@ -21,7 +21,7 @@
                     <div class="controls">
                         <select name="district" class="form-control">
                             <option value="">---</option>
-    {% for d in district_list %}
+    {% for d in sorted(district_list, key=lambda d: d.name) %}
                             <option value="{{ d.id }}">{{ d.name }}</option>
     {% end %}
                         </select>
