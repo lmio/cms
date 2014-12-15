@@ -340,3 +340,8 @@ def _get_shard_from_addresses(service, addrs):
         else:
             if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
                 return shard
+
+
+LT_ALPHABET = {c: i for i, c in enumerate(' aąbcčdeęėfghiįyjklmnoprsštuųūvzž')}
+def lt_sort_key(s):
+    return tuple(LT_ALPHABET.get(c.lower(), len(LT_ALPHABET) + ord(c)) for c in s)
