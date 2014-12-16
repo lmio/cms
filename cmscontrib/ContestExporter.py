@@ -50,7 +50,7 @@ from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
     Submission, UserTest, SubmissionResult, UserTestResult, \
-    RepeatedUnicode, District
+    RepeatedUnicode, District, RepeatedInteger
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -267,7 +267,7 @@ class ContestExporter(object):
 
             val = getattr(obj, prp.key)
             if col_type in \
-                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
+                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, RepeatedInteger, Enum]:
                 data[prp.key] = val
             elif col_type is String:
                 data[prp.key] = \
