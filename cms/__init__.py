@@ -38,16 +38,19 @@ __all__ = [
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
+    "LANGUAGE_TO_OBJ_EXT_MAP",
+    "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "utf8_decoder", "Address", "ServiceCoord", "get_safe_shard",
-    "get_service_address", "get_service_shards", "default_argument_parser",
+    "ConfigError", "mkdir", "utf8_decoder", "Address", "ServiceCoord",
+    "get_safe_shard", "get_service_address", "get_service_shards",
+    "default_argument_parser",
     # conf
     "config",
     # plugin
     "plugin_list", "plugin_lookup",
-    ]
+]
 
 
 # Instantiate or import these objects.
@@ -101,8 +104,21 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
 }
+LANGUAGE_TO_OBJ_EXT_MAP = {
+    LANG_C: ".o",
+    LANG_CPP: ".o",
+    LANG_PASCAL: ".o",
+}
 
-from .util import mkdir, utf8_decoder, Address, ServiceCoord, get_safe_shard, \
-    get_service_address, get_service_shards, default_argument_parser
+# Task score modes.
+
+# Maximum score amongst all submissions.
+SCORE_MODE_MAX = "max"
+# Maximum score among all tokened submissions and the last submission.
+SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
+
+from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
+    get_safe_shard, get_service_address, get_service_shards, \
+    default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup

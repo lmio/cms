@@ -3,9 +3,10 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,8 +41,8 @@ logger = logging.getLogger(__name__)
 class Config(object):
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
-    default with some sane data. See cms.conf.sample in the examples
-    for information on the meaning of the fields.
+    default with some sane data. See cms.conf.sample in the config
+    directory for information on the meaning of the fields.
 
     """
     def __init__(self):
@@ -67,8 +68,12 @@ class Config(object):
         self.use_cgroups = True
         self.sandbox_implementation = 'isolate'
 
+        # Sandbox.
+        self.max_file_size = 1048576
+
         # WebServers.
-        self.secret_key = "8e045a51e4b102ea803c06f92841a1fb"
+        self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
+        self.secret_key = self.secret_key_default
         self.tornado_debug = False
 
         # ContestWebServer.
@@ -108,6 +113,14 @@ class Config(object):
         self.https_certfile = None
         self.ranking_contests = []
 
+        # PrintingService
+        self.max_print_length = 10000000
+        self.printer = None
+        self.paper_size = "A4"
+        self.max_pages_per_job = 10
+        self.max_jobs_per_user = 10
+        self.pdf_printing_allowed = False
+
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \
             sys.argv[0] != '/usr/bin/ipython' and \
@@ -126,11 +139,11 @@ class Config(object):
             self.cache_dir = "cache"
             self.data_dir = "lib"
             self.run_dir = "run"
-            paths = [os.path.join(".", "examples", "cms.conf")]
+            paths = [os.path.join(".", "config", "cms.conf")]
             if '__file__' in globals():
                 paths += [os.path.abspath(os.path.join(
                           os.path.dirname(__file__),
-                          '..', 'examples', 'cms.conf'))]
+                          '..', 'config', 'cms.conf'))]
             paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
                       os.path.join("/", "etc", "cms.conf")]
 
