@@ -709,7 +709,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "Output %d for task %s" % (i, task.name))
             args["testcases"] += [
                 Testcase("%03d" % i, False, input_digest, output_digest)]
-            if args["task_type"] == "OutputOnly":
+            if args["task_type"] == "OutputOnly" and conf.get('attach_inputs', True):
                 task.attachments.set(
                     Attachment("input_%03d.txt" % i, input_digest))
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
