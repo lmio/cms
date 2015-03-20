@@ -269,6 +269,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, ["first_name", "nome"])
         load(conf, args, ["last_name", "cognome"])
 
+        load(conf, args, "email")
+
         if "first_name" not in args:
             args["first_name"] = ""
         if "last_name" not in args:
