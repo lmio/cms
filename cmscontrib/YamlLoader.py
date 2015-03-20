@@ -326,6 +326,8 @@ class YamlLoader(Loader):
         load(conf, args, ["first_name", "nome"])
         load(conf, args, ["last_name", "cognome"])
 
+        load(conf, args, "email")
+
         if "first_name" not in args:
             args["first_name"] = ""
         if "last_name" not in args:
@@ -339,6 +341,10 @@ class YamlLoader(Loader):
             primary_statements = {task: [primary_language]
                                   for task in self.tasks_order.iterkeys()}
             args["primary_statements"] = json.dumps(primary_statements)
+
+        load(conf, args, "city")
+        load(conf, args, "school")
+        load(conf, args, "grade")
 
         logger.info("User parameters loaded.")
 
