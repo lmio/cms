@@ -5,6 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,7 +52,7 @@ class OutputOnly(TaskType):
     CHECKER_CODENAME = "checker"
     # Template for the filename of the output files provided by the user; %s
     # represent the testcase codename.
-    USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
+    USER_OUTPUT_FILENAME_TEMPLATE = "_%03d.out"
 
     # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
@@ -98,8 +99,13 @@ class OutputOnly(TaskType):
 
     @staticmethod
     def _get_user_output_filename(job):
-        return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
-            job.operation.testcase_codename
+        # HACK: guess the required filename...
+        pattern = OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
+            (int(job.operation.testcase_codename) + 1)
+        for filename in job.files:
+            if filename.endswith(pattern):
+                return filename
+        return None
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
