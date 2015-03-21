@@ -232,6 +232,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "allowed_localizations")
 
         load(conf, args, "allow_registration")
+        load(conf, args, "require_country")
         load(conf, args, "require_school_details")
         load(conf, args, "allowed_grades")
 

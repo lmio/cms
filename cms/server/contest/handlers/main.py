@@ -156,6 +156,7 @@ class RegisterHandler(ContestHandler):
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
         role = self.get_argument("role", "")
+        country = self.get_argument("country", "")
         district_id = self.get_argument("district", "")
         city = self.get_argument("city", "")
         school_id = self.get_argument("school", "")
@@ -177,6 +178,9 @@ class RegisterHandler(ContestHandler):
             errors.append("last_name")
         if not email or not self.email_re.match(email):
             errors.append("email")
+
+        if self.contest.require_country and not country:
+            errors.append("country")
 
         if self.contest.require_school_details and not role:
             errors.append("role")
@@ -237,8 +241,8 @@ class RegisterHandler(ContestHandler):
         # Everything's ok. Create the user and participation.
         # Set password on both.
         user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password, district=district,
-                    city=city, school=school, grade=grade)
+                    username=username, password=password, country=country,
+                    district=district, city=city, school=school, grade=grade)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)
