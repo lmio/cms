@@ -380,11 +380,11 @@ class ProxyService(TriggeredService):
 
                 self.enqueue(ProxyOperation(ProxyExecutor.CONTEST_TYPE,
                                             {contest_id: contest_data},
-                                            contest_id))
+                                            contest.id))
                 self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users,
-                                            contest_id))
+                                            contest.id))
                 self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks,
-                                            contest_id))
+                                            contest.id))
 
     def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
