@@ -1035,6 +1035,9 @@ msgstr "Pavardė"
 msgid "Email"
 msgstr "El. paštas"
 
+msgid "Country"
+msgstr "Valstybė"
+
 msgid "City"
 msgstr "Miestas"
 

@@ -212,6 +212,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Should registration ask for country name.
+    require_country = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Allowed grades in registration. Useful only if allow_registration
     # and require_school_details are True.
     allowed_grades = Column(

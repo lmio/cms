@@ -573,6 +573,7 @@ class RegisterHandler(BaseHandler):
         city = self.get_argument("city", "")
         school = self.get_argument("school", "")
         grade = self.get_argument("grade", None)
+        country = self.get_argument("country", "")
 
         errors = []
         if not first_name:
@@ -581,6 +582,9 @@ class RegisterHandler(BaseHandler):
             errors.append("last_name")
         if not email or not self.email_re.match(email):
             errors.append("email")
+
+        if self.contest.require_country and not country:
+            errors.append("country")
 
         if self.contest.require_school_details and not role:
             errors.append("role")
@@ -633,7 +637,8 @@ class RegisterHandler(BaseHandler):
 
         user = User(first_name=first_name, last_name=last_name, email=email,
                     username=username, password=password, contest=self.contest,
-                    district=district, city=city, school=school, grade=grade)
+                    district=district, city=city, school=school, grade=grade,
+                    country=country)
         self.sql_session.add(user)
         self.sql_session.commit()
 

@@ -620,6 +620,7 @@ class AddContestHandler(BaseHandler):
             self.get_bool(attrs, "active")
             self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "require_school_details")
+            self.get_bool(attrs, "require_country")
 
             self.get_string(attrs, "registration_email_subject")
             self.get_string(attrs, "registration_email_body")
@@ -702,6 +703,7 @@ class ContestHandler(BaseHandler):
             self.get_bool(attrs, "active")
             self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "require_school_details")
+            self.get_bool(attrs, "require_country")
 
             self.get_string(attrs, "registration_email_subject")
             self.get_string(attrs, "registration_email_body")
@@ -1808,6 +1810,7 @@ class UserViewHandler(BaseHandler):
             self.get_string(attrs, "city")
             self.get_string(attrs, "school")
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "country")
 
             # Update the user.
             user.set_attrs(attrs)
@@ -1864,6 +1867,7 @@ class AddUserHandler(BaseHandler):
             self.get_string(attrs, "city")
             self.get_string(attrs, "school")
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "country")
 
             # Create the user.
             attrs["contest"] = self.contest

@@ -233,6 +233,10 @@ function update_additional_answer(element, invoker)
         <td>Grade</td>
         <td><input type="text" name="grade" value="{{ selected_user.grade if selected_user.grade is not None else "" }}" /></td>
       </tr>
+      <tr>
+        <td>Country</td>
+        <td><input type="text" name="country" value="{{ selected_user.country if selected_user.country is not None else "" }}" /></td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />

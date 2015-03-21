@@ -173,6 +173,12 @@ class User(Base):
         Integer,
         nullable=True)
 
+    # Country name, required for registration if
+    # contest.require_country is True.
+    country = Column(
+        Unicode,
+        nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # messages (list of Message objects)
