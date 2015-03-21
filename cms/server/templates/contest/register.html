@@ -25,7 +25,14 @@ $(document).ready(function () {
 {% if new_user %}
     <div class="login_box hero-unit">
         <h2>{{ _("Registration successful") }}</h2>
-        <p>{{ _("Here are your login details. Please write them down.") }}</p>
+        <p>
+            {{ _("Here are your login details.") }}
+    {% if email_sent %}
+            {{ _("They have been sent to your email.") }}
+    {% else %}
+            {{ _("Please write them down.") }}
+    {% end %}
+        </p>
         <div class="form-horizontal">
             <div class="control-group" style="margin-bottom:0">
                 <span class="control-label">{{ _("Username") }}</span>

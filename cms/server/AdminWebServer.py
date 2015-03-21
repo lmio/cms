@@ -621,6 +621,9 @@ class AddContestHandler(BaseHandler):
             self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "require_school_details")
 
+            self.get_string(attrs, "registration_email_subject")
+            self.get_string(attrs, "registration_email_body")
+
             allowed_grades = self.get_argument("allowed_grades", "")
             if allowed_grades:
                 attrs["allowed_grades"] = \
@@ -699,6 +702,9 @@ class ContestHandler(BaseHandler):
             self.get_bool(attrs, "active")
             self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "require_school_details")
+
+            self.get_string(attrs, "registration_email_subject")
+            self.get_string(attrs, "registration_email_body")
 
             allowed_grades = self.get_argument("allowed_grades", "")
             if allowed_grades:

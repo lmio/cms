@@ -83,6 +83,7 @@ from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_datetime, make_timestamp, get_timezone
 from cmscommon.mimetypes import get_type_for_file_name
 from cmscommon.archive import Archive
+from cmscommon.email import send_email
 
 
 logger = logging.getLogger(__name__)
@@ -641,9 +642,16 @@ class RegisterHandler(BaseHandler):
         logger.info("New user registered: user=%s name=%s remote_ip=%s." %
                     (filtered_user, filtered_name, self.request.remote_ip))
 
-        # TODO: send email
+        subject = self.contest.registration_email_subject
+        try:
+            message = self.contest.registration_email_body.format(username=username, password=password)
+        except ValueError:
+            message = ""
+        email_sent = False
+        if message and subject:
+            email_sent = send_email(user.email, subject, message)
 
-        self.render("register.html", errors=[], new_user=user, **self.r_params)
+        self.render("register.html", errors=[], new_user=user, email_sent=email_sent, **self.r_params)
 
     def generate_username(self, first_name, last_name, email):
         return "%s%s%04d" % (first_name[:3], last_name[:3],

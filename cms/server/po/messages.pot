@@ -955,7 +955,13 @@ msgstr ""
 msgid "Registration successful"
 msgstr ""
 
-msgid "Here are your login details. Please write them down."
+msgid "Here are your login details."
+msgstr ""
+
+msgid "They have been sent to your email."
+msgstr ""
+
+msgid "Please write them down."
 msgstr ""
 
 msgid "Please register"

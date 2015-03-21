@@ -1014,8 +1014,14 @@ msgstr "Registruotis"
 msgid "Registration successful"
 msgstr "Registracija sėkminga"
 
-msgid "Here are your login details. Please write them down."
-msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti."
+msgid "Here are your login details."
+msgstr "Žemiau pateikti tavo prisijungimo duomenys."
+
+msgid "They have been sent to your email."
+msgstr "Juos gausite ir e-paštu."
+
+msgid "Please write them down."
+msgstr "Prašome juos užsirašyti."
 
 msgid "Please register"
 msgstr "Prašome užsiregistruoti"

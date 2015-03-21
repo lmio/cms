@@ -123,6 +123,14 @@
       <td><input type="text" name="allowed_grades" value="{{ ",".join(map(str, contest.allowed_grades)) }}"/></td>
     </tr>
     <tr>
+      <td>Registration email subject</td>
+      <td><input type="text" name="registration_email_subject" value="{{ contest.registration_email_subject }}"></td>
+    </tr>
+    <tr>
+      <td>Registration email body (use placeholders {username} and {password})</td>
+      <td><textarea name="registration_email_body">{{ contest.registration_email_body }}</textarea></td>
+    </tr>
+    <tr>
       <td>Attachments</td>
       <td>
         <a href="{{ url_root }}/add_contest_attachment/{{ contest.id }}" >Add attachment</a><br/>

@@ -219,6 +219,15 @@ class Contest(Base):
         nullable=False,
         default=[])
 
+    # Registration email template. If any of these is empty, email is not sent.
+    registration_email_subject = Column(
+        Unicode,
+        nullable=False)
+    registration_email_body = Column(
+        Unicode,
+        nullable=False)
+
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)

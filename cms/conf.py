@@ -128,6 +128,14 @@ class Config(object):
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
+        # Emails
+        self.email_host = ''
+        self.email_port = 25
+        self.email_tls = False
+        self.email_username = None
+        self.email_password = None
+        self.email_from_address = 'cms@localhost'
+
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \
             sys.argv[0] != '/usr/bin/ipython' and \
