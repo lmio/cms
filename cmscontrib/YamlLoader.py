@@ -210,7 +210,13 @@ class YamlLoader(Loader):
 
         load(conf, args, "allow_registration")
         load(conf, args, "require_school_details")
+        load(conf, args, "require_country")
         load(conf, args, "allowed_grades")
+
+        load(conf, args, "registration_email_subject")
+        load(conf, args, "registration_email_body")
+        args.setdefault("registration_email_subject", "")
+        args.setdefault("registration_email_body", "")
 
         args["attachments"] = []
         for filename in load(conf, None, "attachments", conv=lambda val: val or []):
