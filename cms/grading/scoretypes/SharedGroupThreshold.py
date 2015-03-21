@@ -128,7 +128,7 @@ class SharedGroupThreshold(ScoreTypeGroup):
 
     def get_public_outcome(self, outcome, parameter):
         threshold = parameter[2]
-        if outcome < threshold:
+        if outcome == 0 or outcome < threshold:
             return N_("Not correct")
         elif outcome >= 1.0:
             return N_("Correct")
