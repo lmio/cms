@@ -251,6 +251,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Should registration ask for country name.
+    require_country = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Should registration include school related fields. Useful only if
     # allow_registration is True.
     require_school_details = Column(

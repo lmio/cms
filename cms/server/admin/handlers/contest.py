@@ -131,6 +131,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
 
             self.get_bool(attrs, "active")
             self.get_bool(attrs, "allow_registration")
+            self.get_bool(attrs, "require_country")
             self.get_bool(attrs, "require_school_details")
 
             allowed_grades = self.get_argument("allowed_grades", "")

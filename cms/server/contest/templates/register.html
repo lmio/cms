@@ -92,6 +92,14 @@ $(document).ready(function () {
                         <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
+    {% if contest.require_country %}
+                <div class="control-group {% if errors and "country" in errors %} error{% end %}">
+                    <label class="control-label" for="country">{{ _("Country") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="country" value="{{ handler.get_argument("country", "") }}">
+                    </div>
+                </div>
+    {% end %}
     {% if contest.require_school_details %}
                 <div class="control-group">
                     <div class="controls">
