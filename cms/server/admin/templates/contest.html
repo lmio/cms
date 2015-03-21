@@ -149,6 +149,13 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Should registration include country name."></span>
+        <label for="registration_require_country">Require country name</label>
+      </td>
+      <td><input type="checkbox" id="registration_require_country" name="registration_require_country" {{ "checked" if contest.registration_require_country else "" }}></td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Should registration include school related fields."></span>
         <label for="registration_require_school_details">Require school details</label>
       </td>

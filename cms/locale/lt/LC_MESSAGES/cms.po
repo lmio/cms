@@ -1170,6 +1170,9 @@ msgstr "Tavo slaptažodis yra:"
 msgid "District"
 msgstr "Savivaldybė"
 
+msgid "Country"
+msgstr "Valstybė"
+
 msgid "City"
 msgstr "Miestas"
 

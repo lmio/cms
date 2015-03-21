@@ -11,6 +11,9 @@ const registerFields = [
     "first_name",
     "last_name",
     "email",
+    {% if contest.registration_require_country %}
+    "country",
+    {% endif %}
     {% if not contest.registration_auto_credentials %}
     "password-confirm",
     {% endif %}
@@ -210,6 +213,14 @@ $(document).ready(function() {
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="email" class="input-xlarge" name="email" id="email" autocomplete="email">
                         </div>
                     </div>
+                    {% if contest.registration_require_country %}
+                    <div class="control-group">
+                        <label class="control-label" for="country">{% trans %}Country{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="country" id="country">
+                        </div>
+                    </div>
+                    {% endif %}
                     {% if contest.registration_require_school_details %}
                     <div class="control-group">
                         <div class="controls">

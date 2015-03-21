@@ -1100,6 +1100,9 @@ msgstr ""
 msgid "District"
 msgstr ""
 
+msgid "Country"
+msgstr ""
+
 msgid "City"
 msgstr ""
 

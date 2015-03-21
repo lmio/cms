@@ -234,6 +234,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "registration_allow_join")
         load(conf, args, "registration_require_team")
         load(conf, args, "registration_auto_credentials")
+        load(conf, args, "registration_require_country")
         load(conf, args, "registration_require_school_details")
         load(conf, args, "registration_allowed_grades")
 

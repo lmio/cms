@@ -175,6 +175,15 @@ class RegistrationHandler(ContestHandler):
                     or not self.email_re.match(email):
                 raise ValueError()
 
+            if self.contest.registration_require_country:
+                country = self.get_argument("country")
+
+                if not 1 <= len(country) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+
+            else:
+                country = None
+
             if self.contest.registration_require_school_details \
                     and self.get_argument("role") == 'student':
                 district_id = self.get_argument("district")
@@ -239,7 +248,8 @@ class RegistrationHandler(ContestHandler):
 
         # Store new user
         user = User(first_name, last_name, username, password, email=email,
-                    district=district, city=city, school=school, grade=grade)
+                    country=country, district=district, city=city,
+                    school=school, grade=grade)
         self.sql_session.add(user)
 
         return user, ret_password
