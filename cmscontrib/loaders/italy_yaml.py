@@ -694,7 +694,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["memory_limit"] = None
             args["task_type_parameters"] = [evaluation_param]
             task.submission_format = \
-                ["output_%03d.txt" % i for i in range(n_input)]
+                ["%s_%03d.out" % (name, i + 1) for i in range(n_input)]
 
         # If there is check/manager (or equivalent), then the task
         # type is Communication
@@ -760,7 +760,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 Testcase("%03d" % i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly" and conf.get('attach_inputs', True):
                 task.attachments.set(
-                    Attachment("input_%03d.txt" % i, input_digest))
+                    Attachment("%s_%03d.in" % (name, i + 1), input_digest))
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
         if public_testcases == "all":

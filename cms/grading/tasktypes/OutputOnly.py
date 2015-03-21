@@ -106,8 +106,12 @@ class OutputOnly(TaskType):
 
     @staticmethod
     def _get_user_output_filename(job):
-        return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
-            job.operation.testcase_codename
+        # HACK: guess the required filename...
+        pattern = "_%03d.out" % (int(job.operation.testcase_codename) + 1)
+        for filename in job.files:
+            if filename.endswith(pattern):
+                return filename
+        return None
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
