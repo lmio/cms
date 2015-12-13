@@ -226,6 +226,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
+        load(conf, args, "score_precision")
+
         load(conf, args, "languages")
         load(conf, args, "allowed_localizations")
 
@@ -471,6 +473,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "max_user_test_number")
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
+
+        load(conf, args, "score_precision")
 
         # Attachments
         args["attachments"] = dict()
