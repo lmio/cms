@@ -193,7 +193,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
 {% from cms.server import format_size %}
 {% set idx = 0 %}
 {% for st in details %}
-    {% if "score" in st and "max_score" in st %}
+    {% if "outcome" in st %}
+<div class="subtask {{ st["outcome"] }}">
+    {% elif "score" in st and "max_score" in st %}
         {% if st["score"] >= st["max_score"] %}
 <div class="subtask correct">
         {% elif st["score"] <= 0.0 %}
