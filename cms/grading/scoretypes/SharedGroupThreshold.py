@@ -76,9 +76,11 @@ class SharedGroupThreshold(ScoreTypeGroup):
         ranking_details = []
 
         for st_idx, parameter in enumerate(self.parameters):
-            st_score = self.reduce([float(evaluations[idx].outcome)
-                                    for idx in parameter[1]],
-                                   parameter) * parameter[0]
+            st_result = self.reduce([float(evaluations[idx].outcome)
+                                     for idx in parameter[1]],
+                                    parameter)
+            st_outcome = self.get_subtask_outcome(st_result)
+            st_score = st_result * parameter[0]
             st_public = all(self.public_testcases[idx]
                             for idx in parameter[1])
             tc_outcomes = dict((
@@ -103,6 +105,7 @@ class SharedGroupThreshold(ScoreTypeGroup):
                     public_testcases.append({"idx": idx})
             subtasks.append({
                 "idx": st_idx + 1,
+                "outcome": st_outcome,
                 "score": st_score,
                 "max_score": parameter[0],
                 "testcases": testcases,
@@ -134,6 +137,14 @@ class SharedGroupThreshold(ScoreTypeGroup):
             return N_("Correct")
         else:
             return N_("Partially correct")
+
+    def get_subtask_outcome(self, outcome):
+        if outcome == 0:
+            return "notcorrect"
+        elif outcome >= 1.0:
+            return "correct"
+        else:
+            return "partiallycorrect"
 
     def reduce(self, outcomes, parameter):
         threshold = parameter[2]
