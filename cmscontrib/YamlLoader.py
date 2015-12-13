@@ -205,6 +205,8 @@ class YamlLoader(Loader):
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
+        load(conf, args, "score_precision")
+
         load(conf, args, "languages")
         load(conf, args, "allowed_localizations")
 
@@ -495,6 +497,8 @@ class YamlLoader(Loader):
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
+        load(conf, args, "score_precision")
+
         # Attachments
         args["attachments"] = []
         if os.path.exists(os.path.join(task_path, "att")):
@@ -588,7 +592,10 @@ class YamlLoader(Loader):
                         if max_score is not None:
                             subtasks.append((max_score, tests, threshold))
                         params = line[3:].split()
-                        max_score = int(params[0])
+                        try:
+                            max_score = int(params[0])
+                        except ValueError:
+                            max_score = float(params[0])
                         threshold = float(params[1])
                         tests = []
                     else:
