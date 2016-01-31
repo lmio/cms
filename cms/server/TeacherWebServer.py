@@ -33,6 +33,7 @@ import os
 import pickle
 import pkg_resources
 import traceback
+import urlparse
 from datetime import timedelta
 
 import tornado.web
@@ -327,6 +328,9 @@ class ImpersonateHandler(BaseHandler):
             user.district != self.current_user):
             raise tornado.web.HTTPError(403)
 
+        url = self.application.service.contest_url[user.contest_id]
+        domain = urlparse.urlparse(url).hostname
+
         filtered_username = filter_ascii(user.username)
         logger.info("Teacher logged in as contestant: username=%s remote_ip=%s." %
                     (filtered_username, self.request.remote_ip))
@@ -334,11 +338,11 @@ class ImpersonateHandler(BaseHandler):
                                pickle.dumps((user.username,
                                              user.password,
                                              make_timestamp())),
+                               domain=domain,
                                expires_days=None)
         # Bypass the overriden redirect because we are going outside
         # this web server.
-        super(CommonRequestHandler, self).redirect(
-                self.application.service.contest_url[user.contest_id])
+        super(CommonRequestHandler, self).redirect(url)
 
 
 _tws_handlers = [
