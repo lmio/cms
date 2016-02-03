@@ -61,20 +61,24 @@
     </td>
 
     {% if score_type is not None and score_type.max_public_score != 0 %}
-    <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
-            {{ "%g" % round(sr.public_score, task.score_precision) }} / {{ "%g" % round(score_type.max_public_score, task.score_precision) }}
+        {% set public_score = round(sr.public_score, task.score_precision) %}
+        {% set max_public_score = round(score_type.max_public_score, task.score_precision) %}
+    <td class="public_score {{ get_score_class(public_score, max_public_score) }}">
+            {{ "%g" % public_score }} / {{ "%g" % max_public_score }}
     </td>
     {% end %}
 
     {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
         {% if s.token is not None %}
+            {% set score = round(sr.score, task.score_precision) %}
             {% if score_type.max_score != 0 %}
-    <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
-        {{ "%g" % round(sr.score, task.score_precision) }} / {{ "%g" % round(score_type.max_score, task.score_precision) }}
+                {% set max_score = round(score_type.max_score, task.score_precision) %}
+    <td class="total_score {{ get_score_class(score, max_score) }}">
+        {{ "%g" % score }} / {{ "%g" % max_score }}
     </td>
             {% else %}
     <td class="total_score">
-        {{ "%g" % round(sr.score, task.score_precision) }}
+        {{ "%g" % score }}
     </td>
             {% end %}
         {% else %}
