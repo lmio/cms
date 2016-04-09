@@ -1066,3 +1066,9 @@ msgstr "Vertinimo išeiga"
 
 msgid "There are no announcements yet."
 msgstr "Kol kas nėra jokių pranešimų."
+
+msgid "Input file"
+msgstr "Duomenų failas"
+
+msgid "Output file"
+msgstr "Rezultatų failas"
