@@ -5,20 +5,47 @@
   <h1>District information</h1>
 </div>
 
-<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/district/{{ district.id }}{% if contest is not None %}/{{ contest.id }}{% end %}" method="POST" name="edit_district">
-  <table class="sub_table">
-    <tr>
-      <td>Name</td>
-      <td><input type="text" name="name" value="{{ district.name }}"></td>
-    </tr>
-    <tr>
-      <td>Password</td>
-      <td><input type="text" name="password" value="{{ district.password }}"></td>
-    </tr>
-  </table>
-  <input type="submit" value="Update">
-  <input type="reset" value="Reset">
-</form>
+<h2 id="title_general_info" class="toggling_on">General Information</h2>
+<div id="general_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url_root }}/district/{{ district.id }}{% if contest is not None %}/{{ contest.id }}{% end %}" method="POST" name="edit_district">
+    <table class="sub_table">
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name" value="{{ district.name }}"></td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <td><input type="text" name="password" value="{{ district.password }}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update">
+    <input type="reset" value="Reset">
+  </form>
+</div>
+
+<h2 id="title_schools" class="toggling_on">School list</h2>
+<div id="schools">
+  <a href="{{ url_root }}/school/add/{{ district.id }}{% if contest is not None %}/{{ contest.id }}{% end %}">Add a new school</a>
+  {% if district.schools != [] %}
+    <table class="bordered">
+      <thead>
+        <tr>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for school in district.schools %}
+        <tr>
+          <td><a href="{{ url_root }}/school/{{ school.id }}{% if contest is not None %}/{{ contest.id }}{% end %}">{{ school.name }}</a></td>
+        </tr>
+        {% end %}
+      </tbody>
+    </table>
+  {% else %}
+  <br />
+  No schools.
+  {% end %}
+</div>
 
 {% end %}

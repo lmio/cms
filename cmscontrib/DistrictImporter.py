@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,7 +37,7 @@ import sys
 import yaml
 
 from cms import utf8_decoder
-from cms.db import SessionGen, District
+from cms.db import SessionGen, District, School
 
 
 def import_districts(filename, clean):
@@ -46,20 +46,37 @@ def import_districts(filename, clean):
 
     with SessionGen() as session:
         old_districts = {d.name: d for d in session.query(District).all()}
+        old_schools = {s.name: s for s in session.query(School).all()}
         for d in districts:
-            old_district = old_districts.get(d["name"])
-            if old_district is None:
+            district = old_districts.get(d["name"])
+            schools = d.pop("schools", [])
+            if district is None:
                 # Create a new district
                 district = District(**d)
                 session.add(district)
             else:
                 # Update the district
-                old_district.set_attrs(d)
+                district.set_attrs(d)
                 del old_districts[d["name"]]
+            # Import district schools
+            for s in schools:
+                s["district"] = district
+                school = old_schools.get(s["name"])
+                if school is None:
+                    # Create a new school
+                    school = School(**s)
+                    session.add(school)
+                else:
+                    # Update the school
+                    school.set_attrs(s)
+                    del old_schools[s["name"]]
         if clean:
             # Remove districts not in the new list
             for district in old_districts.itervalues():
                 session.delete(district)
+            # Remove schools not in the new list
+            for school in old_schools.itervalues():
+                session.delete(school)
         session.commit()
 
 

@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,7 +52,7 @@ from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, File, Task, Dataset, Attachment, Manager, Testcase, \
-    SubmissionFormatElement, Statement, ContestAttachment, District
+    SubmissionFormatElement, Statement, ContestAttachment, District, School
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -2109,6 +2110,9 @@ class DistrictListHandler(BaseHandler):
 
 
 class DistrictHandler(BaseHandler):
+    """Displays and allows to edit a district.
+
+    """
     def get(self, district_id, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
@@ -2151,7 +2155,7 @@ class DistrictHandler(BaseHandler):
 
 
 class AddDistrictHandler(BaseHandler):
-    """Adds a new contest.
+    """Adds a new district.
 
     """
     def get(self, contest_id=None):
@@ -2192,6 +2196,105 @@ class AddDistrictHandler(BaseHandler):
         else:
             self.redirect("/district/add%s" % url_suffix)
 
+
+class SchoolHandler(BaseHandler):
+    """Displays and allows to edit a school.
+
+    """
+    def get(self, school_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        school = self.safe_get_item(School, school_id)
+
+        self.r_params = self.render_params()
+        self.r_params["school"] = school
+        self.r_params["district_list"] = self.sql_session.query(District).all()
+        self.render("school.html", **self.r_params)
+
+    def post(self, school_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        url_suffix = ""
+        if self.contest is not None:
+            url_suffix = "/%s" % self.contest.id
+
+        school = self.safe_get_item(School, school_id)
+
+        try:
+            attrs = school.get_attrs()
+
+            self.get_int(attrs, "district")
+            assert attrs.get("district") is not None, "No district selected."
+            attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
+
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
+
+            assert attrs.get("name") is not None, "No school name specified."
+
+            # Update the school.
+            school.set_attrs(attrs)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s).", repr(error))
+            self.redirect("/school/%s%s" % (school_id, url_suffix))
+            return
+
+        if try_commit(self.sql_session, self):
+            pass
+        self.redirect("/school/%s%s" % (school_id, url_suffix))
+
+
+class AddSchoolHandler(BaseHandler):
+    """Adds a new school.
+
+    """
+    def get(self, district_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        district = self.safe_get_item(District, district_id)
+
+        self.r_params = self.render_params()
+        self.r_params["district"] = district
+        self.render("add_school.html", **self.r_params)
+
+    def post(self, district_id, contest_id=None):
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+
+        url_suffix = ""
+        if self.contest is not None:
+            url_suffix = "/%s" % self.contest.id
+
+        district = self.safe_get_item(District, district_id)
+
+        try:
+            attrs = dict()
+
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
+
+            assert attrs.get("name") is not None, "No school name specified."
+
+            # Create the school.
+            attrs["district"] = district
+            school = School(**attrs)
+            self.sql_session.add(school)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s).", repr(error))
+            self.redirect("/school/add/%s%s" % (district.id, url_suffix))
+            return
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/school/%s%s" % (school.id, url_suffix))
+        else:
+            self.redirect("/school/add/%s%s" % (district.id, url_suffix))
 
 _aws_handlers = [
     (r"/", MainHandler),
@@ -2246,4 +2349,8 @@ _aws_handlers = [
     (r"/district/([0-9]+)/([0-9]+)", DistrictHandler),
     (r"/district/add", AddDistrictHandler),
     (r"/district/add/([0-9]+)", AddDistrictHandler),
+    (r"/school/([0-9]+)", SchoolHandler),
+    (r"/school/([0-9]+)/([0-9]+)", SchoolHandler),
+    (r"/school/add/([0-9]+)", AddSchoolHandler),
+    (r"/school/add/([0-9]+)/([0-9]+)", AddSchoolHandler),
 ]
