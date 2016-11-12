@@ -9,6 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -62,6 +63,7 @@ from urllib import quote
 import tornado.web
 
 from sqlalchemy import func
+from sqlalchemy.orm import subqueryload
 
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
@@ -69,7 +71,7 @@ from werkzeug.datastructures import LanguageAccept
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, ConfigError, config, ServiceCoord
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
-    File, UserTest, UserTestFile, UserTestManager, PrintJob, District
+    File, UserTest, UserTestFile, UserTestManager, PrintJob, District, School
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
@@ -553,7 +555,9 @@ class RegisterHandler(BaseHandler):
 
     def render_params(self):
         params = super(RegisterHandler, self).render_params()
-        params["district_list"] = self.sql_session.query(District).all()
+        params["district_list"] = (self.sql_session.query(District)
+                                   .options(subqueryload(District.schools))
+                                   .all())
         return params
 
     def get(self):
@@ -571,7 +575,7 @@ class RegisterHandler(BaseHandler):
         role = self.get_argument("role", "")
         district_id = self.get_argument("district", "")
         city = self.get_argument("city", "")
-        school = self.get_argument("school", "")
+        school_id = self.get_argument("school", "")
         grade = self.get_argument("grade", None)
         country = self.get_argument("country", "")
 
@@ -601,8 +605,17 @@ class RegisterHandler(BaseHandler):
                     errors.append("district")
             if not city:
                 errors.append("city")
-            if not school:
+            try:
+                school_id = int(school_id)
+            except ValueError:
                 errors.append("school")
+                school = None
+            else:
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is not None and district is not None and school.district != district:
+                    school = None
+                if school is None:
+                    errors.append("school")
             try:
                 grade = int(grade)
             except ValueError:
@@ -617,7 +630,7 @@ class RegisterHandler(BaseHandler):
         else:
             district = None
             city = ""
-            school = ""
+            school = None
             grade = None
 
         if errors:

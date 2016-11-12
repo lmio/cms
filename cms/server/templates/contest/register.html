@@ -15,6 +15,29 @@ $(document).ready(function () {
     {% if handler.get_argument("role", "") != "student" %}
     $('.students-only').hide();
     {% end %}
+
+    var $select_district = $('select[name="district"]');
+    var $select_school = $('select[name="school"]');
+    var $no_school = $select_school.children('option[value=""]').clone();
+    var schools_by_district = {};
+    $select_school.find('optgroup').each(function (i, og) {
+        schools_by_district[$(og).data('district-id')] = $(og).find('option').clone();
+    });
+
+    function district_changed () {
+        var val = $select_district.val();
+        $select_school.children().remove();
+        $select_school.append($no_school.clone());
+        if (val && schools_by_district.hasOwnProperty(val)) {
+            $select_school.append(schools_by_district[$select_district.val()].clone());
+        }
+        $select_school.val('');
+    }
+    $select_district.change(district_changed);
+    district_changed();
+    {% if handler.get_argument("school", "") %}
+    $select_school.val('{{ handler.get_argument("school", "") }}');
+    {% end %}
 });
 </script>
 {% end %}
@@ -117,7 +140,17 @@ $(document).ready(function () {
                 <div class="control-group students-only{% if errors and "school" in errors %} error{% end %}">
                     <label class="control-label" for="school">{{ _("School") }}</label>
                     <div class="controls">
-                        <input type="text" class="input-xlarge" name="school" value="{{ handler.get_argument("school", "") }}">
+                        <select name="school" class="form-control">
+                            <option value="">---</option>
+    {% set selected_school = handler.get_argument("school", "") %}
+    {% for d in sorted(district_list, key=lambda d: lt_sort_key(d.name)) %}
+                            <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
+        {% for s in sorted(d.schools, key=lambda s: lt_sort_key(s.name)) %}
+                                <option value="{{ s.id }}"{% if str(s.id) == selected_school %} selected{% end %}>{{ s.name }}</option>
+        {% end %}
+                            </optgroup>
+    {% end %}
+                        </select>
                     </div>
                 </div>
                 <div class="control-group students-only{% if errors and "grade" in errors %} error{% end %}">
