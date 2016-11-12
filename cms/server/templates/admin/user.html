@@ -227,7 +227,16 @@ function update_additional_answer(element, invoker)
       </tr>
       <tr>
         <td>School</td>
-        <td><input type="text" name="school" value="{{ selected_user.school if selected_user.school is not None else "" }}" /></td>
+        <td><select name="school">
+          <option value="" {% if selected_user.school_id is None %} selected {% end %}>---</option>
+          {% for d in district_list %}
+          <optgroup label="{{ d.name }}">
+            {% for s in d.schools %}
+            <option value="{{ s.id }}" {% if selected_user.school_id == s.id %} selected {% end %}>{{ s.name }}</option>
+            {% end %}
+          </optgroup>
+          {% end %}
+        </select></td>
       </tr>
       <tr>
         <td>Grade</td>

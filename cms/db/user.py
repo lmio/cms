@@ -36,7 +36,7 @@ from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, Contest, District
+from . import Base, Contest, District, School
 
 
 def generate_random_password():
@@ -147,6 +147,9 @@ class User(Base):
         nullable=False,
         default=timedelta())
 
+    # School details, required for registration if
+    # contest.require_school_details is True.
+
     # District (id and object) this user belongs to.
     district_id = Column(
         Integer,
@@ -159,15 +162,21 @@ class User(Base):
         backref=backref("users",
                         passive_deletes=True))
 
-    # School details, required for registration if
-    # contest.require_school_details is True.
     city = Column(
         Unicode,
         nullable=True)
 
-    school = Column(
-        Unicode,
-        nullable=True)
+    # School (id and object) this user belongs to.
+    school_id = Column(
+        Integer,
+        ForeignKey(School.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    school = relationship(
+        School,
+        backref=backref("users",
+                        passive_deletes=True))
 
     grade = Column(
         Integer,

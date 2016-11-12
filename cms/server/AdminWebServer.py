@@ -42,7 +42,7 @@ from datetime import datetime, timedelta
 from StringIO import StringIO
 import zipfile
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.exc import IntegrityError
 
 import tornado.web
@@ -1775,7 +1775,10 @@ class UserViewHandler(BaseHandler):
         self.r_params = self.render_params()
         self.r_params["selected_user"] = user
         self.r_params["submissions"] = user.submissions
-        self.r_params["district_list"] = self.sql_session.query(District).all()
+        self.r_params["district_list"] = (
+            self.sql_session.query(District)
+            .options(subqueryload(District.schools))
+            .all())
         self.render("user.html", **self.r_params)
 
     def post(self, user_id):
@@ -1807,9 +1810,12 @@ class UserViewHandler(BaseHandler):
             self.get_int(attrs, "district")
             if attrs.get("district") is not None:
                 attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
-
             self.get_string(attrs, "city")
-            self.get_string(attrs, "school")
+            self.get_int(attrs, "school")
+            if attrs.get("school") is not None:
+                attrs["school"] = School.get_from_id(attrs["school"], self.sql_session)
+                assert attrs["district"] == attrs["school"].district, \
+                    "Selected school and district do not match."
             self.get_int(attrs, "grade")
             self.get_string(attrs, "country")
 
@@ -1833,7 +1839,10 @@ class AddUserHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         self.r_params = self.render_params()
-        self.r_params["district_list"] = self.sql_session.query(District).all()
+        self.r_params["district_list"] = (
+            self.sql_session.query(District)
+            .options(subqueryload(District.schools))
+            .all())
         self.render("add_user.html", **self.r_params)
 
     def post(self, contest_id):
@@ -1864,9 +1873,12 @@ class AddUserHandler(BaseHandler):
             self.get_int(attrs, "district")
             if attrs.get("district") is not None:
                 attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
-
             self.get_string(attrs, "city")
-            self.get_string(attrs, "school")
+            self.get_int(attrs, "school")
+            if attrs.get("school") is not None:
+                attrs["school"] = School.get_from_id(attrs["school"], self.sql_session)
+                assert attrs["district"] == attrs["school"].district, \
+                    "Selected school and district do not match."
             self.get_int(attrs, "grade")
             self.get_string(attrs, "country")
 

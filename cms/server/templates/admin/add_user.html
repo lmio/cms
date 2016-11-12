@@ -73,7 +73,16 @@
       </tr>
       <tr>
         <td>School</td>
-        <td><input type="text" name="school" /></td>
+        <td><select name="school">
+          <option value="">---</option>
+          {% for d in district_list %}
+          <optgroup label="{{ d.name }}">
+            {% for s in d.schools %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% end %}
+          </optgroup>
+          {% end %}
+        </select></td>
       </tr>
       <tr>
         <td>Grade</td>
