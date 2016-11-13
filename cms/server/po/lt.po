@@ -891,7 +891,7 @@ msgid "%s"
 msgstr "%s"
 
 msgid "Some details"
-msgstr "Detalės"
+msgstr "Nuostatos"
 
 msgid "Compilation commands"
 msgstr "Kompiliavimo komandos"
