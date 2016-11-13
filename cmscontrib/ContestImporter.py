@@ -52,7 +52,8 @@ import cms.db as class_hook
 from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
-    SubmissionResult, UserTestResult, RepeatedUnicode, District, RepeatedInteger
+    SubmissionResult, UserTestResult, RepeatedUnicode, RepeatedInteger, \
+    District, School
 from cms.db.filecacher import FileCacher
 
 from cmscontrib import sha1sum
@@ -194,6 +195,8 @@ class ContestImporter(object):
 
                 districts = session.query(District).all()
                 self.districts = {d.name: d for d in districts}
+                schools = session.query(School).all()
+                self.schools = {s.name: s for s in schools}
 
                 self.objs = dict()
                 for id_, data in self.datas.iteritems():
@@ -382,6 +385,9 @@ class ContestImporter(object):
             elif prp.mapper.class_ == District:
                 # Import districts by name
                 setattr(obj, prp.key, self.districts.get(val))
+            elif prp.mapper.class_ == School:
+                # Import schools by name
+                setattr(obj, prp.key, self.schools.get(val))
             elif type(val) == unicode:
                 setattr(obj, prp.key, self.objs[val])
             elif type(val) == list:
