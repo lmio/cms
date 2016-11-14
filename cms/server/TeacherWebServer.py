@@ -36,12 +36,14 @@ import traceback
 import urlparse
 from datetime import timedelta
 
+from sqlalchemy.orm import subqueryload
+
 import tornado.web
 import tornado.locale
 
 from cms import config
 from cms.io import WebService
-from cms.db import Session, District, Contest, User
+from cms.db import Session, District, Contest, User, School
 from cms.server import CommonRequestHandler, get_url_root, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -94,6 +96,19 @@ def get_locale(lang):
     return cms_locale
 
 
+def userattr(user):
+    return getattr(user, config.teacher_login_kind)
+
+
+def get_user_from_db(object_id, session):
+    if config.teacher_login_kind == "district":
+        return District.get_from_id(object_id, session)
+    elif config.teacher_login_kind == "school":
+        return School.get_from_id(object_id, session)
+    else:
+        return None
+
+
 class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
@@ -127,9 +142,11 @@ class BaseHandler(CommonRequestHandler):
         # Parse cookie.
         try:
             cookie = pickle.loads(self.get_secure_cookie("tws_login"))
-            district_id = cookie[0]
-            password = cookie[1]
-            last_update = make_datetime(cookie[2])
+            kind = cookie[0]
+            object_id = cookie[1]
+            password = cookie[2]
+            last_update = make_datetime(cookie[3])
+            assert kind == config.teacher_login_kind
         except:
             self.clear_cookie("tws_login")
             return None
@@ -140,22 +157,23 @@ class BaseHandler(CommonRequestHandler):
             self.clear_cookie("login")
             return None
 
-        # Load the district from DB.
-        district = District.get_from_id(district_id, self.sql_session)
+        # Load the district or school from DB.
+        obj = get_user_from_db(object_id, self.sql_session)
 
         # Check if district exists and password is correct.
-        if district is None or district.password != password:
+        if obj is None or obj.password != password:
             self.clear_cookie("tws_login")
             return None
 
         # Refresh cookie
         self.set_secure_cookie("tws_login",
-                               pickle.dumps((district.id,
-                                             district.password,
+                               pickle.dumps((config.teacher_login_kind,
+                                             obj.id,
+                                             obj.password,
                                              make_timestamp())),
                                expires_days=None)
 
-        return district
+        return obj
 
     def get_user_locale(self):
         return get_locale(config.teacher_locale)
@@ -240,37 +258,42 @@ class LoginHandler(BaseHandler):
 
     """
     def get(self):
-        self.r_params["district_list"] = self.sql_session.query(District).all()
+        districts = self.sql_session.query(District)
+        if config.teacher_login_kind == "school":
+            districts = districts.options(subqueryload(District.schools))
+        self.r_params["district_list"] = districts.all()
+        self.r_params["login_kind"] = config.teacher_login_kind
         self.render("login.html", **self.r_params)
 
     def post(self):
-        district_id = self.get_argument("district", "")
+        login_id = self.get_argument(config.teacher_login_kind, "")
         password = self.get_argument("password", "")
         next_page = self.get_argument("next", "/")
 
-        filtered_district = filter_ascii(district_id)
+        filtered_login = filter_ascii(login_id)
         filtered_password = filter_ascii(password)
         try:
-            district_id = int(district_id)
+            login_id = int(login_id)
         except ValueError:
             logger.info("Login error: id=%s pass=%s remote_ip=%s" %
-                        (filtered_district, filtered_password, self.request.remote_ip))
+                        (filtered_login, filtered_password, self.request.remote_ip))
             self.redirect("/login?error=true")
             return
 
-        district = District.get_from_id(district_id, self.sql_session)
+        obj = get_user_from_db(login_id, self.sql_session)
 
-        if district is None or district.password != password:
+        if obj is None or obj.password != password:
             logger.info("Login error: id=%s pass=%s remote_ip=%s" %
-                        (filtered_district, filtered_password, self.request.remote_ip))
+                        (filtered_login, filtered_password, self.request.remote_ip))
             self.redirect("/login?error=true")
             return
 
         logger.info("Teacher logged in: id=%s remote_ip=%s." %
-                    (filtered_district, self.request.remote_ip))
+                    (filtered_login, self.request.remote_ip))
         self.set_secure_cookie("tws_login",
-                               pickle.dumps((district.id,
-                                             district.password,
+                               pickle.dumps((config.teacher_login_kind,
+                                             obj.id,
+                                             obj.password,
                                              make_timestamp())),
                                expires_days=None)
         self.redirect(next_page)
@@ -311,7 +334,7 @@ class ContestHandler(BaseHandler):
         self.r_params["contest"] = contest
         self.r_params["users"] = self.sql_session.query(User)\
                 .filter(User.contest == contest)\
-                .filter(User.district == self.current_user).all()
+                .filter(userattr(User) == self.current_user).all()
         self.render("contest.html", **self.r_params)
 
 
@@ -325,7 +348,7 @@ class ImpersonateHandler(BaseHandler):
         if user is None:
             raise tornado.web.HTTPError(404)
         if (user.contest_id not in config.teacher_active_contests or
-            user.district != self.current_user):
+                userattr(user) != self.current_user):
             raise tornado.web.HTTPError(403)
 
         url = self.application.service.contest_url[user.contest_id]

@@ -351,7 +351,7 @@ class YamlLoader(Loader):
             args["primary_statements"] = json.dumps(primary_statements)
 
         load(conf, args, "city")
-        load(conf, args, "school")
+        # load(conf, args, "school")
         load(conf, args, "grade")
 
         logger.info("User parameters loaded.")

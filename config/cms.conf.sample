@@ -155,6 +155,9 @@
     "_help": "Language of the TWS.",
     "teacher_locale": "en_US",
 
+    "_help": "The 'user' of the TWS. May be 'district' or 'school'.",
+    "teacher_login_kind": "district",
+
 
 
     "_section": "ScoringService",

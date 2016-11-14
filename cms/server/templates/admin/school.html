@@ -1,0 +1,32 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/district/{{ school.district.id }}{% if contest is not None %}/{{ contest.id }}{% end %}">{{ school.district.name }}</a> - School information</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/school/{{ school.id }}{% if contest is not None %}/{{ contest.id }}{% end %}" method="POST" name="edit_school">
+  <table class="sub_table">
+    <tr>
+      <td>District</td>
+      <td><select name="district">
+        {% for d in district_list %}
+        <option value="{{ d.id }}" {% if school.district_id == d.id %}selected{% end %}>{{ d.name }}</option>
+        {% end %}
+      </select></td>
+    </tr>
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name" value="{{ school.name }}"></td>
+    </tr>
+    <tr>
+      <td>Password</td>
+      <td><input type="text" name="password" value="{{ school.password }}"></td>
+    </tr>
+  </table>
+  <input type="submit" value="Update">
+  <input type="reset" value="Reset">
+</form>
+
+{% end %}
