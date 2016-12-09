@@ -28,7 +28,9 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from future.moves.urllib.parse import urlparse
+import six
 
+import csv
 import ipaddress
 import json
 import logging
@@ -94,7 +96,7 @@ class ContestHandler(BaseHandler):
         return header, table
 
     @tornado.web.authenticated
-    def get(self, contest_id):
+    def get(self, contest_id, format="online"):
         if int(contest_id) not in config.teacher_active_contests:
             raise tornado.web.HTTPError(404)
         contest = Contest.get_from_id(contest_id, self.sql_session)
@@ -113,11 +115,28 @@ class ContestHandler(BaseHandler):
 
         header, table = self.get_results_table(contest, participations)
 
-        self.r_params["contest"] = contest
-        self.r_params["header"] = header
-        self.r_params["table"] = table
-        self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
-        self.render("contest.html", **self.r_params)
+        if format == "csv":
+            self.set_header("Content-Type", "text/csv")
+            self.set_header("Content-Disposition",
+                            "attachment; filename=\"results.csv\"")
+
+            if six.PY3:
+                def encode(row):
+                    return [str(item) for item in row]
+            else:
+                def encode(row):
+                    return [str(item).encode('utf-8') for item in row]
+
+            writer = csv.writer(self)
+            writer.writerow(encode(header))
+            writer.writerows(encode(row) for user, row in table)
+            self.finish()
+        else:
+            self.r_params["contest"] = contest
+            self.r_params["header"] = header
+            self.r_params["table"] = table
+            self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
+            self.render("contest.html", **self.r_params)
 
 
 class ImpersonateHandler(BaseHandler):

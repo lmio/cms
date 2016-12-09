@@ -8,7 +8,10 @@
     <h1>{{ contest.description }}</h1>
 </div>
 
-<p><a href="{{ url() }}">{% trans %}Back to contest list{% endtrans %}</a></p>
+<p>
+  <a href="{{ url() }}">{% trans %}Back to contest list{% endtrans %}</a>
+  <a style="float: right" href="{{ url("contest", contest.id, "csv") }}">{% trans %}Export to CSV{% endtrans %}</a>
+</p>
 
 <table class="table table-bordered table-striped">
   <thead>
