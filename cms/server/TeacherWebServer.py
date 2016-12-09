@@ -329,6 +329,8 @@ class ContestHandler(BaseHandler):
         header = [
             self._("Username"),
             self._("Contestant"),
+            self._("School"),
+            self._("Grade"),
         ]
         for task in contest.tasks:
             header.append(task.name)
@@ -343,6 +345,8 @@ class ContestHandler(BaseHandler):
             row = [
                 user.username,
                 "{} {}".format(user.first_name, user.last_name),
+                user.school.name if user.school else "",
+                user.grade if user.grade else "",
             ]
             for task in contest.tasks:
                 t_score, t_partial = task_score(user, task)
@@ -367,6 +371,7 @@ class ContestHandler(BaseHandler):
         users = self.sql_session.query(User)\
             .filter(User.contest == contest)\
             .filter(userattr(User) == self.current_user)\
+            .options(joinedload('school'))\
             .options(joinedload('submissions'))\
             .options(joinedload('submissions.token'))\
             .options(joinedload('submissions.results'))\
