@@ -35,6 +35,7 @@ HANDLERS = [
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/contest/([0-9]+)", ContestHandler),
+    (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
 ]
 

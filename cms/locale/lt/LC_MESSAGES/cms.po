@@ -1146,6 +1146,9 @@ msgstr "Šiuo metu nėra aktyvių varžybų."
 msgid "Back to contest list"
 msgstr "Grįžti į varžybų sąrašą"
 
+msgid "Export to CSV"
+msgstr "Parsisiųsti CSV formatu"
+
 msgid "Contestant"
 msgstr "Dalyvis"
 
