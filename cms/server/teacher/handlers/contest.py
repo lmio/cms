@@ -20,6 +20,7 @@
 
 """
 
+import csv
 import ipaddress
 import json
 import logging
@@ -89,7 +90,7 @@ class ContestHandler(BaseHandler):
         return header, table
 
     @tornado_web.authenticated
-    def get(self, contest_id):
+    def get(self, contest_id, format="online"):
         if int(contest_id) not in config.teacher_active_contests:
             raise tornado_web.HTTPError(404)
         contest = Contest.get_from_id(contest_id, self.sql_session)
@@ -115,11 +116,21 @@ class ContestHandler(BaseHandler):
 
         header, table = self.get_results_table(contest, participations)
 
-        self.r_params["contest"] = contest
-        self.r_params["header"] = header
-        self.r_params["table"] = table
-        self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
-        self.render("contest.html", **self.r_params)
+        if format == "csv":
+            self.set_header("Content-Type", "text/csv")
+            self.set_header("Content-Disposition",
+                            "attachment; filename=\"results.csv\"")
+
+            writer = csv.writer(self)
+            writer.writerow(header)
+            writer.writerows(row for user, row in table)
+            self.finish()
+        else:
+            self.r_params["contest"] = contest
+            self.r_params["header"] = header
+            self.r_params["table"] = table
+            self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
+            self.render("contest.html", **self.r_params)
 
 
 class ImpersonateHandler(BaseHandler):
