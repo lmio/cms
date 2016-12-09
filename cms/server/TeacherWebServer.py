@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
+import csv
 import gettext
 import logging
 import os
@@ -36,7 +37,7 @@ import traceback
 import urlparse
 from datetime import timedelta
 
-from sqlalchemy.orm import subqueryload
+from sqlalchemy.orm import subqueryload, joinedload
 
 import tornado.web
 import tornado.locale
@@ -44,6 +45,7 @@ import tornado.locale
 from cms import config
 from cms.io import WebService
 from cms.db import Session, District, Contest, User, School
+from cms.grading import task_score
 from cms.server import CommonRequestHandler, get_url_root, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -323,19 +325,72 @@ class ContestHandler(BaseHandler):
     """Contest result list handler.
 
     """
+    def get_results_table(self, contest, users):
+        header = [
+            self._("Username"),
+            self._("Contestant"),
+        ]
+        for task in contest.tasks:
+            header.append(task.name)
+        header.append(self._("Total"))
+
+        table = []
+        for user in sorted(users, key=lambda u: u.username):
+            if user.hidden:
+                continue
+            score = 0.0
+            partial = False
+            row = [
+                user.username,
+                "{} {}".format(user.first_name, user.last_name),
+            ]
+            for task in contest.tasks:
+                t_score, t_partial = task_score(user, task)
+                t_score = round(t_score, task.score_precision)
+                score += t_score
+                partial = partial or t_partial
+                row.append("{}{}".format(t_score, "*" if t_partial else ""))
+            score = round(score, task.score_precision)
+            row.append("{}{}".format(score, "*" if partial else ""))
+            table.append((user, row))
+
+        return header, table
+
     @tornado.web.authenticated
-    def get(self, contest_id):
+    def get(self, contest_id, format="online"):
         if int(contest_id) not in config.teacher_active_contests:
             raise tornado.web.HTTPError(404)
         contest = Contest.get_from_id(contest_id, self.sql_session)
         if contest is None:
             raise tornado.web.HTTPError(404)
 
-        self.r_params["contest"] = contest
-        self.r_params["users"] = self.sql_session.query(User)\
-                .filter(User.contest == contest)\
-                .filter(userattr(User) == self.current_user).all()
-        self.render("contest.html", **self.r_params)
+        users = self.sql_session.query(User)\
+            .filter(User.contest == contest)\
+            .filter(userattr(User) == self.current_user)\
+            .options(joinedload('submissions'))\
+            .options(joinedload('submissions.token'))\
+            .options(joinedload('submissions.results'))\
+            .all()
+
+        header, table = self.get_results_table(contest, users)
+
+        if format == "csv":
+            self.set_header("Content-Type", "text/csv")
+            self.set_header("Content-Disposition",
+                            "attachment; filename=\"results.csv\"")
+
+            def encode(row):
+                return [unicode(item).encode('utf-8') for item in row]
+
+            writer = csv.writer(self)
+            writer.writerow(encode(header))
+            writer.writerows(encode(row) for user, row in table)
+            self.finish()
+        else:
+            self.r_params["contest"] = contest
+            self.r_params["header"] = header
+            self.r_params["table"] = table
+            self.render("contest.html", **self.r_params)
 
 
 class ImpersonateHandler(BaseHandler):
@@ -373,5 +428,6 @@ _tws_handlers = [
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/contest/([0-9]+)", ContestHandler),
+    (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
 ]

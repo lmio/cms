@@ -1022,6 +1022,9 @@ msgstr ""
 msgid "Back to contest list"
 msgstr ""
 
+msgid "Export to CSV"
+msgstr ""
+
 msgid "Contestant"
 msgstr ""
 
