@@ -33,7 +33,7 @@ import logging
 
 from cms import ServiceCoord, config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
-from cms.db import SessionGen, Submission, Dataset
+from cms.db import SessionGen, Submission, Dataset, get_active_contest_list
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results
 
@@ -165,12 +165,14 @@ class ScoringService(TriggeredService):
         """
         counter = 0
         with SessionGen() as session:
-            for sr in get_submission_results(session=session):
-                if sr is not None and sr.needs_scoring():
-                    self.enqueue(ScoringOperation(sr.submission_id,
-                                                  sr.dataset_id),
-                                 timestamp=sr.submission.timestamp)
-                    counter += 1
+            for contest in get_active_contest_list(session):
+                for sr in get_submission_results(contest_id=contest.id,
+                                                 session=session):
+                    if sr is not None and sr.needs_scoring():
+                        self.enqueue(ScoringOperation(sr.submission_id,
+                                                      sr.dataset_id),
+                                     timestamp=sr.submission.timestamp)
+                        counter += 1
         return counter
 
     @rpc_method
