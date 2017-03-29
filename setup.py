@@ -161,6 +161,7 @@ def do_setup():
                   "cmsDumpUpdater=cmscontrib.DumpUpdater:main",
                   "cmsRWSHelper=cmscontrib.RWSHelper:main",
                   "cmsDistrictImporter=cmscontrib.DistrictImporter:main",
+                  "cmsCWSPrefetch=cmscontrib.CWSPrefetch:main",
 
                   "cmsMake=cmstaskenv.cmsMake:main",
 
