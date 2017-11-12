@@ -1,0 +1,104 @@
+{% extends base.html %}
+{% block extrahead %}
+{% from cms.util import lt_sort_key %}
+
+<script type="text/javascript">
+$(document).ready(function () {
+    var $select_district = $('select[name="district"]');
+    var $select_school = $('select[name="school"]');
+    var $no_school = $select_school.children('option[value=""]').clone();
+    var schools_by_district = {};
+    $select_school.find('optgroup').each(function (i, og) {
+        schools_by_district[$(og).data('district-id')] = $(og).find('option').clone();
+    });
+
+    function district_changed () {
+        var val = $select_district.val();
+        $select_school.children().remove();
+        $select_school.append($no_school.clone());
+        if (val && schools_by_district.hasOwnProperty(val)) {
+            $select_school.append(schools_by_district[$select_district.val()].clone());
+        }
+        $select_school.val('');
+    }
+    $select_district.change(district_changed);
+    district_changed();
+    {% if handler.get_argument("school", "") %}
+    $select_school.val('{{ handler.get_argument("school", "") }}');
+    {% end %}
+});
+</script>
+{% end %}
+
+{% block body %}
+<div class="login_container">
+{% if complete %}
+    <div class="login_box hero-unit">
+        <h2>{{ _("Registration successful") }}</h2>
+        <p>{{ _("You will receive your login details via email.") }}</p>
+    </div>
+{% else %}
+    <div class="login_box hero-unit">
+        <h1>{{ _("Welcome") }}</h1>
+        <p>{{ _("Please register") }}</p>
+        <form class="form-horizontal" action="{{ url_root }}/register" method="POST">
+            {% module xsrf_form_html() %}
+            <fieldset>
+                <div class="control-group{% if errors and "first_name" in errors %} error{% end %}">
+                    <label class="control-label" for="first_name">{{ _("First name") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="first_name" value="{{ handler.get_argument("first_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "last_name" in errors %} error{% end %}">
+                    <label class="control-label" for="last_name">{{ _("Last name") }}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "email" in errors %} error{% end %}">
+                    <label class="control-label" for="email">{{ _("Email") }}</label>
+                    <div class="controls">
+                        <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "district" in errors %} error{% end %}">
+                    <label class="control-label" for="district">{{ _("District") }}</label>
+                    <div class="controls">
+                        <select name="district" class="form-control">
+                            <option value="">---</option>
+    {% set selected_district = handler.get_argument("district", "") %}
+    {% for d in sorted(district_list, key=lambda d: lt_sort_key(d.name)) %}
+                            <option value="{{ d.id }}"{% if str(d.id) == selected_district %} selected{% end %}>{{ d.name }}</option>
+    {% end %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group{% if errors and "school" in errors %} error{% end %}">
+                    <label class="control-label" for="school">{{ _("School") }}</label>
+                    <div class="controls">
+                        <select name="school" class="form-control">
+                            <option value="">---</option>
+    {% set selected_school = handler.get_argument("school", "") %}
+    {% for d in sorted(district_list, key=lambda d: lt_sort_key(d.name)) %}
+                            <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
+        {% for s in sorted(d.schools, key=lambda s: lt_sort_key(s.name)) %}
+                                <option value="{{ s.id }}"{% if str(s.id) == selected_school %} selected{% end %}>{{ s.name }}</option>
+        {% end %}
+                            </optgroup>
+    {% end %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{{ _("Register") }}</button>
+                        <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% end %}
+</div>
+{% end %}
