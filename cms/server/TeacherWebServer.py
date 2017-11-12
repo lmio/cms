@@ -33,6 +33,7 @@ import logging
 import os
 import pickle
 import pkg_resources
+import re
 import traceback
 import urlparse
 from datetime import timedelta
@@ -44,7 +45,7 @@ import tornado.locale
 
 from cms import config
 from cms.io import WebService
-from cms.db import Session, District, Contest, User, School
+from cms.db import Session, District, Contest, User, School, TeacherRegistration
 from cms.grading import task_score
 from cms.server import CommonRequestHandler, get_url_root, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
@@ -310,6 +311,81 @@ class LogoutHandler(BaseHandler):
         self.redirect("/login")
 
 
+class RegisterHandler(BaseHandler):
+
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        params["district_list"] = (self.sql_session.query(District)
+                                   .options(subqueryload(District.schools))
+                                   .all())
+        return params
+
+    def get(self):
+        if not config.teacher_allow_registration:
+            raise tornado.web.HTTPError(404)
+        self.render("register.html", errors=[], complete=False, **self.r_params)
+
+    def post(self):
+        if not config.teacher_allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        district_id = self.get_argument("district", "")
+        school_id = self.get_argument("school", "")
+
+        errors = []
+        if not first_name:
+            errors.append("first_name")
+        if not last_name:
+            errors.append("last_name")
+        if not email or not self.email_re.match(email):
+            errors.append("email")
+
+        try:
+            district_id = int(district_id)
+        except ValueError:
+            errors.append("district")
+            district = None
+        else:
+            district = District.get_from_id(district_id, self.sql_session)
+            if district is None:
+                errors.append("district")
+
+        try:
+            school_id = int(school_id)
+        except ValueError:
+            errors.append("school")
+            school = None
+        else:
+            school = School.get_from_id(school_id, self.sql_session)
+            if school is not None and district is not None and school.district != district:
+                school = None
+            if school is None:
+                errors.append("school")
+
+        if errors:
+            self.render("register.html", errors=errors, complete=False, **self.r_params)
+            return
+
+        registration = TeacherRegistration(first_name=first_name, last_name=last_name,
+                                           email=email, district=district, school=school,
+                                           timestamp=make_datetime())
+        self.sql_session.add(registration)
+        self.sql_session.commit()
+
+        filtered_name = filter_ascii("%s %s" % (first_name, last_name))
+        filtered_email = filter_ascii(email)
+        filtered_school = filter_ascii(school.name)
+        logger.info("New teacher registered: name=%s email=%s school=%s remote_ip=%s." %
+                    (filtered_name, filtered_email, filtered_school, self.request.remote_ip))
+
+        self.render("register.html", errors=[], complete=True, **self.r_params)
+
+
 class MainHandler(BaseHandler):
     """Home page handler.
 
@@ -432,6 +508,7 @@ _tws_handlers = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegisterHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),

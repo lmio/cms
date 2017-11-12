@@ -1186,3 +1186,6 @@ msgstr "Iš viso"
 
 msgid "Log in as contestant"
 msgstr "Prisijungti dalyvio vardu"
+
+msgid "You will receive your login details via email."
+msgstr "Prisijungimo duomenis gausite el. paštu."

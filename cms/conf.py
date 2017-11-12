@@ -115,6 +115,7 @@ class Config(object):
         self.teacher_contest_urls = ["http://localhost:8888/"]
         self.teacher_locale = "en_US"
         self.teacher_login_kind = "district"  # "district" or "school"
+        self.teacher_allow_registration = False
 
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]

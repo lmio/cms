@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
+import csv
 import json
 import logging
 import os
@@ -52,7 +53,8 @@ from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, File, Task, Dataset, Attachment, Manager, Testcase, \
-    SubmissionFormatElement, Statement, ContestAttachment, District, School
+    SubmissionFormatElement, Statement, ContestAttachment, District, School, \
+    TeacherRegistration
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -2308,6 +2310,46 @@ class AddSchoolHandler(BaseHandler):
         else:
             self.redirect("/school/add/%s%s" % (district.id, url_suffix))
 
+
+class TeacherRegistrationsHandler(BaseHandler):
+    """Exports teacher registration table as CSV.
+    
+    """
+    def get(self):
+        registrations = self.sql_session.query(TeacherRegistration)\
+            .options(joinedload('district'))\
+            .options(joinedload('school'))\
+            .all()
+
+        self.set_header("Content-Type", "text/csv")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"registrations.csv\"")
+
+        writer = csv.writer(self)
+        writer.writerow([
+            'Timestamp',
+            'First name',
+            'Last name',
+            'Email',
+            'District',
+            'School',
+            'Password',
+        ])
+        writer.writerows([
+            [
+                reg.timestamp.isoformat(b' '),
+                reg.first_name.encode('utf8'),
+                reg.last_name.encode('utf8'),
+                reg.email.encode('utf8'),
+                reg.district.name.encode('utf8') if reg.district else '',
+                reg.school.name.encode('utf8') if reg.school else '',
+                reg.school.password.encode('ascii') if reg.school else '',
+            ]
+            for reg in registrations
+        ])
+        self.finish()
+
+
 _aws_handlers = [
     (r"/", MainHandler),
     (r"/([0-9]+)", MainHandler),
@@ -2365,4 +2407,5 @@ _aws_handlers = [
     (r"/school/([0-9]+)/([0-9]+)", SchoolHandler),
     (r"/school/add/([0-9]+)", AddSchoolHandler),
     (r"/school/add/([0-9]+)/([0-9]+)", AddSchoolHandler),
+    (r"/teacher_registrations", TeacherRegistrationsHandler),
 ]
