@@ -20,7 +20,11 @@
 
 """
 
-from cms.db import District, School
+import csv
+
+from sqlalchemy.orm import joinedload
+
+from cms.db import District, School, TeacherRegistration
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -201,3 +205,45 @@ class AddSchoolHandler(BaseHandler):
         else:
             self.redirect(fallback_page)
 
+
+class TeacherRegistrationsHandler(BaseHandler):
+    """Exports teacher registration table as CSV.
+
+    """
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self):
+        registrations = self.sql_session.query(TeacherRegistration)\
+            .options(joinedload('district'))\
+            .options(joinedload('school'))\
+            .order_by(TeacherRegistration.id)\
+            .all()
+
+        self.set_header("Content-Type", "text/csv")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"registrations.csv\"")
+
+        writer = csv.writer(self)
+        writer.writerow([
+            'Timestamp',
+            'First name',
+            'Last name',
+            'Email',
+            'District',
+            'School',
+            'School email',
+            'Password',
+        ])
+        writer.writerows([
+            [
+                reg.timestamp.isoformat(' '),
+                reg.first_name,
+                reg.last_name,
+                reg.email if reg.email else '',
+                reg.district.name if reg.district else '',
+                reg.school.name if reg.school else '',
+                reg.school.email if reg.school and reg.school.email else '',
+                reg.school.password if reg.school else '',
+            ]
+            for reg in registrations
+        ])
+        self.finish()

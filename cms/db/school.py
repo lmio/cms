@@ -22,7 +22,7 @@
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, Unicode
+from sqlalchemy.types import DateTime, Integer, Unicode
 
 from . import Base
 
@@ -111,3 +111,54 @@ class School(Base):
         cascade="all",
         passive_deletes=True,
         back_populates="school")
+
+
+class TeacherRegistration(Base):
+    """Class to store teacher registration details.
+
+    """
+
+    __tablename__ = 'teacher_registrations'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Real name of the teacher.
+    first_name = Column(
+        Unicode,
+        nullable=False)
+    last_name = Column(
+        Unicode,
+        nullable=False)
+
+    # Email for any communications.
+    email = Column(
+        Unicode,
+        nullable=True)
+
+    # District (id and object) this teacher registered to.
+    district_id = Column(
+        Integer,
+        ForeignKey(District.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    district = relationship(
+        District)
+
+    # School (id and object) this teacher registered to.
+    school_id = Column(
+        Integer,
+        ForeignKey(School.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    school = relationship(
+        School)
+
+    # Time of the registration
+    timestamp = Column(
+        DateTime,
+        nullable=False)

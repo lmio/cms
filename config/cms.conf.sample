@@ -181,6 +181,12 @@
     "_help": "Whether to show contestants' results to teachers.",
     "teacher_show_results": true,
 
+    "_help": "Whether to enable teacher pre-registration.",
+    "teacher_allow_registration": false,
+
+    "_help": "Whether teacher pre-registration is anonymous.",
+    "teacher_registration_anonymous": false,
+
 
 
     "_section": "ScoringService",

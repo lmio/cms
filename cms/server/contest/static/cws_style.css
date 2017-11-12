@@ -234,6 +234,12 @@ div.register_box {
     margin: 20px auto;
 }
 
+@media (min-width: 768px) {
+    div.register_box fieldset div.control-group div.controls select {
+        width: 280px;
+    }
+}
+
 /* Some fixes and enhancements of Bootstrap */
 
 @media (max-width: 767px) {

@@ -19,7 +19,8 @@
 from .main import \
     MainHandler, \
     LoginHandler, \
-    LogoutHandler
+    LogoutHandler, \
+    RegisterHandler
 from .contest import \
     ContestHandler, \
     ImpersonateHandler
@@ -29,6 +30,7 @@ HANDLERS = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegisterHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
