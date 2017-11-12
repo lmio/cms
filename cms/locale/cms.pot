@@ -964,3 +964,6 @@ msgstr ""
 
 msgid "Log in as contestant"
 msgstr ""
+
+msgid "You will receive your login details via email."
+msgstr ""

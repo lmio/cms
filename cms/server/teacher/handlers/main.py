@@ -30,13 +30,14 @@ from future.builtins import *  # noqa
 
 import ipaddress
 import logging
+import re
 
 import tornado.web
 
 from sqlalchemy.orm import subqueryload
 
 from cms import config
-from cms.db import Contest, District
+from cms.db import Contest, District, School, TeacherRegistration
 from cms.util import lt_sort_key
 
 from ..authentication import validate_login
@@ -109,6 +110,91 @@ class LogoutHandler(BaseHandler):
     def post(self):
         self.clear_cookie("tws_login")
         self.redirect(self.url("login"))
+
+
+class RegisterHandler(BaseHandler):
+
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        district_list = (self.sql_session.query(District)
+                         .options(subqueryload(District.schools))
+                         .all())
+        district_list.sort(key=lambda d: lt_sort_key(d.name))
+        for d in district_list:
+            d.schools.sort(key=lambda s: lt_sort_key(s.name))
+        params["district_list"] = district_list
+        return params
+
+    def get(self):
+        if not config.teacher_allow_registration:
+            raise tornado.web.HTTPError(404)
+        self.render("register.html", **self.r_params)
+
+    def post(self):
+        if not config.teacher_allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        district_id = self.get_argument("district", "")
+        school_id = self.get_argument("school", "")
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        errors = []
+        if not first_name:
+            errors.append("first_name")
+        if not last_name:
+            errors.append("last_name")
+        if not email or not self.email_re.match(email):
+            errors.append("email")
+
+        try:
+            district_id = int(district_id)
+        except ValueError:
+            errors.append("district")
+            district = None
+        else:
+            district = District.get_from_id(district_id, self.sql_session)
+            if district is None:
+                errors.append("district")
+
+        try:
+            school_id = int(school_id)
+        except ValueError:
+            errors.append("school")
+            school = None
+        else:
+            school = School.get_from_id(school_id, self.sql_session)
+            if school is not None and district is not None and school.district != district:
+                school = None
+            if school is None:
+                errors.append("school")
+
+        if errors:
+            self.render("register.html", errors=errors, **self.r_params)
+            return
+
+        registration = TeacherRegistration(first_name=first_name, last_name=last_name,
+                                           email=email, district=district, school=school,
+                                           timestamp=self.timestamp)
+        self.sql_session.add(registration)
+        self.sql_session.commit()
+
+        logger.info("New teacher registered from IP address %s, for school %s, at %s.",
+                    ip_address, school.name, self.timestamp)
+
+        self.render("register.html", complete=True, **self.r_params)
 
 
 class MainHandler(BaseHandler):
