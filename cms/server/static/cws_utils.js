@@ -37,6 +37,7 @@ CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
     this.phase = phase;
     this.remaining_div = null;
     this.unread_count = 0;
+    this.is_reloading = false;
 };
 
 
@@ -174,8 +175,9 @@ CMS.CWSUtils.prototype.update_time = function() {
     switch (this.phase) {
     case -2:
         // Contest hasn't started yet.
-        if (server_time >= this.current_phase_end) {
+        if (server_time >= this.current_phase_end && !this.is_reloading) {
             window.location.href = this.url_root + "/";
+            this.is_reloading = true;
         }
         $("#countdown_label").text(
             $("#translation_until_contest_starts").text());
