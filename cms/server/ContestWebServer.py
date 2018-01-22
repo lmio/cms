@@ -2218,4 +2218,6 @@ _cws_handlers = [
     (r"/testing", UserTestInterfaceHandler),
     (r"/printing", PrintingHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
+    (r"/fp_doc/(.*)", StaticFileGzHandler, {"path": config.fp_doc_path}),
+    (r"/c_guide/(.*)", StaticFileGzHandler, {"path": config.c_guide_path}),
 ]

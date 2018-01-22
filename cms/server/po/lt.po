@@ -1189,3 +1189,12 @@ msgstr "Prisijungti dalyvio vardu"
 
 msgid "You will receive your login details via email."
 msgstr "Prisijungimo duomenis gausite el. paštu."
+
+msgid "FP documentation"
+msgstr "Free Pascal dokumentacija"
+
+msgid "C guide"
+msgstr "standartinės bibliotekos gidas"
+
+msgid "cppreference"
+msgstr "cppreference dokumentacija"
