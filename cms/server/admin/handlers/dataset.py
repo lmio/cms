@@ -65,6 +65,7 @@ class DatasetSubmissionsHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         submission_query = self.sql_session.query(Submission)\
             .filter(Submission.task == task)
@@ -95,6 +96,7 @@ class CloneDatasetHandler(BaseHandler):
     def get(self, dataset_id_to_copy):
         dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
         task = self.safe_get_item(Task, dataset.task_id)
+        self.contest = task.contest
 
         try:
             original_dataset = \
@@ -185,6 +187,7 @@ class RenameDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -226,6 +229,7 @@ class DeleteDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -253,6 +257,7 @@ class ActivateDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         changes = compute_changes_for_dataset(task.active_dataset, dataset)
         notify_participations = set()
@@ -348,6 +353,7 @@ class AddManagerHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -419,6 +425,7 @@ class AddTestcaseHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -490,6 +497,7 @@ class AddTestcasesHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -575,6 +583,7 @@ class DownloadTestcasesHandler(FileHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
