@@ -8,6 +8,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,7 +51,8 @@ from cms import utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
     Submission, SubmissionResult, User, Participation, UserTest, \
-    UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files
+    UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files, \
+    District, School
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -229,6 +231,11 @@ class DumpImporter:
                     self.datas["_version"] = version + 1
 
                 assert self.datas["_version"] == model_version
+
+                districts = session.query(District).all()
+                self.districts = {d.name: d for d in districts}
+                schools = session.query(School).all()
+                self.schools = {s.name: s for s in schools}
 
                 self.objs = dict()
                 for id_, data in self.datas.items():
@@ -418,6 +425,12 @@ class DumpImporter:
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
+            elif prp.mapper.class_ == District:
+                # Import districts by name
+                setattr(obj, prp.key, self.districts.get(val))
+            elif prp.mapper.class_ == School:
+                # Import schools by name
+                setattr(obj, prp.key, self.schools.get(val))
             elif isinstance(val, str):
                 setattr(obj, prp.key, self.objs.get(val))
             elif isinstance(val, list):

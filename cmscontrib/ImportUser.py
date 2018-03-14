@@ -7,6 +7,7 @@
 # Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,7 +41,7 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import Participation, SessionGen, User
+from cms.db import Participation, SessionGen, User, District, School
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, contest_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -120,6 +121,26 @@ class UserImporter:
         if old_user is not None:
             raise ImportDataError(
                 "User \"%s\" already exists." % user.username)
+
+        if getattr(user, "district_name", None):
+            district = session.query(District).filter(District.name == user.district_name).first()
+            if district is None:
+                logger.warning("District \"%s\" was not found.", user.district_name)
+            else:
+                user.district = district
+
+            if getattr(user, "school_name", None):
+                school = session.query(School).filter(School.name == user.school_name).first()
+                if school is None:
+                    logger.warning("School \"%s\" was not found.", user.school_name)
+                elif school.district != district:
+                    raise ImportDataError("District and school do not match.")
+                else:
+                    user.school = school
+
+        elif getattr(user, "school_name", None):
+            logger.warning("School specified without district. Ignoring.")
+
         session.add(user)
         return user
 

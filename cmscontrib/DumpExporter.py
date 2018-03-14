@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -47,7 +48,7 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Announcement, Participation, enumerate_files
+    Announcement, Participation, enumerate_files, District, School
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -345,6 +346,9 @@ class DumpExporter:
             val = getattr(obj, prp.key)
             if val is None:
                 data[prp.key] = None
+            elif other_cls in [District, School]:
+                # Export districts and schools by name
+                data[prp.key] = val.name
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):
