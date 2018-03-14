@@ -52,7 +52,7 @@ __all__ = [
     # base
     "metadata", "Base",
     # types
-    "RepeatedUnicode",
+    "RepeatedUnicode", "RepeatedInteger",
     # contest
     "Contest", "Announcement", "ContestAttachment",
     # user
@@ -95,7 +95,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import RepeatedUnicode
+from .types import RepeatedUnicode, RepeatedInteger
 from .base import metadata, Base
 from .contest import Contest, Announcement, ContestAttachment
 from .school import District, School

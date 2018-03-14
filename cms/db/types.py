@@ -26,6 +26,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import six
+
 from sqlalchemy.types import TypeDecorator, Unicode
 
 
@@ -65,4 +67,36 @@ class RepeatedUnicode(TypeDecorator):
 
         """
         return list(val.strip() for val in value.split(",")
+                    if len(val) > 0 and not val.isspace())
+
+
+class RepeatedInteger(TypeDecorator):
+    """Implement (short) lists of integers.
+
+    """
+    impl = Unicode
+
+    def process_bind_param(self, value, unused_dialect):
+        """Encode value in a single unicode.
+
+        value ([int]): the list to encode.
+
+        return (unicode): the unicode string encoding value.
+
+        raise (ValueError): if some element is not an int.
+
+        """
+        if any(not isinstance(val, six.integer_types) for val in value):
+            raise ValueError("Must be integer.")
+        return ",".join(str(val) for val in value)
+
+    def process_result_value(self, value, unused_dialect):
+        """Decode values from a single unicode.
+
+        value (unicode): the unicode string to decode.
+
+        return ([int]): the decoded list.
+
+        """
+        return list(int(val.strip()) for val in value.split(",")
                     if len(val) > 0 and not val.isspace())
