@@ -61,6 +61,12 @@ class District(Base):
         passive_deletes=True,
         back_populates="district")
 
+    users = relationship(
+        "User",
+        cascade="all",
+        passive_deletes=True,
+        back_populates="district")
+
 
 class School(Base):
     """Class to store a school.
@@ -89,3 +95,12 @@ class School(Base):
     district = relationship(
         District,
         back_populates="schools")
+
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    users = relationship(
+        "User",
+        cascade="all",
+        passive_deletes=True,
+        back_populates="school")
