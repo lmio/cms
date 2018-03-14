@@ -40,7 +40,7 @@ from sqlalchemy.orm import relationship, backref
 
 from cmscommon.crypto import generate_random_password
 
-from . import Base, Contest
+from . import Base, Contest, District, School
 
 
 class User(Base):
@@ -98,6 +98,45 @@ class User(Base):
         String,
         nullable=False,
         default="[]")
+
+    # Name of the country this user represents.
+    country = Column(
+        Unicode,
+        nullable=True)
+
+    # School details if this user is a high school student.
+
+    # District (id and object) this user belongs to.
+    district_id = Column(
+        Integer,
+        ForeignKey(District.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    district = relationship(
+        District,
+        backref=backref("users",
+                        passive_deletes=True))
+
+    city = Column(
+        Unicode,
+        nullable=True)
+
+    # School (id and object) this user belongs to.
+    school_id = Column(
+        Integer,
+        ForeignKey(School.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    school = relationship(
+        School,
+        backref=backref("users",
+                        passive_deletes=True))
+
+    grade = Column(
+        Integer,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
