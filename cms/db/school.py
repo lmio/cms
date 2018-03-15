@@ -52,6 +52,11 @@ class District(Base):
         Unicode,
         nullable=False)
 
+    # TWS login password.
+    password = Column(
+        Unicode,
+        nullable=False)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
@@ -82,6 +87,11 @@ class School(Base):
 
     # Name of the school
     name = Column(
+        Unicode,
+        nullable=False)
+
+    # TWS login password.
+    password = Column(
         Unicode,
         nullable=False)
 
