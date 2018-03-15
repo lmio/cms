@@ -48,6 +48,11 @@ class District(Base):
         Unicode,
         nullable=False)
 
+    # TWS login password.
+    password = Column(
+        Unicode,
+        nullable=False)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # schools (list of School objects)
@@ -67,6 +72,11 @@ class School(Base):
 
     # Name of the school
     name = Column(
+        Unicode,
+        nullable=False)
+
+    # TWS login password.
+    password = Column(
         Unicode,
         nullable=False)
 
