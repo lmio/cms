@@ -61,6 +61,7 @@ class DistrictHandler(BaseHandler):
             attrs = district.get_attrs()
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No district name specified."
 
@@ -90,6 +91,7 @@ class AddDistrictHandler(SimpleHandler('add_district.html', permission_all=True)
             attrs = dict()
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No district name specified."
 
@@ -138,6 +140,7 @@ class SchoolHandler(BaseHandler):
 
             self.get_string(attrs, "name", empty=None)
             self.get_string(attrs, "email", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No school name specified."
 
@@ -178,6 +181,7 @@ class AddSchoolHandler(BaseHandler):
 
             self.get_string(attrs, "name", empty=None)
             self.get_string(attrs, "email", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No school name specified."
 
