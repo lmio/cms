@@ -56,7 +56,7 @@ from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import Contest, RepeatedUnicode, SessionGen, \
     Submission, SubmissionResult, UserTest, UserTestResult, \
-    init_db, drop_db, District, School
+    init_db, drop_db, RepeatedInteger, District, School
 from cms.db.filecacher import FileCacher
 
 from cmscontrib import sha1sum
@@ -346,7 +346,7 @@ class DumpImporter(object):
 
             val = data[prp.key]
             if col_type in \
-                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
+                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, RepeatedInteger, Enum]:
                 args[prp.key] = val
             elif col_type is String:
                 args[prp.key] = \

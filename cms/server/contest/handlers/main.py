@@ -35,11 +35,15 @@ from __future__ import unicode_literals
 import json
 import logging
 import pickle
+import random
+import re
 
 import tornado.web
 
+from sqlalchemy.orm import subqueryload
+
 from cms import config
-from cms.db import Participation, PrintJob, User
+from cms.db import Participation, PrintJob, User, District, School
 from cms.server import actual_phase_required, filter_ascii
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -123,6 +127,133 @@ class LoginHandler(BaseHandler):
                                              make_timestamp())),
                                expires_days=None)
         self.redirect(next_page)
+
+
+class RegisterHandler(BaseHandler):
+
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        params["district_list"] = (self.sql_session.query(District)
+                                   .options(subqueryload(District.schools))
+                                   .all())
+        return params
+
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+        self.render("register.html", errors=[], new_user=None, **self.r_params)
+
+    def post(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        role = self.get_argument("role", "")
+        country = self.get_argument("country", "")
+        district_id = self.get_argument("district", "")
+        city = self.get_argument("city", "")
+        school_id = self.get_argument("school", "")
+        grade = self.get_argument("grade", None)
+
+        errors = []
+        if not first_name:
+            errors.append("first_name")
+        if not last_name:
+            errors.append("last_name")
+        if not email or not self.email_re.match(email):
+            errors.append("email")
+
+        if self.contest.require_country and not country:
+            errors.append("country")
+
+        if self.contest.require_school_details and not role:
+            errors.append("role")
+
+        if self.contest.require_school_details and role == "student":
+            try:
+                district_id = int(district_id)
+            except ValueError:
+                errors.append("district")
+                district = None
+            else:
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    errors.append("district")
+            if not city:
+                errors.append("city")
+            try:
+                school_id = int(school_id)
+            except ValueError:
+                errors.append("school")
+                school = None
+            else:
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is not None and district is not None and school.district != district:
+                    school = None
+                if school is None:
+                    errors.append("school")
+            try:
+                grade = int(grade)
+            except ValueError:
+                errors.append("grade")
+            else:
+                if self.contest.allowed_grades:
+                    if grade not in self.contest.allowed_grades:
+                        errors.append("grade")
+                else:
+                    if not 1 <= grade <= 12:
+                        errors.append("grade")
+        else:
+            district = None
+            city = ""
+            school = None
+            grade = None
+
+        if errors:
+            self.render("register.html", errors=errors, new_user=None, **self.r_params)
+            return
+
+        password = self.generate_password()
+        for _i in xrange(10):
+            username = self.generate_username(first_name, last_name, email)
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                break
+        else:
+            raise Exception  # TODO: show some error message
+
+        # Everything's ok. Create the user and participation.
+        # Set password on both.
+        user = User(first_name=first_name, last_name=last_name, email=email,
+                    username=username, password=password, country=country,
+                    district=district, city=city, school=school, grade=grade)
+        participation = Participation(contest=self.contest, user=user,
+                                      password=password)
+        self.sql_session.add(user)
+        self.sql_session.add(participation)
+        self.sql_session.commit()
+
+        filtered_name = filter_ascii("%s %s" % (first_name, last_name))
+        filtered_user = filter_ascii(username)
+        logger.info("New user registered: user=%s name=%s remote_ip=%s." %
+                    (filtered_user, filtered_name, self.request.remote_ip))
+
+        # TODO: send email
+
+        self.render("register.html", errors=[], new_user=user, **self.r_params)
+
+    def generate_username(self, first_name, last_name, email):
+        return "%s%s%04d" % (first_name[:3], last_name[:3],
+                             random.randint(0, 9999))
+
+    def generate_password(self):
+        chars = "abcdefghijkmnopqrstuvwxyz23456789"
+        return "".join(random.choice(chars)
+                       for _i in xrange(8))
 
 
 class StartHandler(BaseHandler):

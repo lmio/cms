@@ -130,6 +130,17 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_int(attrs, "score_precision")
 
             self.get_bool(attrs, "active")
+            self.get_bool(attrs, "allow_registration")
+            self.get_bool(attrs, "require_country")
+            self.get_bool(attrs, "require_school_details")
+
+            allowed_grades = self.get_argument("allowed_grades", "")
+            if allowed_grades:
+                attrs["allowed_grades"] = \
+                    [int(x.strip()) for x in allowed_grades.split(",")
+                     if len(x) > 0 and not x.isspace()]
+            else:
+                attrs["allowed_grades"] = []
 
             # Update the contest.
             contest.set_attrs(attrs)

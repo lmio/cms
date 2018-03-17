@@ -1048,3 +1048,42 @@ msgstr ""
 
 msgid "Output file"
 msgstr ""
+
+msgid "Register"
+msgstr ""
+
+msgid "Registration successful"
+msgstr ""
+
+msgid "Here are your login details. Please write them down."
+msgstr ""
+
+msgid "Please register"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Last name"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "School"
+msgstr ""
+
+msgid "Grade"
+msgstr ""
+
+msgid "Student"
+msgstr ""
+
+msgid "Guest"
+msgstr ""
