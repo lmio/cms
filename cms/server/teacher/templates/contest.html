@@ -1,0 +1,38 @@
+{% extends base.html %}
+{% block core %}
+{% from cms.grading import task_score %}
+
+<div class="span12">
+
+<div class="page-header">
+    <h1>{{ contest.description }}</h1>
+</div>
+
+<p>
+  <a href="{{ url_root }}/">{{ _("Back to contest list") }}</a>
+  <a style="float: right" href="{{ url_root }}/contest/{{ contest.id}}/csv">{{ _("Export to CSV") }}</a>
+</p>
+
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      {% for head in header %}
+      <th>{{ head }}</th>
+      {% end %}
+      <th style="width: 1%"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p, row in table %}
+    <tr>
+      {% for item in row %}
+      <td>{{ item }}</td>
+      {% end %}
+      <td style="white-space: nowrap"><a href="{{ url_root }}/impersonate/{{ p.id }}" class="btn" target="_blank">{{ _("Log in as contestant") }}</a></td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+
+</div>
+{% end %}

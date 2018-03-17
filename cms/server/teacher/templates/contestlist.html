@@ -1,0 +1,22 @@
+{% extends base.html %}
+{% block core %}
+
+<div class="span12">
+
+<div class="page-header">
+    <h1>{{ _("Contests") }}</h1>
+</div>
+
+<div>
+{% if len(contest_list) > 0 %}
+{% for c in contest_list %}
+<p><a href="{{ url_root }}/contest/{{ c.id }}" class="btn btn-large">{{ c.description }}</a></p>
+{% end %}
+{% else %}
+<p>{{ _("There are no active contests at this time.") }}</p>
+{% end %}
+</div>
+
+</div>
+
+{% end %}
