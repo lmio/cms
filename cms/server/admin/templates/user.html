@@ -122,6 +122,55 @@
         </td>
         <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Name of the country this user represents."></span>
+          Country
+        </td>
+        <td><input type="text" name="country" value="{{ user.country if user.country is not None else "" }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's district."></span>
+          District
+        </td>
+        <td><select name="district">
+          <option value="" {{ "selected" if user.district_id is None else "" }}>---</option>
+          {% for d in district_list %}
+          <option value="{{ d.id }}" {{ "selected" if user.district_id == d.id else "" }}>{{ d.name }}</option>
+          {% end %}
+        </select></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's city."></span>
+          City
+        </td>
+        <td><input type="text" name="city" value="{{ user.city if user.city is not None else "" }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's school."></span>
+          School
+        </td>
+        <td><select name="school">
+          <option value="" {{ "selected" if user.school_id is None else "" }}>---</option>
+          {% for d in district_list %}
+          <optgroup label="{{ d.name }}">
+            {% for s in d.schools %}
+            <option value="{{ s.id }}" {{ "selected" if user.school_id == s.id else "" }}>{{ s.name }}</option>
+            {% end %}
+          </optgroup>
+          {% end %}
+        </select></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's grade."></span>
+          Grade
+        </td>
+        <td><input type="text" name="grade" value="{{ user.grade if user.grade is not None else "" }}" /></td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />

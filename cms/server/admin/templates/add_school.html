@@ -1,0 +1,21 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/district/{{ district.id }}">{{ district.name }}</a> - New school</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/school/add/{{ district.id }}" method="POST" name="add_school">
+  {% module xsrf_form_html() %}
+  <table class="sub_table">
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name"></td>
+    </tr>
+  </table>
+  <input type="submit">
+  <input type="reset" value="Reset">
+</form>
+
+{% end %}

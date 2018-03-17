@@ -95,6 +95,7 @@ $(document).ready(init);
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}contest/{{ contest.id }}/overview{% end %}">Overview</a></li>
           <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is None %}resourceslist{% else %}contest/{{ contest.id }}/resourceslist{% end %}">Resource usage</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/districtlist">Districts</a></li>
         </ul>
         <div class="hr"></div>
 

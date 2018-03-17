@@ -72,6 +72,8 @@ __all__ = [
     "PrintJob",
     # fsobject
     "FSObject",
+    # school
+    "District", "School",
     # init
     "init_db",
     # drop
@@ -96,6 +98,7 @@ from .session import Session, ScopedSession, SessionGen, \
 from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement, ContestAttachment
+from .school import District, School
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \

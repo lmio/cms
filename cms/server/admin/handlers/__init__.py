@@ -32,6 +32,12 @@ from .main import \
     LogoutHandler, \
     ResourcesHandler, \
     NotificationsHandler
+from .school import \
+    DistrictListHandler, \
+    DistrictHandler, \
+    AddDistrictHandler, \
+    SchoolHandler, \
+    AddSchoolHandler
 from .contest import \
     AddContestHandler, \
     ContestHandler, \
@@ -117,6 +123,14 @@ HANDLERS = [
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
     (r"/notifications", NotificationsHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
+
+    # Districts
+
+    (r"/districtlist", DistrictListHandler),
+    (r"/district/([0-9]+)", DistrictHandler),
+    (r"/district/add", AddDistrictHandler),
+    (r"/school/([0-9]+)", SchoolHandler),
+    (r"/school/add/([0-9]+)", AddSchoolHandler),
 
     # Contest
 
