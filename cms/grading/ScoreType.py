@@ -191,7 +191,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
-{% set idx = 0 %}
 {% for st in details %}
     {% if "outcome" in st %}
 <div class="subtask {{ st["outcome"] }}">
@@ -233,7 +232,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
             </thead>
             <tbody>
     {% for tc in st["testcases"] %}
-        {% set idx = idx + 1 %}
         {% if "outcome" in tc and "text" in tc %}
             {% if tc["outcome"] == "Correct" %}
                 <tr class="correct">
@@ -242,7 +240,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% else %}
                 <tr class="partiallycorrect">
             {% end %}
-                    <td class="idx">{{ idx }}</td>
+                    <td class="idx">{{ tc["idx"] }}</td>
                     <td class="outcome">{{ _(tc["outcome"]) }}</td>
                     <td class="details">
                       {{ format_status_text(tc["text"], _) }}

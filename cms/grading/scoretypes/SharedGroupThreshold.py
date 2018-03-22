@@ -74,6 +74,8 @@ class SharedGroupThreshold(ScoreTypeGroup):
 
         evaluations = dict((ev.codename, ev)
                            for ev in submission_result.evaluations)
+        tc_idx = {codename: idx
+                  for idx, codename in enumerate(sorted(evaluations.keys()), 1)}
         subtasks = []
         public_subtasks = []
         ranking_details = []
@@ -96,7 +98,7 @@ class SharedGroupThreshold(ScoreTypeGroup):
             public_testcases = []
             for idx in parameter[1]:
                 testcases.append({
-                    "idx": idx,
+                    "idx": tc_idx[idx],
                     "outcome": tc_outcomes[idx],
                     "text": evaluations[idx].text,
                     "time": evaluations[idx].execution_time,
