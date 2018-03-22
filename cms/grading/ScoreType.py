@@ -211,7 +211,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }})
+            ({{ '%g' % round(st["score"], 2) }} / {{ '%g' % st["max_score"] }})
         </span>
     {% else %}
         <span class="score">
