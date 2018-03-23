@@ -52,6 +52,7 @@ import sys
 
 from datetime import datetime, timedelta
 
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
@@ -63,7 +64,7 @@ from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
 from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
     UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files, \
-    District, School
+    District, School, User, Participation
 from cms.db.filecacher import FileCacher
 
 from cmscommon.archive import Archive
@@ -142,7 +143,8 @@ class DumpImporter(object):
 
     def __init__(self, drop, import_source,
                  load_files, load_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_print_jobs):
+                 skip_submissions, skip_user_tests, skip_print_jobs,
+                 update_users):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
@@ -150,6 +152,7 @@ class DumpImporter(object):
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
         self.skip_print_jobs = skip_print_jobs
+        self.update_users = update_users
 
         self.import_source = import_source
         self.import_dir = import_source
@@ -242,6 +245,9 @@ class DumpImporter(object):
                     self.datas["_version"] = version + 1
 
                 assert self.datas["_version"] == model_version
+
+                users = session.query(User).options(subqueryload(User.participations)).all()
+                self.users = {u.username: u for u in users}
 
                 districts = session.query(District).all()
                 self.districts = {d.name: d for d in districts}
@@ -395,6 +401,13 @@ class DumpImporter(object):
             val = data[prp.key]
             args[prp.key] = decode_value(col.type, val)
 
+        if cls is User and args['username'] in self.users:
+            existing_user = self.users[args['username']]
+            if self.update_users:
+                for k, v in args.iteritems():
+                    setattr(existing_user, k, v)
+            return existing_user
+
         return cls(**args)
 
     def add_relationships(self, data, obj):
@@ -415,9 +428,21 @@ class DumpImporter(object):
 
         cls = type(obj)
 
+        if cls is User:
+            # Append new participations
+            val = data['participations']
+            for i in val:
+                obj.participations.append(self.objs[i])
+
+            if not self.update_users:
+                return
+
         for prp in cls._rel_props:
             if prp.key not in data:
                 # Relationships are always optional
+                continue
+            if cls is User and prp.mapper.class_ is Participation:
+                # Participations are already handled
                 continue
 
             val = data[prp.key]
@@ -499,6 +524,8 @@ def main():
                         help="don't import user tests")
     parser.add_argument("-P", "--no-print-jobs", action="store_true",
                         help="don't import print jobs")
+    parser.add_argument("-u", "--update-users", action="store_true",
+                        help="update already existing users")
     parser.add_argument("import_source", action="store", type=utf8_decoder,
                         help="source directory or compressed file")
 
@@ -511,7 +538,8 @@ def main():
                             skip_generated=args.no_generated,
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
-                            skip_print_jobs=args.no_print_jobs)
+                            skip_print_jobs=args.no_print_jobs,
+                            update_users=args.update_users)
     success = importer.do_import()
     return 0 if success is True else 1
 

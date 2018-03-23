@@ -57,7 +57,7 @@ from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
     SubmissionResult, UserTestResult, PrintJob, enumerate_files, District, \
-    School
+    School, Participation, Team
 from cms.db.filecacher import FileCacher
 
 from cmscommon.datetime import make_timestamp
@@ -159,9 +159,6 @@ class DumpExporter(object):
                     .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
         else:
-            # FIXME: this is ATM broken, because if you export a contest, you
-            # then export the users who participated in it and then all of the
-            # contests those users participated in.
             self.contests_ids = contest_ids
             self.users_ids = []
             self.tasks_ids = []
@@ -342,12 +339,21 @@ class DumpExporter(object):
                                                      UserTestResult):
                 continue
 
+            # Skip participations if contest is not included
+            if cls is User and other_cls is Participation:
+                participations = getattr(obj, prp.key)
+                data[prp.key] = list(self.get_id(p) for p in participations if p.contest_id in self.contests_ids)
+                continue
+
             val = getattr(obj, prp.key)
             if val is None:
                 data[prp.key] = None
             elif other_cls in [District, School]:
                 # Export districts and schools by name
                 data[prp.key] = val.name
+            elif other_cls is Team:
+                # FIXME: Skip teams to avoid pulling in other contests
+                pass
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):
