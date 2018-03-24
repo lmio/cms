@@ -51,7 +51,7 @@ from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, User, Task, \
     Submission, UserTest, SubmissionResult, UserTestResult, \
-    RepeatedUnicode, RepeatedInteger, District, School, Participation
+    RepeatedUnicode, RepeatedInteger, District, School, Participation, Team
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -323,6 +323,9 @@ class DumpExporter(object):
             elif other_cls in [District, School]:
                 # Export districts and schools by name
                 data[prp.key] = val.name
+            elif other_cls is Team:
+                # FIXME: Skip teams to avoid pulling in other contests
+                pass
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):
