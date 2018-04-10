@@ -942,7 +942,7 @@ class IsolateSandbox(SandboxBase):
         if self.box_id is not None:
             res += ["--box-id=%d" % self.box_id]
         if self.cgroup:
-            res += ["--cg"]
+            res += ["--cg", "--cg-timing"]
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for in_name, out_name, options in self.dirs:
@@ -965,7 +965,10 @@ class IsolateSandbox(SandboxBase):
         if self.stack_space is not None:
             res += ["--stack=%d" % self.stack_space]
         if self.address_space is not None:
-            res += ["--cg-mem=%d" % self.address_space]
+            if self.cgroup:
+                res += ["--cg-mem=%d" % self.address_space]
+            else:
+                res += ["--mem=%d" % self.address_space]
         if self.stdout_file is not None:
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
