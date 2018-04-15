@@ -31,7 +31,7 @@ import sys
 
 from cms.db import Attachment, Executable, File, Manager, PrintJob, \
     SessionGen, Statement, Testcase, UserTest, UserTestExecutable, \
-    UserTestFile, UserTestManager, UserTestResult
+    UserTestFile, UserTestManager, UserTestResult, ContestAttachment
 from cms.db.filecacher import FileCacher
 from cms.server.util import format_size
 
@@ -55,7 +55,7 @@ def clean_files(session, dry_run):
                 len(files))
     for cls in [Attachment, Executable, File, Manager, PrintJob,
                 Statement, Testcase, UserTest, UserTestExecutable,
-                UserTestFile, UserTestManager, UserTestResult]:
+                UserTestFile, UserTestManager, UserTestResult, ContestAttachment]:
         for col in ["input", "output", "digest"]:
             if hasattr(cls, col):
                 found_digests = set()
