@@ -42,92 +42,69 @@ class SharedGroupThreshold(ScoreTypeGroup):
 
     """
 
-    def max_scores(self):
-        """Compute the maximum score of a submission.
-
-        returns (float, float): maximum score overall and public.
-
-        """
-        score = 0.0
-        public_score = 0.0
-        headers = list()
-
-        for i, parameter in enumerate(self.parameters):
-            score += parameter[0]
-            if all(self.public_testcases[idx]
-                   for idx in parameter[1]):
-                public_score += parameter[0]
-            headers += ["Subtask %d (%g)" % (i + 1, parameter[0])]
-
-        return score, public_score, headers
+    def retrieve_target_testcases(self):
+        """See ScoreType.retrieve_target_testcases."""
+        return [p[1] for p in self.parameters]
 
     def compute_score(self, submission_result):
-        """Compute the score of a submission.
-
-        submission_id (int): the submission to evaluate.
-        returns (float): the score
-
-        """
+        """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
 
-        evaluations = dict((ev.codename, ev)
-                           for ev in submission_result.evaluations)
-        tc_idx = {codename: idx
-                  for idx, codename in enumerate(sorted(evaluations.keys()), 1)}
+        score = 0
         subtasks = []
+        public_score = 0
         public_subtasks = []
         ranking_details = []
+
+        targets = self.retrieve_target_testcases()
+        evaluations = {ev.codename: ev for ev in submission_result.evaluations}
+        tc_indices = {codename: idx
+                      for idx, codename in enumerate(sorted(evaluations.keys()), 1)}
         score_precision = submission_result.submission.task.score_precision
-        score = 0.0
-        public_score = 0.0
 
         for st_idx, parameter in enumerate(self.parameters):
-            st_result = self.reduce([float(evaluations[idx].outcome)
-                                     for idx in parameter[1]],
-                                    parameter)
-            st_outcome = self.get_subtask_outcome(st_result)
-            st_score = st_result * parameter[0]
-            st_public = all(self.public_testcases[idx]
-                            for idx in parameter[1])
-            tc_outcomes = dict((
-                idx,
-                self.get_public_outcome(
-                    float(evaluations[idx].outcome), parameter)
-                ) for idx in parameter[1])
+            target = targets[st_idx]
 
             testcases = []
             public_testcases = []
-            for idx in parameter[1]:
+            for tc_idx in target:
+                tc_outcome = self.get_public_outcome(
+                    float(evaluations[tc_idx].outcome), parameter)
+
                 testcases.append({
-                    "idx": tc_idx[idx],
-                    "outcome": tc_outcomes[idx],
-                    "text": evaluations[idx].text,
-                    "time": evaluations[idx].execution_time,
-                    "memory": evaluations[idx].execution_memory,
-                    })
-                if self.public_testcases[idx]:
+                    "idx": tc_indices[tc_idx],
+                    "outcome": tc_outcome,
+                    "text": evaluations[tc_idx].text,
+                    "time": evaluations[tc_idx].execution_time,
+                    "memory": evaluations[tc_idx].execution_memory})
+                if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
                 else:
-                    public_testcases.append({"idx": idx})
+                    public_testcases.append({"idx": tc_indices[tc_idx]})
+
+            st_score_fraction = self.reduce(
+                [float(evaluations[tc_idx].outcome) for tc_idx in target],
+                parameter)
+            st_score = st_score_fraction * parameter[0]
+
+            score += st_score
             subtasks.append({
                 "idx": st_idx + 1,
-                "outcome": st_outcome,
+                # We store the fraction so that an "example" testcase
+                # with a max score of zero is still properly rendered as
+                # correct or incorrect.
+                "score_fraction": st_score_fraction,
                 "score": round(st_score, score_precision),
                 "max_score": round(parameter[0], score_precision),
-                "testcases": testcases,
-                })
-            score += st_score
-            if st_public:
-                public_subtasks.append(subtasks[-1])
+                "testcases": testcases})
+            if all(self.public_testcases[tc_idx] for tc_idx in target):
                 public_score += st_score
+                public_subtasks.append(subtasks[-1])
             else:
-                public_subtasks.append({
-                    "idx": st_idx + 1,
-                    "testcases": public_testcases,
-                    })
-
+                public_subtasks.append({"idx": st_idx + 1,
+                                        "testcases": public_testcases})
             ranking_details.append("%g" % round(st_score, score_precision))
 
         score = round(score, score_precision)
@@ -145,14 +122,6 @@ class SharedGroupThreshold(ScoreTypeGroup):
             return N_("Correct")
         else:
             return N_("Partially correct")
-
-    def get_subtask_outcome(self, outcome):
-        if outcome == 0:
-            return "notcorrect"
-        elif outcome >= 1.0:
-            return "correct"
-        else:
-            return "partiallycorrect"
 
     def reduce(self, outcomes, parameter):
         threshold = parameter[2]

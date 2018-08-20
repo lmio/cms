@@ -192,9 +192,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
 {% for st in details %}
-    {% if "outcome" in st %}
-<div class="subtask {{ st["outcome"] }}">
-    {% elif "score_fraction" in st %}
+    {% if "score_fraction" in st %}
         {% if st["score_fraction"] >= 1.0 %}
 <div class="subtask correct">
         {% elif st["score_fraction"] <= 0.0 %}
@@ -210,7 +208,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {{ _("Subtask %d") % st["idx"] }}
         </span>
     {% if "score_fraction" in st and "max_score" in st %}
-        {% set score = st["score_fraction"] * st["max_score"] %}
+        {% set score = st.get("score", st["score_fraction"] * st["max_score"]) %}
         <span class="score">
             ({{ '%g' % round(score, 2) }} / {{ '%g' % st["max_score"] }})
         </span>
