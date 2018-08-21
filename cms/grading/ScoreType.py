@@ -351,6 +351,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         targets = self.retrieve_target_testcases()
         evaluations = {ev.codename: ev for ev in submission_result.evaluations}
+        tc_indices = {codename: idx
+                      for idx, codename in enumerate(sorted(evaluations.keys()), 1)}
         score_precision = submission_result.submission.task.score_precision
 
         for st_idx, parameter in enumerate(self.parameters):
@@ -363,7 +365,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     float(evaluations[tc_idx].outcome), parameter)
 
                 testcases.append({
-                    "idx": tc_idx,
+                    "idx": tc_indices[tc_idx],
                     "outcome": tc_outcome,
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
@@ -371,7 +373,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
                 else:
-                    public_testcases.append({"idx": tc_idx})
+                    public_testcases.append({"idx": tc_indices[tc_idx]})
 
             st_score_fraction = self.reduce(
                 [float(evaluations[tc_idx].outcome) for tc_idx in target],
