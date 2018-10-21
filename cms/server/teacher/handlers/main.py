@@ -25,8 +25,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
-import pickle
 import re
 
 import tornado.web
@@ -82,10 +82,10 @@ class LoginHandler(BaseHandler):
         logger.info("Teacher logged in: id=%s remote_ip=%s." %
                     (filtered_login, self.request.remote_ip))
         self.set_secure_cookie("tws_login",
-                               pickle.dumps((config.teacher_login_kind,
-                                             obj.id,
-                                             obj.password,
-                                             make_timestamp())),
+                               json.dumps([config.teacher_login_kind,
+                                           obj.id,
+                                           obj.password,
+                                           make_timestamp()]),
                                expires_days=None)
         self.redirect(next_page)
 

@@ -26,8 +26,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import csv
+import json
 import logging
-import pickle
 import urlparse
 
 import tornado.web
@@ -149,9 +149,9 @@ class ImpersonateHandler(BaseHandler):
                     (filtered_username, self.request.remote_ip))
         password = p.password if p.password is not None else p.user.password
         self.set_secure_cookie("login",
-                               pickle.dumps((p.user.username,
-                                             password,
-                                             make_timestamp())),
+                               json.dumps([p.user.username,
+                                           password,
+                                           make_timestamp()]),
                                domain=domain,
                                expires_days=None)
         # Bypass the overriden redirect because we are going outside
