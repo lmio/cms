@@ -1117,3 +1117,11 @@ msgstr "Mokinys"
 
 msgid "Guest"
 msgstr "Svečias"
+
+#, python-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
+"\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+"Man yra 14 ar daugiau metų ir susipažinau su <a href=\"%(policy_url)s\" "
+"target=\"_blank\">asmens duomenų tvarkymo nuostatomis</a>."

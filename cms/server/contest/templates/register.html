@@ -100,12 +100,12 @@ $(document).ready(function () {
                 </div>
     {% endif %}
     {% if contest.require_school_details %}
-                <div class="control-group">
+                <div class="control-group{% if errors is defined and "role" in errors %} error{% endif %}">
                     <div class="controls">
-                        <label class="inline"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% endif %} />
+                        <label class="inline radio"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% endif %} />
                             <span>{% trans %}Student{% endtrans %}</span>
                         </label>
-                        <label class="inline"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% endif %} />
+                        <label class="inline radio"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% endif %} />
                             <span>{% trans %}Guest{% endtrans %}</span>
                         </label>
                     </div>
@@ -154,6 +154,15 @@ $(document).ready(function () {
                             <option value="{{ i }}"{% if i|string == selected_grade %} selected{% endif %}>{{ i }}</option>
         {% endfor %}
                         </select>
+                    </div>
+                </div>
+    {% endif %}
+    {% if policy_url %}
+                <div class="control-group{% if errors is defined and "accept_terms" in errors %} error{% endif %}">
+                    <div class="controls">
+                        <label class="checkbox"><input type="checkbox" name="accept_terms" value="yes" {% if handler.get_argument("accept_terms", "") == "yes" %}checked="checked"{% endif %} />
+                            <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>.{% endtrans %}</span>
+                        </label>
                     </div>
                 </div>
     {% endif %}

@@ -972,3 +972,9 @@ msgstr ""
 
 msgid "Guest"
 msgstr ""
+
+#, python-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
+"\"_blank\">Personal Data Management Policy</a>."
+msgstr ""

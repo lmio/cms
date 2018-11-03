@@ -139,6 +139,7 @@ class RegisterHandler(ContestHandler):
         for d in district_list:
             d.schools.sort(key=lambda s: lt_sort_key(s.name))
         params["district_list"] = district_list
+        params["policy_url"] = config.data_management_policy_url
         return params
 
     @multi_contest
@@ -161,6 +162,7 @@ class RegisterHandler(ContestHandler):
         city = self.get_argument("city", "")
         school_id = self.get_argument("school", "")
         grade = self.get_argument("grade", None)
+        accept_terms = self.get_argument("accept_terms", None)
 
         try:
             # In py2 Tornado gives us the IP address as a native binary
@@ -224,6 +226,9 @@ class RegisterHandler(ContestHandler):
             city = ""
             school = None
             grade = None
+
+        if config.data_management_policy_url and accept_terms != 'yes':
+            errors.append('accept_terms')
 
         if errors:
             self.render("register.html", errors=errors, **self.r_params)

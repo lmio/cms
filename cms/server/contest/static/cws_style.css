@@ -1058,3 +1058,7 @@ label.inline span {
 label.inline+label.inline {
     margin-left:10px;
 }
+
+.radio input[type="radio"], .checkbox input[type="checkbox"] {
+    margin-right: 3px;
+}
