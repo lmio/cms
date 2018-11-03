@@ -329,6 +329,16 @@ $(document).ready(function() {
                     {% endif %}
                 </div>
 
+                {% if policy_url %}
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="checkbox"><input required type="checkbox" name="accept_terms" value="yes" />
+                            <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>.{% endtrans %}</span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>

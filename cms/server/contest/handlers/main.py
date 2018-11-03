@@ -100,6 +100,11 @@ class RegistrationHandler(ContestHandler):
                            self.request.remote_ip)
             return None
 
+        if config.data_management_policy_url:
+            accept_terms = self.get_argument("accept_terms", None)
+            if accept_terms != 'yes':
+                raise tornado_web.HTTPError(400)
+
         create_new_user = self.get_argument("new_user") == "true"
 
         # Get or create user
@@ -159,6 +164,7 @@ class RegistrationHandler(ContestHandler):
                 d.schools.sort(key=lambda s: lt_sort_key(s.name))
             self.r_params["district_list"] = district_list
 
+        self.r_params["policy_url"] = config.data_management_policy_url
         self.render("register.html", **self.r_params)
 
     def _create_user(self):
