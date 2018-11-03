@@ -137,6 +137,7 @@ class RegisterHandler(BaseHandler):
         params["district_list"] = (self.sql_session.query(District)
                                    .options(subqueryload(District.schools))
                                    .all())
+        params["policy_url"] = config.data_management_policy_url
         return params
 
     def get(self):
@@ -157,6 +158,7 @@ class RegisterHandler(BaseHandler):
         city = self.get_argument("city", "")
         school_id = self.get_argument("school", "")
         grade = self.get_argument("grade", None)
+        accept_terms = self.get_argument("accept_terms", None)
 
         errors = []
         if not first_name:
@@ -211,6 +213,9 @@ class RegisterHandler(BaseHandler):
             city = ""
             school = None
             grade = None
+
+        if config.data_management_policy_url and accept_terms != 'yes':
+            errors.append('accept_terms')
 
         if errors:
             self.render("register.html", errors=errors, new_user=None, **self.r_params)

@@ -1088,6 +1088,12 @@ msgstr ""
 msgid "Guest"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"{policy_url}\" target="
+"\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+
 msgid "Teacher web server"
 msgstr ""
 

@@ -101,12 +101,12 @@ $(document).ready(function () {
                 </div>
     {% end %}
     {% if contest.require_school_details %}
-                <div class="control-group">
+                <div class="control-group{% if errors and "role" in errors %} error{% end %}">
                     <div class="controls">
-                        <label class="inline"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% end %} />
+                        <label class="inline radio"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% end %} />
                             <span>{{ _("Student") }}</span>
                         </label>
-                        <label class="inline"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% end %} />
+                        <label class="inline radio"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% end %} />
                             <span>{{ _("Guest") }}</span>
                         </label>
                     </div>
@@ -156,6 +156,15 @@ $(document).ready(function () {
                             <option value="{{ i }}"{% if str(i) == selected_grade %} selected{% end %}>{{ i }}</option>
         {% end %}
                         </select>
+                    </div>
+                </div>
+    {% end %}
+    {% if policy_url %}
+                <div class="control-group{% if errors and "accept_terms" in errors %} error{% end %}">
+                    <div class="controls">
+                        <label class="checkbox"><input type="checkbox" name="accept_terms" value="yes" {% if handler.get_argument("accept_terms", "") == "yes" %}checked="checked"{% end %} />
+                            <span>{% raw _('I am 14 years or older and agree to the <a href="{policy_url}" target="_blank">Personal Data Management Policy</a>.').format(policy_url=policy_url) %}</span>
+                        </label>
                     </div>
                 </div>
     {% end %}
