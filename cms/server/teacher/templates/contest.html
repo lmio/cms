@@ -19,7 +19,9 @@
       {% for head in header %}
       <th>{{ head }}</th>
       {% end %}
+      {% if allow_impersonate %}
       <th style="width: 1%"></th>
+      {% end %}
     </tr>
   </thead>
   <tbody>
@@ -28,7 +30,9 @@
       {% for item in row %}
       <td>{{ item }}</td>
       {% end %}
+      {% if allow_impersonate %}
       <td style="white-space: nowrap"><a href="{{ url_root }}/impersonate/{{ p.id }}" class="btn" target="_blank">{{ _("Log in as contestant") }}</a></td>
+      {% end %}
     </tr>
     {% end %}
   </tbody>

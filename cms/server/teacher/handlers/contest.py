@@ -61,9 +61,10 @@ class ContestHandler(BaseHandler):
             self._("School"),
             self._("Grade"),
         ]
-        for task in contest.tasks:
-            header.append(task.name)
-        header.append(self._("Total"))
+        if config.teacher_show_results:
+            for task in contest.tasks:
+                header.append(task.name)
+            header.append(self._("Total"))
 
         table = []
         for p in sorted(participations, key=lambda p: p.user.username):
@@ -77,14 +78,15 @@ class ContestHandler(BaseHandler):
                 p.user.school.name if p.user.school else "",
                 p.user.grade if p.user.grade else "",
             ]
-            for task in contest.tasks:
-                t_score, t_partial = task_score(p, task)
-                t_score = round(t_score, task.score_precision)
-                score += t_score
-                partial = partial or t_partial
-                row.append("{}{}".format(t_score, "*" if t_partial else ""))
-            score = round(score, contest.score_precision)
-            row.append("{}{}".format(score, "*" if partial else ""))
+            if config.teacher_show_results:
+                for task in contest.tasks:
+                    t_score, t_partial = task_score(p, task)
+                    t_score = round(t_score, task.score_precision)
+                    score += t_score
+                    partial = partial or t_partial
+                    row.append("{}{}".format(t_score, "*" if t_partial else ""))
+                score = round(score, contest.score_precision)
+                row.append("{}{}".format(score, "*" if partial else ""))
             table.append((p, row))
 
         return header, table
@@ -125,6 +127,7 @@ class ContestHandler(BaseHandler):
             self.r_params["contest"] = contest
             self.r_params["header"] = header
             self.r_params["table"] = table
+            self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
             self.render("contest.html", **self.r_params)
 
 
@@ -134,6 +137,9 @@ class ImpersonateHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, participation_id):
+        if not config.teacher_allow_impersonate:
+            raise tornado.web.HTTPError(403)
+
         p = Participation.get_from_id(participation_id, self.sql_session)
         if p is None:
             raise tornado.web.HTTPError(404)

@@ -118,6 +118,8 @@ class Config(object):
         self.teacher_locale = "en_US"
         self.teacher_login_kind = "district"  # "district" or "school"
         self.teacher_allow_registration = False
+        self.teacher_allow_impersonate = False
+        self.teacher_show_results = True
 
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
