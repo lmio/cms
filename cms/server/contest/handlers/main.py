@@ -153,17 +153,6 @@ class RegisterHandler(ContestHandler):
         if not self.contest.allow_registration:
             raise tornado.web.HTTPError(404)
 
-        first_name = self.get_argument("first_name", "")
-        last_name = self.get_argument("last_name", "")
-        email = self.get_argument("email", "")
-        role = self.get_argument("role", "")
-        country = self.get_argument("country", "")
-        district_id = self.get_argument("district", "")
-        city = self.get_argument("city", "")
-        school_id = self.get_argument("school", "")
-        grade = self.get_argument("grade", None)
-        accept_terms = self.get_argument("accept_terms", None)
-
         try:
             # In py2 Tornado gives us the IP address as a native binary
             # string, whereas ipaddress wants text (unicode) strings.
@@ -172,6 +161,42 @@ class RegisterHandler(ContestHandler):
             logger.warning("Invalid IP address provided by Tornado: %s",
                            self.request.remote_ip)
             return None
+
+        role = self.get_argument("role", "")
+
+        errors = []
+        if self.contest.require_school_details and not role:
+            errors.append("role")
+
+        data, d_errors = self.validate_data(role)
+        errors.extend(d_errors)
+
+        if errors:
+            self.render("register.html", errors=errors, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        # TODO: send email
+
+        method, password = parse_authentication(user.password)
+        assert method == 'plaintext'
+        self.render("register.html", new_user=user, password=password, **self.r_params)
+
+    def validate_data(self, role):
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        country = self.get_argument("country", "")
+        district_id = self.get_argument("district", "")
+        city = self.get_argument("city", "")
+        school_id = self.get_argument("school", "")
+        grade = self.get_argument("grade", None)
+        accept_terms = self.get_argument("accept_terms", None)
 
         errors = []
         if not first_name:
@@ -183,9 +208,6 @@ class RegisterHandler(ContestHandler):
 
         if self.contest.require_country and not country:
             errors.append("country")
-
-        if self.contest.require_school_details and not role:
-            errors.append("role")
 
         if self.contest.require_school_details and role == "student":
             try:
@@ -230,48 +252,86 @@ class RegisterHandler(ContestHandler):
         if config.data_management_policy_url and accept_terms != 'yes':
             errors.append('accept_terms')
 
-        if errors:
-            self.render("register.html", errors=errors, **self.r_params)
-            return
+        data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'country': country,
+            'district': district,
+            'city': city,
+            'school': school,
+            'grade': grade,
+        }
+        return data, errors
 
+    def create_user(self, data):
+        username = self.generate_username(data['first_name'], data['last_name'], data['email'])
         password = build_password(self.generate_password())
-        for _i in range(10):
-            username = self.generate_username(first_name, last_name, email)
-            if (self.sql_session.query(User)
-                    .filter(User.username == username).count() == 0):
-                break
-        else:
-            raise Exception  # TODO: show some error message
 
         # Everything's ok. Create the user and participation.
         # Set password on both.
-        user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password, country=country,
-                    district=district, city=city, school=school, grade=grade)
+        user = User(username=username, password=password, **data)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)
         self.sql_session.add(participation)
         self.sql_session.commit()
 
-        logger.info("New user registered from IP address %s, as user %r, on "
-                    "contest %s, at %s", ip_address, username,
-                    self.contest.name, self.timestamp)
+        return user
 
-        # TODO: send email
-
-        method, password = parse_authentication(user.password)
-        assert method == 'plaintext'
-        self.render("register.html", new_user=user, password=password, **self.r_params)
-
-    def generate_username(self, first_name, last_name, email):
+    def generate_one_username(self, first_name, last_name, email):
         return "%s%s%04d" % (first_name[:3], last_name[:3],
                              random.randint(0, 9999))
+
+    def generate_username(self, first_name, last_name, email):
+        for _i in range(10):
+            username = self.generate_one_username(first_name, last_name, email)
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                return username
+        else:
+            raise Exception  # TODO: show some error message
 
     def generate_password(self):
         chars = "abcdefghijkmnopqrstuvwxyz23456789"
         return "".join(random.choice(chars)
                        for _i in range(8))
+
+
+class RegisterByParentHandler(RegisterHandler):
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+        self.render("register_by_parent.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        data, errors = self.validate_data('student')
+
+        if errors:
+            self.render("register_by_parent.html", errors=errors, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        logger.info("New user registered by parent from IP address %s, as "
+                    "user %r, on contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        self.render("register_by_parent.html", new_user=user, **self.r_params)
 
 
 class StartHandler(ContestHandler):
