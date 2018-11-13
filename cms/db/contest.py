@@ -120,6 +120,13 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Whether to allow student registration by their parents. May be used
+    # regardless of allow_registration.
+    allow_registration_by_parent = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Whether to allow joining with an existing account.
     registration_allow_join = Column(
         Boolean,

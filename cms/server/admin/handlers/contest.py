@@ -107,6 +107,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "block_hidden_participations")
             self.get_bool(attrs, "allow_password_authentication")
             self.get_bool(attrs, "allow_registration")
+            self.get_bool(attrs, "allow_registration_by_parent")
             self.get_bool(attrs, "registration_allow_join")
             self.get_bool(attrs, "registration_require_team")
             self.get_bool(attrs, "registration_auto_credentials")

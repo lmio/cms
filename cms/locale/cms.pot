@@ -1097,6 +1097,13 @@ msgstr ""
 msgid "Your password is:"
 msgstr ""
 
+msgid ""
+"This form is for contestants aged 14 or older, or younger contestants whose "
+"parents have submitted acceptance letters for them to register and "
+"participate in the contest. Other contestants, please contact supervising "
+"teacher."
+msgstr ""
+
 msgid "District"
 msgstr ""
 
@@ -1121,5 +1128,35 @@ msgstr ""
 #, python-format
 msgid ""
 "I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
+"\"_blank\">Personal Data Management Policy</a>, <br />or my parents have "
+"submitted an acceptance letter for me to register and participate in the "
+"contest."
+msgstr ""
+
+#, python-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
 "\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+
+msgid ""
+"Login details will be sent to the provided email address before the contest."
+msgstr ""
+
+msgid "Register a contestant"
+msgstr ""
+
+msgid "Student's first name"
+msgstr ""
+
+msgid "Student's last name"
+msgstr ""
+
+msgid "Student's email"
+msgstr ""
+
+#, python-format
+msgid ""
+"I am legal guardian of this child and agree to the <a href=\""
+"%(policy_url)s\" target=\"_blank\">Personal Data Management Policy</a>."
 msgstr ""

@@ -149,6 +149,13 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether to allow student registration by their parents. May be used regardless of allow_registration."></span>
+        <label for="allow_registration_by_parent">Allow registration by parent</label>
+      </td>
+      <td><input type="checkbox" id="allow_registration_by_parent" name="allow_registration_by_parent" {{ "checked" if contest.allow_registration_by_parent else "" }}></td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Should registration include country name."></span>
         <label for="registration_require_country">Require country name</label>
       </td>

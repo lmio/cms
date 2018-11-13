@@ -88,6 +88,33 @@ class RegistrationHandler(ContestHandler):
     MIN_PASSWORD_LENGTH = 6
     email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
+    def render_params(self):
+        params = super().render_params()
+
+        params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
+        params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
+        if self.contest.registration_require_team:
+            params["teams"] = self.sql_session.query(Team)\
+                                  .order_by(Team.name).all()
+
+        if self.contest.registration_require_school_details:
+            district_list = (self.sql_session.query(District)
+                             .options(subqueryload(District.schools))
+                             .all())
+            district_list.sort(key=lambda d: lt_sort_key(d.name))
+            for d in district_list:
+                d.schools.sort(key=lambda s: lt_sort_key(s.name))
+            params["district_list"] = district_list
+
+        params["policy_url"] = config.data_management_policy_url
+        return params
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado_web.HTTPError(404)
+        self.render("register.html", **self.r_params)
+
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
@@ -100,6 +127,19 @@ class RegistrationHandler(ContestHandler):
                            self.request.remote_ip)
             return None
 
+        user, password = self.do_register()
+
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        if password is not None:
+            resp = f"{user.username}:{password}"
+        else:
+            resp = user.username
+        self.finish(resp)
+
+    def do_register(self):
         if config.data_management_policy_url:
             accept_terms = self.get_argument("accept_terms", None)
             if accept_terms != 'yes':
@@ -134,38 +174,7 @@ class RegistrationHandler(ContestHandler):
 
         self.sql_session.commit()
 
-        logger.info("New user registered from IP address %s, as user %r, on "
-                    "contest %s, at %s", ip_address, user.username,
-                    self.contest.name, self.timestamp)
-
-        if password is not None:
-            resp = f"{user.username}:{password}"
-        else:
-            resp = user.username
-        self.finish(resp)
-
-    @multi_contest
-    def get(self):
-        if not self.contest.allow_registration:
-            raise tornado_web.HTTPError(404)
-
-        self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
-        self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
-        if self.contest.registration_require_team:
-            self.r_params["teams"] = self.sql_session.query(Team)\
-                                         .order_by(Team.name).all()
-
-        if self.contest.registration_require_school_details:
-            district_list = (self.sql_session.query(District)
-                             .options(subqueryload(District.schools))
-                             .all())
-            district_list.sort(key=lambda d: lt_sort_key(d.name))
-            for d in district_list:
-                d.schools.sort(key=lambda s: lt_sort_key(s.name))
-            self.r_params["district_list"] = district_list
-
-        self.r_params["policy_url"] = config.data_management_policy_url
-        self.render("register.html", **self.r_params)
+        return user, password
 
     def _create_user(self):
         try:
@@ -303,6 +312,37 @@ class RegistrationHandler(ContestHandler):
             team = None
 
         return team
+
+
+class RegistrationByParentHandler(RegistrationHandler):
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado_web.HTTPError(404)
+        self.render("register_by_parent.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado_web.HTTPError(404)
+
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        user, _password = self.do_register()
+
+        logger.info("New user registered by parent from IP address %s, as "
+                    "user %r, on contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        if self.contest.registration_auto_credentials:
+            self.finish("ok")
+        else:
+            self.finish(user.username)
 
 
 class LoginHandler(ContestHandler):
