@@ -3,17 +3,6 @@
 {% if contest.require_school_details %}
 <script type="text/javascript">
 $(document).ready(function () {
-    $('input[name="role"]:radio').change(function(ev) {
-        if (ev.target.value == 'student') {
-            $('.students-only').show();
-        } else {
-            $('.students-only').hide();
-        }
-    });
-    {% if handler.get_argument("role", "") != "student" %}
-    $('.students-only').hide();
-    {% end %}
-
     var $select_district = $('select[name="district"]');
     var $select_school = $('select[name="school"]');
     var $no_school = $select_school.children('option[value=""]').clone();
@@ -46,35 +35,12 @@ $(document).ready(function () {
 {% if new_user %}
     <div class="login_box hero-unit">
         <h2>{{ _("Registration successful") }}</h2>
-        <p>{{ _("Here are your login details. Please write them down.") }}</p>
-        <div class="form-horizontal">
-            <div class="control-group" style="margin-bottom:0">
-                <span class="control-label">{{ _("Username") }}</span>
-                <div class="controls">
-                    <p style="margin-bottom:0">{{ new_user.username }}</p>
-                </div>
-            </div>
-            <div class="control-group">
-                <span class="control-label">{{ _("Password") }}</span>
-                <div class="controls">
-                    <p>{{ new_user.password }}</p>
-                </div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
-                    <a class="btn btn-primary btn-large" href="{{ url_root }}/">{{ _("Login") }}</a>
-                </div>
-            </div>
-        </div>
+        <p>{{ _("Login details will be sent to the provided email address before the contest.") }}</p>
     </div>
 {% else %}
     <div class="login_box hero-unit{% if contest.require_school_details %} school-details{% end %}">
-        <h1>{{ _("Welcome") }}</h1>
-        <p>{{ _("Please register") }}</p>
-    {% if policy_url and contest.allow_registration_by_parent %}
-        <p>{{ _("This form is for contestants aged 14 or older. Younger contestants, please contact supervising teacher.") }}</p>
-    {% end %}
-        <form class="form-horizontal" action="{{ url_root }}/register" method="POST">
+        <h2 style="margin-top: 0">{{ _("Register a contestant") }}</h2>
+        <form class="form-horizontal" action="{{ url_root }}/register_by_parent" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
                 <div class="control-group{% if errors and "first_name" in errors %} error{% end %}">
@@ -104,17 +70,7 @@ $(document).ready(function () {
                 </div>
     {% end %}
     {% if contest.require_school_details %}
-                <div class="control-group{% if errors and "role" in errors %} error{% end %}">
-                    <div class="controls">
-                        <label class="inline radio"><input type="radio" name="role" value="student" {% if handler.get_argument("role", "") == "student" %}checked="checked"{% end %} />
-                            <span>{{ _("Student") }}</span>
-                        </label>
-                        <label class="inline radio"><input type="radio" name="role" value="guest" {% if handler.get_argument("role", "") == "guest" %}checked="checked"{% end %} />
-                            <span>{{ _("Guest") }}</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="control-group students-only{% if errors and "district" in errors %} error{% end %}">
+                <div class="control-group{% if errors and "district" in errors %} error{% end %}">
                     <label class="control-label" for="district">{{ _("District") }}</label>
                     <div class="controls">
                         <select name="district" class="form-control">
@@ -127,13 +83,13 @@ $(document).ready(function () {
                         </select>
                     </div>
                 </div>
-                <div class="control-group students-only{% if errors and "city" in errors %} error{% end %}">
+                <div class="control-group{% if errors and "city" in errors %} error{% end %}">
                     <label class="control-label" for="city">{{ _("City") }}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="city" value="{{ handler.get_argument("city", "") }}">
                     </div>
                 </div>
-                <div class="control-group students-only{% if errors and "school" in errors %} error{% end %}">
+                <div class="control-group{% if errors and "school" in errors %} error{% end %}">
                     <label class="control-label" for="school">{{ _("School") }}</label>
                     <div class="controls">
                         <select name="school" class="form-control">
@@ -149,7 +105,7 @@ $(document).ready(function () {
                         </select>
                     </div>
                 </div>
-                <div class="control-group students-only{% if errors and "grade" in errors %} error{% end %}">
+                <div class="control-group{% if errors and "grade" in errors %} error{% end %}">
                     <label class="control-label" for="grade">{{ _("Grade") }}</label>
                     <div class="controls">
                         <select name="grade" class="form-control">
@@ -166,14 +122,14 @@ $(document).ready(function () {
                 <div class="control-group{% if errors and "accept_terms" in errors %} error{% end %}">
                     <div class="controls">
                         <label class="checkbox"><input type="checkbox" name="accept_terms" value="yes" {% if handler.get_argument("accept_terms", "") == "yes" %}checked="checked"{% end %} />
-                            <span>{% raw _('I am 14 years or older and agree to the <a href="{policy_url}" target="_blank">Personal Data Management Policy</a>.').format(policy_url=policy_url) %}</span>
+                            <span>{% raw _('I am legal guardian of this child and agree to the <a href="{policy_url}" target="_blank">Personal Data Management Policy</a>.').format(policy_url=policy_url) %}</span>
                         </label>
                     </div>
                 </div>
     {% end %}
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-primary btn-large">{{ _("Register") }}</button>
+                        <button type="submit" class="btn btn-primary btn-large">{{ _("Submit") }}</button>
                         <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
                     </div>
                 </div>

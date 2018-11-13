@@ -1139,6 +1139,13 @@ msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti.
 msgid "Please register"
 msgstr "Prašome užsiregistruoti"
 
+msgid ""
+"This form is for contestants aged 14 or older. Younger contestants, please "
+"contact supervising teacher."
+msgstr ""
+"Ši forma skirta dalyviams, turintiems 14 ar daugiau metų. Jaunesni dalyviai, "
+"prašome kreiptis į olimpiadą vykdantį mokytoją."
+
 msgid "First name"
 msgstr "Vardas"
 
@@ -1173,6 +1180,22 @@ msgid ""
 msgstr ""
 "Man yra 14 ar daugiau metų ir susipažinau su <a href=\"{policy_url}\" target="
 "\"_blank\">asmens duomenų tvarkymo nuostatomis</a>."
+
+msgid ""
+"Login details will be sent to the provided email address before the contest."
+msgstr ""
+"Prisijungimo duomenys bus nusiųsti į pateiktą el.pašto adresą prieš varžybas."
+
+msgid "Register a contestant"
+msgstr "Dalyvio registracija"
+
+#, python-brace-format
+msgid ""
+"I am legal guardian of this child and agree to the <a href=\"{policy_url}\" "
+"target=\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+"Aš esu šio vaiko įstatyminis atstovas ir susipažinau su <a href=\""
+"{policy_url}\" target=\"_blank\">asmens duomenų tvarkymo nuostatomis</a>."
 
 msgid "Teacher web server"
 msgstr "Mokytojų prieiga"

@@ -149,10 +149,34 @@ class RegisterHandler(BaseHandler):
         if not self.contest.allow_registration:
             raise tornado.web.HTTPError(404)
 
+        role = self.get_argument("role", "")
+
+        errors = []
+        if self.contest.require_school_details and not role:
+            errors.append("role")
+
+        data, d_errors = self.validate_data(role)
+        errors.extend(d_errors)
+
+        if errors:
+            self.render("register.html", errors=errors, new_user=None, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        filtered_name = filter_ascii("%s %s" % (user.first_name, user.last_name))
+        filtered_user = filter_ascii(user.username)
+        logger.info("New user registered: user=%s name=%s remote_ip=%s." %
+                    (filtered_user, filtered_name, self.request.remote_ip))
+
+        # TODO: send email
+
+        self.render("register.html", errors=[], new_user=user, **self.r_params)
+
+    def validate_data(self, role):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
-        role = self.get_argument("role", "")
         country = self.get_argument("country", "")
         district_id = self.get_argument("district", "")
         city = self.get_argument("city", "")
@@ -170,9 +194,6 @@ class RegisterHandler(BaseHandler):
 
         if self.contest.require_country and not country:
             errors.append("country")
-
-        if self.contest.require_school_details and not role:
-            errors.append("role")
 
         if self.contest.require_school_details and role == "student":
             try:
@@ -217,47 +238,76 @@ class RegisterHandler(BaseHandler):
         if config.data_management_policy_url and accept_terms != 'yes':
             errors.append('accept_terms')
 
-        if errors:
-            self.render("register.html", errors=errors, new_user=None, **self.r_params)
-            return
+        data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'country': country,
+            'district': district,
+            'city': city,
+            'school': school,
+            'grade': grade,
+        }
+        return data, errors
 
+    def create_user(self, data):
+        username = self.generate_username(data['first_name'], data['last_name'], data['email'])
         password = self.generate_password()
-        for _i in xrange(10):
-            username = self.generate_username(first_name, last_name, email)
-            if (self.sql_session.query(User)
-                    .filter(User.username == username).count() == 0):
-                break
-        else:
-            raise Exception  # TODO: show some error message
 
         # Everything's ok. Create the user and participation.
         # Set password on both.
-        user = User(first_name=first_name, last_name=last_name, email=email,
-                    username=username, password=password, country=country,
-                    district=district, city=city, school=school, grade=grade)
+        user = User(username=username, password=password, **data)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)
         self.sql_session.add(participation)
         self.sql_session.commit()
 
-        filtered_name = filter_ascii("%s %s" % (first_name, last_name))
-        filtered_user = filter_ascii(username)
-        logger.info("New user registered: user=%s name=%s remote_ip=%s." %
-                    (filtered_user, filtered_name, self.request.remote_ip))
+        return user
 
-        # TODO: send email
-
-        self.render("register.html", errors=[], new_user=user, **self.r_params)
-
-    def generate_username(self, first_name, last_name, email):
+    def generate_one_username(self, first_name, last_name, email):
         return "%s%s%04d" % (first_name[:3], last_name[:3],
                              random.randint(0, 9999))
+
+    def generate_username(self, first_name, last_name, email):
+        for _i in xrange(10):
+            username = self.generate_one_username(first_name, last_name, email)
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                return username
+        else:
+            raise Exception  # TODO: show some error message
 
     def generate_password(self):
         chars = "abcdefghijkmnopqrstuvwxyz23456789"
         return "".join(random.choice(chars)
                        for _i in xrange(8))
+
+
+class RegisterByParentHandler(RegisterHandler):
+    def get(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+        self.render("register_by_parent.html", errors=[], new_user=None, **self.r_params)
+
+    def post(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+
+        data, errors = self.validate_data('student')
+
+        if errors:
+            self.render("register_by_parent.html", errors=errors, new_user=None, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        filtered_name = filter_ascii("%s %s" % (user.first_name, user.last_name))
+        filtered_user = filter_ascii(user.username)
+        logger.info("New user registered by parent: user=%s name=%s remote_ip=%s." %
+                    (filtered_user, filtered_name, self.request.remote_ip))
+
+        self.render("register_by_parent.html", errors=[], new_user=user, **self.r_params)
 
 
 class StartHandler(BaseHandler):
