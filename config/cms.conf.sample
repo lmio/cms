@@ -86,7 +86,7 @@
 
     "_help": "URL for the personal data management policy",
     "_help": "(shown when registering).",
-    "data_management_policy_url": ""
+    "data_management_policy_url": "",
 
 
     "_section": "ContestWebServer",
