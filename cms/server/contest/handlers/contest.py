@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -102,6 +103,7 @@ class ContestHandler(BaseHandler):
 
             # Select the correct contest or return an error
             self.contest = self.sql_session.query(Contest)\
+                .filter(Contest.active.is_(True))\
                 .filter(Contest.name == contest_name).first()
             if self.contest is None:
                 self.contest = Contest(
