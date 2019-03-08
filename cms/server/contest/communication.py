@@ -91,6 +91,10 @@ def accept_question(sql_session, participation, timestamp, subject, text):
 
     subject_length = len(subject)
     text_length = len(text)
+    if subject_length == 0 and text_length == 0:
+        raise UnacceptableQuestion(
+            N_("Invalid question!"),
+            N_("Please enter a question."))
     if subject_length > Question.MAX_SUBJECT_LENGTH \
             or text_length > Question.MAX_TEXT_LENGTH:
         logger.warning("Long question (%d, %d) dropped for user %s.",
