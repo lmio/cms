@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -83,6 +84,10 @@ def accept_question(sql_session, participation, timestamp, subject, text):
 
     subject_length = len(subject)
     text_length = len(text)
+    if subject_length == 0 and text_length == 0:
+        raise UnacceptableQuestion(
+            N_("Invalid question!"),
+            N_("Please enter a question."))
     if subject_length > Question.MAX_SUBJECT_LENGTH \
             or text_length > Question.MAX_TEXT_LENGTH:
         logger.warning("Long question (%d, %d) dropped for user %s.",

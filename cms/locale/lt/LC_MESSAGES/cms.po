@@ -170,6 +170,12 @@ msgstr "Kompiliavimas nereikalingas"
 msgid "File not submitted"
 msgstr "Failas nepateiktas"
 
+msgid "Invalid question!"
+msgstr "Netinkamas klausimas!"
+
+msgid "Please enter a question."
+msgstr "Įvesk klausimą."
+
 msgid "Question too long!"
 msgstr "Klausimas per ilgas!"
 

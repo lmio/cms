@@ -150,6 +150,12 @@ msgstr ""
 msgid "File not submitted"
 msgstr ""
 
+msgid "Invalid question!"
+msgstr ""
+
+msgid "Please enter a question."
+msgstr ""
+
 msgid "Question too long!"
 msgstr ""
 
