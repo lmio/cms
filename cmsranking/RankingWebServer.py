@@ -389,6 +389,29 @@ class ImageHandler(object):
         return response
 
 
+class RootHandler(object):
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    @responder
+    def wsgi_app(self, environ, start_response):
+        path = os.path.join(config.web_dir, 'index.html')
+
+        response = Response()
+        response.status_code = 200
+        response.mimetype = "text/html"
+        response.last_modified = \
+            datetime.utcfromtimestamp(os.path.getmtime(path))\
+                    .replace(microsecond=0)
+
+        # TODO check for If-Modified-Since and If-None-Match
+
+        response.response = wrap_file(environ, io.open(path, 'rb'))
+        response.direct_passthrough = True
+
+        return response
+
+
 class RoutingHandler(object):
     def __init__(self, event_handler, logo_handler):
         self.router = Map([
@@ -398,11 +421,13 @@ class RoutingHandler(object):
             Rule("/scores", methods=["GET"], endpoint="scores"),
             Rule("/events", methods=["GET"], endpoint="events"),
             Rule("/logo", methods=["GET"], endpoint="logo"),
+            Rule("/Ranking.html", methods=["GET"], endpoint="legacy")
         ], encoding_errors="strict")
 
         self.event_handler = event_handler
         self.logo_handler = logo_handler
-        self.root_handler = redirect("Ranking.html")
+        self.root_handler = RootHandler()
+        self.legacy_handler = redirect("")
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -420,6 +445,8 @@ class RoutingHandler(object):
             return self.logo_handler(environ, start_response)
         elif endpoint == "root":
             return self.root_handler(environ, start_response)
+        elif endpoint == "legacy":
+            return self.legacy_handler(environ, start_response)
         else:
             request = Request(environ)
             request.encoding_errors = "strict"
