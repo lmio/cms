@@ -207,6 +207,8 @@ class ContestImporter(BaseImporter):
 
                     if "hidden" in p:
                         args["hidden"] = p["hidden"]
+                    if "unrestricted" in p:
+                        args["unrestricted"] = p["unrestricted"]
                     if "ip" in p:
                         args["ip"] = p["ip"]
                     if "password" in p:
