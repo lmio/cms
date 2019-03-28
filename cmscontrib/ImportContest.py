@@ -7,6 +7,7 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015-2016 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -290,6 +291,8 @@ class ContestImporter:
             args["team"] = team
         if "hidden" in new_p:
             args["hidden"] = new_p["hidden"]
+        if "unrestricted" in new_p:
+            args["unrestricted"] = new_p["unrestricted"]
         if "ip" in new_p and new_p["ip"] is not None:
             args["ip"] = list(map(ipaddress.ip_network, new_p["ip"].split(",")))
         if "password" in new_p:
