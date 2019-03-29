@@ -106,7 +106,7 @@ class LoginHandler(BaseHandler):
 
         if config.restricted_contest and not participation.unrestricted:
             logger.warning(
-                    "Restricted login error: user=%s pass=% remote_ip=%s." %
+                    "Restricted login error: user=%s pass=%s remote_ip=%s." %
                     (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
