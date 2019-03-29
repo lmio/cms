@@ -126,6 +126,7 @@ class Config:
         self.data_management_policy_url = None
 
         # ContestWebServer.
+        self.restricted_contest = False
         self.contest_listen_address = [""]
         self.contest_listen_port = [8888]
         self.cookie_duration = 30 * 60  # 30 minutes
