@@ -130,6 +130,13 @@ def validate_login(
         log_failed_attempt("wrong password")
         return None, None
 
+    if config.restricted_contest and not participation.unrestricted:
+        logger.warning(
+            "Restricted login error from IP address %s, as user %r, on contest "
+            "%s, at %s", ip_address, participation.user.username,
+            participation.contest.name, timestamp)
+        return None, None
+
     if contest.ip_restriction and participation.ip is not None \
             and not any(ip_address in network for network in participation.ip):
         log_failed_attempt("unauthorized IP address")
@@ -213,6 +220,9 @@ def authenticate_request(
             sql_session, contest, timestamp, cookie)
 
     if participation is None:
+        return None, None
+
+    if config.restricted_contest and not participation.unrestricted:
         return None, None
 
     # Check if user is using the right IP (or is on the right subnet).
