@@ -160,6 +160,9 @@ class BaseHandler(CommonRequestHandler):
         if participation is None:
             self.clear_cookie("login")
             return None
+        if config.restricted_contest and not participation.unrestricted:
+            self.clear_cookie("login")
+            return None
 
         # Check if user is using the right IP (or is on the right subnet),
         # and that is not hidden if hidden users are blocked.
