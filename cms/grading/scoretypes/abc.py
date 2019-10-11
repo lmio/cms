@@ -229,10 +229,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
         <span class="title">
             {% trans index=st["idx"] %}Subtask {{ index }}{% endtrans %}
         </span>
-    {% if "score_fraction" in st and "max_score" in st %}
-        {% set score = st["score_fraction"] * st["max_score"] %}
+    {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ score|round(2)|format_decimal }}
+            ({{ st["score"]|format_decimal }}
              / {{ st["max_score"]|format_decimal }})
         </span>
     {% else %}
@@ -395,6 +394,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         targets = self.retrieve_target_testcases()
         evaluations = {ev.codename: ev for ev in submission_result.evaluations}
+        score_precision = submission_result.submission.task.score_precision
 
         for st_idx, parameter in enumerate(self.parameters):
             target = targets[st_idx]
@@ -435,7 +435,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 # with a max score of zero is still properly rendered as
                 # correct or incorrect.
                 "score_fraction": st_score_fraction,
-                "max_score": parameter[0],
+                "score": round(st_score, score_precision),
+                "max_score": round(parameter[0], score_precision),
                 "testcases": testcases})
             if all(self.public_testcases[tc_idx] for tc_idx in target):
                 public_score += st_score
@@ -443,7 +444,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
             else:
                 public_subtasks.append({"idx": st_idx + 1,
                                         "testcases": public_testcases})
-            ranking_details.append("%g" % round(st_score, 2))
+            ranking_details.append("%g" % round(st_score, score_precision))
+
+        score = round(score, score_precision)
+        public_score = round(public_score, score_precision)
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 
