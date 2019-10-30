@@ -83,6 +83,27 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Attachments for this contest. Contestants can view and download attachments from the overview page."></span>
+        Attachments
+{% if admin.permission_all %}
+        [<a href="{{ url("contest", contest.id, "attachments", "add") }}">add</a>]
+{% endif %}
+      </td>
+      <td>
+        {% if contest.attachments|length == 0 %}
+          No attachments.
+        {% else %}
+          {% for attachment in itervalues(contest.attachments) %}
+            <div class="attachment">
+              <a href="{{ url("file", attachment.digest, attachment.filename) }}">{{ attachment.filename }}</a>
+              - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("contest", contest.id, "attachment", attachment.id) }}'); ">Delete</a>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Whether this contest should be handled by CMS services."></span>
         Active
       </td>

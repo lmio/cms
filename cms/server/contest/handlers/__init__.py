@@ -35,6 +35,7 @@ from .main import \
     LoginHandler, \
     LogoutHandler, \
     StartHandler, \
+    ContestAttachmentViewHandler, \
     NotificationsHandler, \
     PrintingHandler, \
     DocumentationHandler
@@ -68,6 +69,7 @@ HANDLERS = [
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/start", StartHandler),
+    (r"/attachments/(.*)", ContestAttachmentViewHandler),
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),

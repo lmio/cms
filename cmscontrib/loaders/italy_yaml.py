@@ -41,7 +41,7 @@ from datetime import datetime, timedelta
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
-    Manager, Testcase
+    Manager, Testcase, ContestAttachment
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
@@ -230,6 +230,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         load(conf, args, "languages")
         load(conf, args, "allowed_localizations")
+
+        args["attachments"] = {}
+        for filename in load(conf, None, "attachments", conv=lambda val: val or []):
+            path = os.path.join(self.path, filename)
+            filename = os.path.basename(filename)
+            if os.path.isfile(path):
+                digest = self.file_cacher.put_file_from_path(
+                    path, "Contest attachment for %s" % args["name"])
+                args["attachments"][filename] = ContestAttachment(filename, digest)
 
         tasks = load(conf, None, ["tasks", "problemi"])
         participations = load(conf, None, ["users", "utenti"])

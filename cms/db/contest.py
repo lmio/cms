@@ -37,15 +37,17 @@ from future.builtins import *  # noqa
 from datetime import datetime, timedelta
 
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
     Boolean, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Codename, Base, Admin
+from . import Codename, Filename, Digest, Base, Admin
 
 
 class Contest(Base):
@@ -284,6 +286,13 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
+    attachments = relationship(
+        "ContestAttachment",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
+
     participations = relationship(
         "Participation",
         cascade="all, delete-orphan",
@@ -313,6 +322,40 @@ class Contest(Base):
             elif timestamp <= self.analysis_stop:
                 return 2
         return 3
+
+
+class ContestAttachment(Base):
+    """Class to store contest related files to give to the user.
+
+    """
+    __tablename__ = 'contest_attachments'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Contest (id and object) owning the attachment.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    contest = relationship(
+        Contest,
+        back_populates="attachments")
+
+    # Filename and digest of the provided attachment.
+    filename = Column(
+        Filename,
+        nullable=False)
+    digest = Column(
+        Digest,
+        nullable=False)
 
 
 class Announcement(Base):

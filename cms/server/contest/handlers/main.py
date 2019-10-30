@@ -50,10 +50,11 @@ from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
 from cmscommon.datetime import make_datetime, make_timestamp
+from cmscommon.mimetypes import get_type_for_file_name
 
 from ..phase_management import actual_phase_required
 
-from .contest import ContestHandler
+from .contest import ContestHandler, FileHandler
 
 
 logger = logging.getLogger(__name__)
@@ -146,6 +147,27 @@ class LogoutHandler(ContestHandler):
     def post(self):
         self.clear_cookie(self.contest.name + "_login")
         self.redirect(self.contest_url())
+
+
+class ContestAttachmentViewHandler(FileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0, 3)
+    @multi_contest
+    def get(self, filename):
+        if filename not in self.contest.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = self.contest.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
 
 
 class NotificationsHandler(ContestHandler):

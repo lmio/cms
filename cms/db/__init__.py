@@ -60,7 +60,7 @@ __all__ = [
     # fsobject
     "FSObject", "LargeObject",
     # contest
-    "Contest", "Announcement",
+    "Contest", "Announcement", "ContestAttachment",
     # user
     "User", "Team", "Participation", "Message", "Question",
     # admin
@@ -103,7 +103,7 @@ from .types import CastingArray, Codename, Filename, FilenameSchema, \
 from .base import Base
 from .fsobject import FSObject, LargeObject
 from .admin import Admin
-from .contest import Contest, Announcement
+from .contest import Contest, Announcement, ContestAttachment
 from .user import User, Team, Participation, Message, Question
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
