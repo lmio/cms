@@ -82,7 +82,7 @@ __all__ = [
     # util
     "test_db_connection", "get_contest_list", "is_contest_id",
     "ask_for_contest", "get_submissions", "get_submission_results",
-    "get_datasets_to_judge", "enumerate_files"
+    "get_datasets_to_judge", "enumerate_files", "get_active_contest_list",
 ]
 
 
@@ -117,7 +117,7 @@ from .drop import drop_db
 
 from .util import test_db_connection, get_contest_list, is_contest_id, \
     ask_for_contest, get_submissions, get_submission_results, \
-    get_datasets_to_judge, enumerate_files
+    get_datasets_to_judge, enumerate_files, get_active_contest_list
 
 
 configure_mappers()

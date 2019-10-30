@@ -260,6 +260,12 @@ class Contest(Base):
         nullable=False,
         default=0)
 
+    # Whether this contest should be handled by CMS services.
+    active = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
