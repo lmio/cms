@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>Districts list</h1>
+</div>
+
+<a href="{{ url("district", "add") }}">Add a new district</a>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in district_list %}
+    <tr>
+      <td><a href="{{ url("district", d.id) }}">{{ d.name }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock core %}

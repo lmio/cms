@@ -296,6 +296,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if primary_language is not None:
             args["preferred_languages"] = [primary_language]
 
+        # load(conf, args, "district")
+        load(conf, args, "city")
+        # load(conf, args, "school")
+        load(conf, args, "grade")
+
         logger.info("User parameters loaded.")
 
         return User(**args)

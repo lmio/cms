@@ -67,6 +67,55 @@
         </td>
         <td><input type="text" name="preferred_languages" value=""></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Name of the country this user represents."></span>
+          Country
+        </td>
+        <td><input type="text" name="country" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's district."></span>
+          District
+        </td>
+        <td><select name="district">
+          <option value="">---</option>
+          {% for d in district_list %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+          {% endfor %}
+        </select></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's city."></span>
+          City
+        </td>
+        <td><input type="text" name="city" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's school."></span>
+          School
+        </td>
+        <td><select name="school">
+          <option value="">---</option>
+          {% for d in district_list %}
+          <optgroup label="{{ d.name }}">
+            {% for s in d.schools %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Contestant's grade."></span>
+          Grade
+        </td>
+        <td><input type="text" name="grade" /></td>
+      </tr>
     </table>
     <input type="submit"/>
     <input type="reset" value="Reset" />

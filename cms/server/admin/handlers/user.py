@@ -35,7 +35,9 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-from cms.db import Contest, Participation, Submission, Team, User
+from sqlalchemy.orm import subqueryload
+
+from cms.db import Contest, Participation, Submission, Team, User, District, School
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -59,6 +61,10 @@ class UserHandler(BaseHandler):
                         .filter(Participation.user == user)
                         .all()))\
                 .all()
+        self.r_params["district_list"] = (
+            self.sql_session.query(District)
+            .options(subqueryload(District.schools))
+            .all())
         self.render("user.html", **self.r_params)
 
     @require_permission(BaseHandler.PERMISSION_ALL)
@@ -79,6 +85,18 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "email", empty=None)
             self.get_string_list(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
+
+            self.get_string(attrs, "country")
+            self.get_int(attrs, "district")
+            if attrs.get("district") is not None:
+                attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
+            self.get_string(attrs, "city")
+            self.get_int(attrs, "school")
+            if attrs.get("school") is not None:
+                attrs["school"] = School.get_from_id(attrs["school"], self.sql_session)
+                assert attrs["district"] == attrs["school"].district, \
+                    "Selected school and district do not match."
+            self.get_int(attrs, "grade")
 
             assert attrs.get("username") is not None, \
                 "No username specified."
@@ -227,7 +245,16 @@ class AddTeamHandler(SimpleHandler("add_team.html", permission_all=True)):
         self.redirect(fallback_page)
 
 
-class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
+class AddUserHandler(BaseHandler):
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self):
+        self.r_params = self.render_params()
+        self.r_params["district_list"] = (
+            self.sql_session.query(District)
+            .options(subqueryload(District.schools))
+            .all())
+        self.render("add_user.html", **self.r_params)
+
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = self.url("users", "add")
@@ -249,6 +276,18 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
             self.get_string(attrs, "timezone", empty=None)
 
             self.get_string_list(attrs, "preferred_languages")
+
+            self.get_string(attrs, "country")
+            self.get_int(attrs, "district")
+            if attrs.get("district") is not None:
+                attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
+            self.get_string(attrs, "city")
+            self.get_int(attrs, "school")
+            if attrs.get("school") is not None:
+                attrs["school"] = School.get_from_id(attrs["school"], self.sql_session)
+                assert attrs["district"] == attrs["school"].district, \
+                    "Selected school and district do not match."
+            self.get_int(attrs, "grade")
 
             # Create the user.
             user = User(**attrs)

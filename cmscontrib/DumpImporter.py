@@ -62,7 +62,8 @@ from cms import utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
 from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
-    UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files
+    UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files, \
+    District, School
 from cms.db.filecacher import FileCacher
 
 from cmscommon.archive import Archive
@@ -242,6 +243,11 @@ class DumpImporter(object):
 
                 assert self.datas["_version"] == model_version
 
+                districts = session.query(District).all()
+                self.districts = {d.name: d for d in districts}
+                schools = session.query(School).all()
+                self.schools = {s.name: s for s in schools}
+
                 self.objs = dict()
                 for id_, data in iteritems(self.datas):
                     if not id_.startswith("_"):
@@ -417,6 +423,12 @@ class DumpImporter(object):
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
+            elif prp.mapper.class_ == District:
+                # Import districts by name
+                setattr(obj, prp.key, self.districts.get(val))
+            elif prp.mapper.class_ == School:
+                # Import schools by name
+                setattr(obj, prp.key, self.schools.get(val))
             elif isinstance(val, str):
                 setattr(obj, prp.key, self.objs[val])
             elif isinstance(val, list):

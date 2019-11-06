@@ -44,7 +44,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from cmscommon.crypto import generate_random_password, build_password
 
-from . import CastingArray, Codename, Base, Admin, Contest
+from . import CastingArray, Codename, Base, Admin, Contest, District, School
 
 
 class User(Base):
@@ -102,6 +102,43 @@ class User(Base):
         ARRAY(String),
         nullable=False,
         default=[])
+
+    # Name of the country this user represents.
+    country = Column(
+        Unicode,
+        nullable=True)
+
+    # School details if this user is a high school student.
+
+    # District (id and object) this user belongs to.
+    district_id = Column(
+        Integer,
+        ForeignKey(District.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    district = relationship(
+        District,
+        back_populates="users")
+
+    city = Column(
+        Unicode,
+        nullable=True)
+
+    # School (id and object) this user belongs to.
+    school_id = Column(
+        Integer,
+        ForeignKey(School.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    school = relationship(
+        School,
+        back_populates="users")
+
+    grade = Column(
+        Integer,
+        nullable=True)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.

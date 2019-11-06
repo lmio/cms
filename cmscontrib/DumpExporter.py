@@ -56,7 +56,8 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
-    SubmissionResult, UserTestResult, PrintJob, enumerate_files
+    SubmissionResult, UserTestResult, PrintJob, enumerate_files, District, \
+    School
 from cms.db.filecacher import FileCacher
 
 from cmscommon.datetime import make_timestamp
@@ -344,6 +345,9 @@ class DumpExporter(object):
             val = getattr(obj, prp.key)
             if val is None:
                 data[prp.key] = None
+            elif other_cls in [District, School]:
+                # Export districts and schools by name
+                data[prp.key] = val.name
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):
