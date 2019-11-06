@@ -34,6 +34,8 @@ from future.builtins import *  # noqa
 from .main import \
     LoginHandler, \
     LogoutHandler, \
+    RegisterHandler, \
+    RegisterByParentHandler, \
     StartHandler, \
     ContestAttachmentViewHandler, \
     NotificationsHandler, \
@@ -68,6 +70,8 @@ HANDLERS = [
 
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegisterHandler),
+    (r"/register_by_parent", RegisterByParentHandler),
     (r"/start", StartHandler),
     (r"/attachments/(.*)", ContestAttachmentViewHandler),
     (r"/notifications", NotificationsHandler),

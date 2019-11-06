@@ -132,6 +132,7 @@ class Config(object):
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
         self.secret_key = self.secret_key_default
         self.tornado_debug = False
+        self.data_management_policy_url = None
 
         # ContestWebServer.
         self.contest_listen_address = [""]

@@ -38,17 +38,23 @@ from future.builtins import *  # noqa
 import ipaddress
 import json
 import logging
+import random
+import re
 
 import tornado.web
 
+from sqlalchemy.orm import subqueryload
+
 from cms import config
-from cms.db import PrintJob
+from cms.db import PrintJob, User, Participation, District, School
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
+from cms.util import lt_sort_key
+from cmscommon.crypto import build_password, parse_authentication
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -118,6 +124,214 @@ class LoginHandler(ContestHandler):
             self.redirect(error_page)
         else:
             self.redirect(next_page)
+
+
+class RegisterHandler(ContestHandler):
+
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    def render_params(self):
+        params = super(RegisterHandler, self).render_params()
+        district_list = (self.sql_session.query(District)
+                         .options(subqueryload(District.schools))
+                         .all())
+        district_list.sort(key=lambda d: lt_sort_key(d.name))
+        for d in district_list:
+            d.schools.sort(key=lambda s: lt_sort_key(s.name))
+        params["district_list"] = district_list
+        params["policy_url"] = config.data_management_policy_url
+        return params
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+        self.render("register.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(404)
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        role = self.get_argument("role", "")
+
+        errors = []
+        if self.contest.require_school_details and not role:
+            errors.append("role")
+
+        data, d_errors = self.validate_data(role)
+        errors.extend(d_errors)
+
+        if errors:
+            self.render("register.html", errors=errors, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        # TODO: send email
+
+        method, password = parse_authentication(user.password)
+        assert method == 'plaintext'
+        self.render("register.html", new_user=user, password=password, **self.r_params)
+
+    def validate_data(self, role):
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        email = self.get_argument("email", "")
+        country = self.get_argument("country", "")
+        district_id = self.get_argument("district", "")
+        city = self.get_argument("city", "")
+        school_id = self.get_argument("school", "")
+        grade = self.get_argument("grade", None)
+        accept_terms = self.get_argument("accept_terms", None)
+
+        errors = []
+        if not first_name:
+            errors.append("first_name")
+        if not last_name:
+            errors.append("last_name")
+        if not email or not self.email_re.match(email):
+            errors.append("email")
+
+        if self.contest.require_country and not country:
+            errors.append("country")
+
+        if self.contest.require_school_details and role == "student":
+            try:
+                district_id = int(district_id)
+            except ValueError:
+                errors.append("district")
+                district = None
+            else:
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    errors.append("district")
+            if not city:
+                errors.append("city")
+            try:
+                school_id = int(school_id)
+            except ValueError:
+                errors.append("school")
+                school = None
+            else:
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is not None and district is not None and school.district != district:
+                    school = None
+                if school is None:
+                    errors.append("school")
+            try:
+                grade = int(grade)
+            except ValueError:
+                errors.append("grade")
+            else:
+                if self.contest.allowed_grades:
+                    if grade not in self.contest.allowed_grades:
+                        errors.append("grade")
+                else:
+                    if not 1 <= grade <= 12:
+                        errors.append("grade")
+        else:
+            district = None
+            city = ""
+            school = None
+            grade = None
+
+        if config.data_management_policy_url and accept_terms != 'yes':
+            errors.append('accept_terms')
+
+        data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'country': country,
+            'district': district,
+            'city': city,
+            'school': school,
+            'grade': grade,
+        }
+        return data, errors
+
+    def create_user(self, data):
+        username = self.generate_username(data['first_name'], data['last_name'], data['email'])
+        password = build_password(self.generate_password())
+
+        # Everything's ok. Create the user and participation.
+        # Set password on both.
+        user = User(username=username, password=password, **data)
+        participation = Participation(contest=self.contest, user=user,
+                                      password=password)
+        self.sql_session.add(user)
+        self.sql_session.add(participation)
+        self.sql_session.commit()
+
+        return user
+
+    def generate_one_username(self, first_name, last_name, email):
+        return "%s%s%04d" % (first_name[:3], last_name[:3],
+                             random.randint(0, 9999))
+
+    def generate_username(self, first_name, last_name, email):
+        for _i in range(10):
+            username = self.generate_one_username(first_name, last_name, email)
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                return username
+        else:
+            raise Exception  # TODO: show some error message
+
+    def generate_password(self):
+        chars = "abcdefghijkmnopqrstuvwxyz23456789"
+        return "".join(random.choice(chars)
+                       for _i in range(8))
+
+
+class RegisterByParentHandler(RegisterHandler):
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+        self.render("register_by_parent.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado.web.HTTPError(404)
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        data, errors = self.validate_data('student')
+
+        if errors:
+            self.render("register_by_parent.html", errors=errors, **self.r_params)
+            return
+
+        user = self.create_user(data)
+
+        logger.info("New user registered by parent from IP address %s, as "
+                    "user %r, on contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        self.render("register_by_parent.html", new_user=user, **self.r_params)
 
 
 class StartHandler(ContestHandler):
