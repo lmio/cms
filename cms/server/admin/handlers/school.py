@@ -27,8 +27,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+import six
 
-from cms.db import District, School
+import csv
+
+from sqlalchemy.orm import joinedload
+
+from cms.db import District, School, TeacherRegistration
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -69,6 +74,7 @@ class DistrictHandler(BaseHandler):
             attrs = district.get_attrs()
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No district name specified."
 
@@ -98,6 +104,7 @@ class AddDistrictHandler(SimpleHandler('add_district.html', permission_all=True)
             attrs = dict()
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No district name specified."
 
@@ -145,6 +152,7 @@ class SchoolHandler(BaseHandler):
             attrs["district"] = District.get_from_id(attrs["district"], self.sql_session)
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No school name specified."
 
@@ -184,6 +192,7 @@ class AddSchoolHandler(BaseHandler):
             attrs = dict()
 
             self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "password")
 
             assert attrs.get("name") is not None, "No school name specified."
 
@@ -203,3 +212,49 @@ class AddSchoolHandler(BaseHandler):
         else:
             self.redirect(fallback_page)
 
+
+class TeacherRegistrationsHandler(BaseHandler):
+    """Exports teacher registration table as CSV.
+
+    """
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self):
+        registrations = self.sql_session.query(TeacherRegistration)\
+            .options(joinedload('district'))\
+            .options(joinedload('school'))\
+            .all()
+
+        self.set_header("Content-Type", "text/csv")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"registrations.csv\"")
+
+        if six.PY3:
+            def encode(row):
+                return [str(item) for item in row]
+        else:
+            def encode(row):
+                return [str(item).encode('utf-8') for item in row]
+
+        writer = csv.writer(self)
+        writer.writerow(encode([
+            'Timestamp',
+            'First name',
+            'Last name',
+            'Email',
+            'District',
+            'School',
+            'Password',
+        ]))
+        writer.writerows([
+            encode([
+                reg.timestamp.isoformat(' '),
+                reg.first_name,
+                reg.last_name,
+                reg.email,
+                reg.district.name if reg.district else '',
+                reg.school.name if reg.school else '',
+                reg.school.password if reg.school else '',
+            ])
+            for reg in registrations
+        ])
+        self.finish()

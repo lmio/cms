@@ -41,7 +41,8 @@ from .school import \
     DistrictHandler, \
     AddDistrictHandler, \
     SchoolHandler, \
-    AddSchoolHandler
+    AddSchoolHandler, \
+    TeacherRegistrationsHandler
 from .contest import \
     AddContestHandler, \
     ContestHandler, \
@@ -137,6 +138,7 @@ HANDLERS = [
     (r"/district/add", AddDistrictHandler),
     (r"/school/([0-9]+)", SchoolHandler),
     (r"/school/add/([0-9]+)", AddSchoolHandler),
+    (r"/teacher_registrations", TeacherRegistrationsHandler),
 
     # Contest
 

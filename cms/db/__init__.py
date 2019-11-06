@@ -76,7 +76,7 @@ __all__ = [
     # printjob
     "PrintJob",
     # school
-    "District", "School",
+    "District", "School", "TeacherRegistration",
     # init
     "init_db",
     # drop
@@ -106,7 +106,7 @@ from .base import Base
 from .fsobject import FSObject, LargeObject
 from .admin import Admin
 from .contest import Contest, Announcement, ContestAttachment
-from .school import District, School
+from .school import District, School, TeacherRegistration
 from .user import User, Team, Participation, Message, Question
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
