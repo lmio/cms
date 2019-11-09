@@ -518,6 +518,14 @@ class RemoteServiceClient(RemoteServiceBase):
             raise RuntimeError("Already (auto-re)connecting")
         self._loop = gevent.spawn(self._run)
 
+    def wait_for_connection(self, timeout=None):
+        """Wait until connection has been made.
+
+        timeout (float|None): maximum duration in seconds to wait for.
+        return (bool): the status of the connection.
+        """
+        return self._connection_event.wait(timeout=timeout)
+
     def disconnect(self, reason="Disconnection requested."):
         """See RemoteServiceBase.disconnect."""
         if super(RemoteServiceClient, self).disconnect(reason=reason):
