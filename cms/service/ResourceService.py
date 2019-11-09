@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -435,6 +435,7 @@ class ResourceService(Service):
             logger.error("Unable to decode service shard.")
 
         remote_service = self.connect_to(ServiceCoord(name, shard))
+        remote_service.wait_for_connection()
         result = remote_service.quit(reason="Asked by ResourceService")
         return result.get()
 
