@@ -313,6 +313,8 @@ def update_contest(old_contest, new_contest, parent=None):
         # must be handled differently.
         Contest.tasks: False,
         Contest.participations: False,
+        # Relationships to update.
+        Contest.attachments: True,
         # Active flag is not managed by the loader.
         Contest.active: False,
     }, parent=parent)
