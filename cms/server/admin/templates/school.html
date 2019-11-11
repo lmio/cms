@@ -28,6 +28,10 @@
         <td>Password</td>
         <td><input type="text" name="password" value="{{ school.password }}"></td>
       </tr>
+      <tr>
+        <td>Email</td>
+        <td><input type="text" name="email" value="{{ school.email if school.email is not none else '' }}"></td>
+      </tr>
     </table>
     <input type="submit" value="Update">
     <input type="reset" value="Reset">

@@ -95,6 +95,11 @@ class School(Base):
         Unicode,
         nullable=False)
 
+    # Contact email address for the school.
+    email = Column(
+        Unicode,
+        nullable=True)
+
     # District (id and object) this school belongs to.
     district_id = Column(
         Integer,
