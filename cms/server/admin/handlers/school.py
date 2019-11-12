@@ -253,7 +253,7 @@ class TeacherRegistrationsHandler(BaseHandler):
                 reg.timestamp.isoformat(' '),
                 reg.first_name,
                 reg.last_name,
-                reg.email,
+                reg.email if reg.email else '',
                 reg.district.name if reg.district else '',
                 reg.school.name if reg.school else '',
                 reg.school.email if reg.school and reg.school.email else '',

@@ -144,7 +144,7 @@ class TeacherRegistration(Base):
     # Email for any communications.
     email = Column(
         Unicode,
-        nullable=False)
+        nullable=True)
 
     # District (id and object) this teacher registered to.
     district_id = Column(

@@ -156,7 +156,9 @@ class RegisterHandler(BaseHandler):
             errors.append("first_name")
         if not last_name:
             errors.append("last_name")
-        if not email or not self.email_re.match(email):
+        if not email:
+            email = None
+        elif not self.email_re.match(email):
             errors.append("email")
 
         try:
@@ -194,7 +196,7 @@ class RegisterHandler(BaseHandler):
         logger.info("New teacher registered from IP address %s, for school %s, at %s.",
                     ip_address, school.name, self.timestamp)
 
-        self.render("register.html", complete=True, **self.r_params)
+        self.render("register.html", complete=True, email_provided=email is not None, **self.r_params)
 
 
 class MainHandler(BaseHandler):

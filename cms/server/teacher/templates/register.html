@@ -7,6 +7,7 @@
 $(document).ready(function () {
     var $select_district = $('select[name="district"]');
     var $select_school = $('select[name="school"]');
+    var $school_email = $('#school-email');
     var $no_school = $select_school.children('option[value=""]').clone();
     var schools_by_district = {};
     $select_school.find('optgroup').each(function (i, og) {
@@ -21,12 +22,20 @@ $(document).ready(function () {
             $select_school.append(schools_by_district[$select_district.val()].clone());
         }
         $select_school.val('');
+        $school_email.text('');
     }
     $select_district.change(district_changed);
     district_changed();
     {% if handler.get_argument("school", "") %}
     $select_school.val('{{ handler.get_argument("school", "") }}');
     {% endif %}
+
+    function school_changed () {
+        var opt = $select_school.children('option:selected');
+        var email = opt.data('email');
+        $school_email.text(email);
+    }
+    $select_school.change(school_changed);
 });
 </script>
 {% endblock extrahead %}
@@ -36,10 +45,16 @@ $(document).ready(function () {
 {% if complete is defined and complete %}
     <div class="login_box hero-unit">
         <h2>{% trans %}Registration successful{% endtrans %}</h2>
-        <p>{% trans %}You will receive your login details via email.{% endtrans %}</p>
+        <p>
+    {% if email_provided %}
+          {% trans %}You will receive your login details via email after we receive confirmation from the school's official email address.{% endtrans %}
+    {% else %}
+          {% trans %}Login details will be sent to the school's official email address.{% endtrans %}
+    {% endif %}
+        </p>
     </div>
 {% else %}
-    <div class="login_box hero-unit">
+    <div class="login_box hero-unit school-details">
         <h1>{% trans %}Welcome{% endtrans %}</h1>
         <p>{% trans %}Please register{% endtrans %}</p>
         <form class="form-horizontal" action="{{ url("register") }}" method="POST">
@@ -55,12 +70,6 @@ $(document).ready(function () {
                     <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
-                    </div>
-                </div>
-                <div class="control-group{% if errors is defined and "email" in errors %} error{% endif %}">
-                    <label class="control-label" for="email">{% trans %}Email{% endtrans %}</label>
-                    <div class="controls">
-                        <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
                 <div class="control-group{% if errors is defined and "district" in errors %} error{% endif %}">
@@ -84,11 +93,24 @@ $(document).ready(function () {
     {% for d in district_list %}
                             <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
         {% for s in d.schools %}
-                                <option value="{{ s.id }}"{% if s.id|string == selected_school %} selected{% endif %}>{{ s.name }}</option>
+                                <option value="{{ s.id }}"{% if s.id|string == selected_school %} selected{% endif %} data-email="{{ s.email }}">{{ s.name }}</option>
         {% endfor %}
                             </optgroup>
     {% endfor %}
                         </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">{% trans %}School's official email address to which details will be sent{% endtrans %}</div>
+                    <div class="controls" style="padding-top: 5px"><span id="school-email"></span></div>
+                </div>
+                <div class="control-group">
+                  {% trans %}If you want to use a different email address, enter it here. In that case we will send a request to confirm your email address to the school's official email address. After receiving confirmation we will send details to your email address.{% endtrans %}
+                </div>
+                <div class="control-group{% if errors is defined and "email" in errors %} error{% endif %}">
+                    <label class="control-label" for="email">{% trans %}Email{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
                 <div class="control-group">
