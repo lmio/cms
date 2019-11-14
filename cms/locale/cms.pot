@@ -1000,6 +1000,9 @@ msgstr ""
 msgid "Student's email"
 msgstr ""
 
+msgid "Submitter's full name"
+msgstr ""
+
 #, python-format
 msgid ""
 "I am legal guardian of this child and agree to the <a href=\""

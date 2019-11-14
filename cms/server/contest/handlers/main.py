@@ -187,7 +187,7 @@ class RegisterHandler(ContestHandler):
         assert method == 'plaintext'
         self.render("register.html", new_user=user, password=password, **self.r_params)
 
-    def validate_data(self, role):
+    def validate_data(self, role, require_registered_by=False):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         email = self.get_argument("email", "")
@@ -196,6 +196,7 @@ class RegisterHandler(ContestHandler):
         city = self.get_argument("city", "")
         school_id = self.get_argument("school", "")
         grade = self.get_argument("grade", None)
+        registered_by = self.get_argument("registered_by", None)
         accept_terms = self.get_argument("accept_terms", None)
 
         errors = []
@@ -249,6 +250,9 @@ class RegisterHandler(ContestHandler):
             school = None
             grade = None
 
+        if require_registered_by and not registered_by:
+            errors.append('registered_by')
+
         if config.data_management_policy_url and accept_terms != 'yes':
             errors.append('accept_terms')
 
@@ -261,6 +265,7 @@ class RegisterHandler(ContestHandler):
             'city': city,
             'school': school,
             'grade': grade,
+            'registered_by': registered_by,
         }
         return data, errors
 
@@ -319,7 +324,7 @@ class RegisterByParentHandler(RegisterHandler):
                            self.request.remote_ip)
             return None
 
-        data, errors = self.validate_data('student')
+        data, errors = self.validate_data('student', require_registered_by=True)
 
         if errors:
             self.render("register_by_parent.html", errors=errors, **self.r_params)

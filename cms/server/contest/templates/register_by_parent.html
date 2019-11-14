@@ -116,6 +116,12 @@ $(document).ready(function () {
                     </div>
                 </div>
     {% endif %}
+                <div class="control-group{% if errors is defined and "registered_by" in errors %} error{% endif %}">
+                    <label class="control-label" for="registered_by">{% trans %}Submitter's full name{% endtrans %}</label>
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" name="registered_by" value="{{ handler.get_argument("registered_by", "") }}">
+                    </div>
+                </div>
     {% if policy_url %}
                 <div class="control-group{% if errors is defined and "accept_terms" in errors %} error{% endif %}">
                     <div class="controls">

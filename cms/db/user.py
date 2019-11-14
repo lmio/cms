@@ -140,6 +140,12 @@ class User(Base):
         Integer,
         nullable=True)
 
+    # Person who registered this participant and agreed to data
+    # management policy, if any.
+    registered_by = Column(
+        Unicode,
+        nullable=True)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 

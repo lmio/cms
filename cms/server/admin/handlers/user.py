@@ -97,6 +97,7 @@ class UserHandler(BaseHandler):
                 assert attrs["district"] == attrs["school"].district, \
                     "Selected school and district do not match."
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "registered_by")
 
             assert attrs.get("username") is not None, \
                 "No username specified."
@@ -288,6 +289,7 @@ class AddUserHandler(BaseHandler):
                 assert attrs["district"] == attrs["school"].district, \
                     "Selected school and district do not match."
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "registered_by")
 
             # Create the user.
             user = User(**attrs)
