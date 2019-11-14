@@ -43,19 +43,19 @@ $(document).ready(function () {
             {{ xsrf_form_html|safe }}
             <fieldset>
                 <div class="control-group{% if errors is defined and "first_name" in errors %} error{% endif %}">
-                    <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
+                    <label class="control-label" for="first_name">{% trans %}Student's first name{% endtrans %}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="first_name" value="{{ handler.get_argument("first_name", "") }}">
                     </div>
                 </div>
                 <div class="control-group{% if errors is defined and "last_name" in errors %} error{% endif %}">
-                    <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
+                    <label class="control-label" for="last_name">{% trans %}Student's last name{% endtrans %}</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
                     </div>
                 </div>
                 <div class="control-group{% if errors is defined and "email" in errors %} error{% endif %}">
-                    <label class="control-label" for="email">{% trans %}Email{% endtrans %}</label>
+                    <label class="control-label" for="email">{% trans %}Student's email{% endtrans %}</label>
                     <div class="controls">
                         <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>

@@ -991,6 +991,15 @@ msgstr ""
 msgid "Register a contestant"
 msgstr ""
 
+msgid "Student's first name"
+msgstr ""
+
+msgid "Student's last name"
+msgstr ""
+
+msgid "Student's email"
+msgstr ""
+
 #, python-format
 msgid ""
 "I am legal guardian of this child and agree to the <a href=\""

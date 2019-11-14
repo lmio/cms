@@ -1141,12 +1141,21 @@ msgstr ""
 msgid "Register a contestant"
 msgstr "Dalyvio registracija"
 
+msgid "Student's first name"
+msgstr "Mokinio vardas"
+
+msgid "Student's last name"
+msgstr "Mokinio pavardė"
+
+msgid "Student's email"
+msgstr "Mokinio el. paštas"
+
 #, python-brace-format
 msgid ""
 "I am legal guardian of this child and agree to the <a href=\""
 "%(policy_url)s\" target=\"_blank\">Personal Data Management Policy</a>."
 msgstr ""
-"Aš esu šio vaiko įstatyminis atstovas ir susipažinau su <a href=\""
+"Aš esu šio vaiko įstatyminis atstovas, susipažinau ir sutinku su <a href=\""
 "%(policy_url)s\" target=\"_blank\">asmens duomenų tvarkymo nuostatomis</a>."
 
 msgid "Teacher web server"
