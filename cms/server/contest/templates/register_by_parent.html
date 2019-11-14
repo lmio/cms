@@ -222,6 +222,13 @@ $(document).ready(function() {
                 </div>
                 {% endif %}
 
+                <div class="control-group">
+                    <label class="control-label" for="registered_by">{% trans %}Submitter's full name{% endtrans %}</label>
+                    <div class="controls">
+                        <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="registered_by" id="registered_by">
+                    </div>
+                </div>
+
                 {% if policy_url %}
                 <div class="control-group">
                     <div class="controls">

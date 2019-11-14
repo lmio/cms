@@ -139,7 +139,7 @@ class RegistrationHandler(ContestHandler):
             resp = user.username
         self.finish(resp)
 
-    def do_register(self):
+    def do_register(self, require_registered_by=False):
         if config.data_management_policy_url:
             accept_terms = self.get_argument("accept_terms", None)
             if accept_terms != 'yes':
@@ -149,7 +149,7 @@ class RegistrationHandler(ContestHandler):
 
         # Get or create user
         if create_new_user:
-            user, password = self._create_user()
+            user, password = self._create_user(require_registered_by=require_registered_by)
         else:
             if not self.contest.registration_allow_join:
                 raise tornado_web.HTTPError(400)
@@ -176,7 +176,7 @@ class RegistrationHandler(ContestHandler):
 
         return user, password
 
-    def _create_user(self):
+    def _create_user(self, require_registered_by=False):
         try:
             first_name = self.get_argument("first_name")
             last_name = self.get_argument("last_name")
@@ -242,6 +242,14 @@ class RegistrationHandler(ContestHandler):
                 if not self.MIN_PASSWORD_LENGTH <= len(password) \
                         <= self.MAX_INPUT_LENGTH:
                     raise ValueError()
+
+            if require_registered_by:
+                registered_by = self.get_argument("registered_by")
+                if not 1 <= len(registered_by) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+            else:
+                registered_by = None
+
         except (tornado_web.MissingArgumentError, ValueError):
             raise tornado_web.HTTPError(400)
 
@@ -264,7 +272,7 @@ class RegistrationHandler(ContestHandler):
         # Store new user
         user = User(first_name, last_name, username, password, email=email,
                     country=country, district=district, city=city,
-                    school=school, grade=grade)
+                    school=school, grade=grade, registered_by=registered_by)
         self.sql_session.add(user)
 
         return user, ret_password
@@ -333,7 +341,7 @@ class RegistrationByParentHandler(RegistrationHandler):
                            self.request.remote_ip)
             return None
 
-        user, _password = self.do_register()
+        user, _password = self.do_register(require_registered_by=True)
 
         logger.info("New user registered by parent from IP address %s, as "
                     "user %r, on contest %s, at %s", ip_address, user.username,

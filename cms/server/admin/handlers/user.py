@@ -7,7 +7,7 @@
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
@@ -90,6 +90,7 @@ class UserHandler(BaseHandler):
                 assert attrs["district"] == attrs["school"].district, \
                     "Selected school and district do not match."
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "registered_by")
 
             assert attrs.get("username") is not None, \
                 "No username specified."
@@ -281,6 +282,7 @@ class AddUserHandler(BaseHandler):
                 assert attrs["district"] == attrs["school"].district, \
                     "Selected school and district do not match."
             self.get_int(attrs, "grade")
+            self.get_string(attrs, "registered_by")
 
             # Create the user.
             user = User(**attrs)
