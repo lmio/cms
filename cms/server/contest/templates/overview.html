@@ -237,7 +237,6 @@
 {% endfor %}
     </tbody>
 </table>
-{% endif %}
 
 {% if contest.attachments|length > 0 %}
     <h2>{% trans %}Attachments{% endtrans %}</h2>
@@ -272,6 +271,8 @@
     {% endfor %}
         </ul>
     </div>
+{% endif %}
+
 {% endif %}
 
 </div>
