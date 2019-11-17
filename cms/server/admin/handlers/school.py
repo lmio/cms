@@ -224,6 +224,7 @@ class TeacherRegistrationsHandler(BaseHandler):
         registrations = self.sql_session.query(TeacherRegistration)\
             .options(joinedload('district'))\
             .options(joinedload('school'))\
+            .order_by(TeacherRegistration.id)\
             .all()
 
         self.set_header("Content-Type", "text/csv")
