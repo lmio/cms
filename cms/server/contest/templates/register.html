@@ -1,5 +1,7 @@
 {% extends "contest.html" %}
 
+{% set page = "register" %}
+
 {% block additional_js %}
 {% if contest.require_school_details %}
 $(document).ready(function () {
