@@ -19,6 +19,9 @@
       {% for head in header %}
       <th>{{ head }}</th>
       {% endfor %}
+      {% if allow_contestant_leave %}
+      <th style="width: 1%">{% trans %}Leave time{% endtrans %}</th>
+      {% endif %}
       {% if allow_impersonate %}
       <th style="width: 1%"></th>
       {% endif %}
@@ -30,6 +33,19 @@
       {% for item in row %}
       <td>{{ item }}</td>
       {% endfor %}
+      {% if allow_contestant_leave %}
+      <td style="white-space: nowrap">
+        <form class="form-horizontal" style="margin: 0" enctype="multipart/form-data" action="{{ url("contestant_leave", p.id) }}" method="POST">
+          {{ xsrf_form_html|safe }}
+          {% if p.leave_time is none or now <= p.leave_time %}
+          <button type="submit" name="state" value="left" class="btn">{% trans %}Contestant has left{% endtrans %}</button>
+          {% else %}
+          <p>{{ p.leave_time|format_datetime_smart }}</p>
+          <button type="submit" name="state" value="returned" class="btn">{% trans %}Contestant has returned{% endtrans %}</button>
+          {% endif %}
+        </form>
+      </td>
+      {% endif %}
       {% if allow_impersonate %}
       <td style="white-space: nowrap"><a href="{{ url("impersonate", p.id) }}" class="btn" target="_blank">{% trans %}Log in as contestant{% endtrans %}</a></td>
       {% endif %}

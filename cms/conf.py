@@ -170,6 +170,7 @@ class Config(object):
         self.teacher_allow_impersonate = False
         self.teacher_show_results = True
         self.teacher_allow_registration = False
+        self.teacher_allow_contestant_leave = False
 
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]

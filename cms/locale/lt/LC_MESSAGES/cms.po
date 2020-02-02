@@ -1217,3 +1217,12 @@ msgstr ""
 "el. paštą. Tokiu atveju į mokyklos oficialų el. paštą išsiųsime prašymą "
 "patvirtinti pageidaujamą el. paštą. Tik sulaukę patvirtinimo, galėsime "
 "siųsti informaciją į pageidaujamą el. paštą."
+
+msgid "Leave time"
+msgstr "Išėjimo laikas"
+
+msgid "Contestant has left"
+msgstr "Dalyvis išėjo"
+
+msgid "Contestant has returned"
+msgstr "Dalyvis grįžo"
