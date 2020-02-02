@@ -11,7 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
-# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2019-2020 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -189,7 +189,8 @@ class ContestHandler(BaseHandler):
                 self.contest.analysis_stop if self.contest.analysis_enabled
                 else None,
                 self.contest.per_user_time, participation.starting_time,
-                participation.delay_time, participation.extra_time)
+                participation.delay_time, participation.extra_time,
+                participation.leave_time)
 
             ret["actual_phase"], ret["current_phase_begin"], \
                 ret["current_phase_end"], ret["valid_phase_begin"], \
