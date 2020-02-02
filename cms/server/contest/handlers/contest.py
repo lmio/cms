@@ -198,7 +198,8 @@ class ContestHandler(BaseHandler):
                 self.contest.analysis_stop if self.contest.analysis_enabled
                 else None,
                 self.contest.per_user_time, participation.starting_time,
-                participation.delay_time, participation.extra_time)
+                participation.delay_time, participation.extra_time,
+                participation.leave_time)
 
             ret["actual_phase"], ret["current_phase_begin"], \
                 ret["current_phase_end"], ret["valid_phase_begin"], \

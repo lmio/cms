@@ -222,6 +222,7 @@ class ParticipationHandler(BaseHandler):
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
+            self.get_datetime(attrs, "leave_time")
             self.get_bool(attrs, "hidden")
             self.get_bool(attrs, "unrestricted")
 

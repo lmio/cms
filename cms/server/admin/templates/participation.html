@@ -126,6 +126,15 @@ function update_additional_answer(element, invoker)
         </td>
         <td><input type="text" name="extra_time" value="{{ participation.extra_time.total_seconds()|int }}"></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Time when the contestant left the contest hall.
+                                    After this time the contestant is not allowed to submit solutions or otherwise participate in the contest.
+                                    Analysis mode is not affected."></span>
+          Leave time (in UTC)
+        </td>
+        <td><input type="text" name="leave_time" value="{{ participation.leave_time if participation.leave_time is not none else "" }}"></td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />
