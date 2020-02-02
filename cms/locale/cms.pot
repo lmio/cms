@@ -1219,8 +1219,17 @@ msgstr ""
 msgid "Participation location"
 msgstr ""
 
+msgid "Leave time"
+msgstr ""
+
 msgid "On-site"
 msgstr ""
 
 msgid "Remote"
+msgstr ""
+
+msgid "Contestant has left"
+msgstr ""
+
+msgid "Contestant has returned"
 msgstr ""
