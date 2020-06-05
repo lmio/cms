@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
+# Copyright © 2020 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -350,6 +351,8 @@ class Communication(TaskType):
             # that don't need tight control.
             if len(commands) > 1:
                 trusted_step(sandbox_user[i], commands[:-1])
+            # Quick hack. Add a couple seconds to allow manager to calculate something.
+            wallclock_time_limit = job.time_limit * 2 + 3 if job.time_limit is not None else None
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 commands[-1],
@@ -358,7 +361,8 @@ class Communication(TaskType):
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 stdin_redirect=stdin_redirect,
                 stdout_redirect=stdout_redirect,
-                multiprocess=job.multithreaded_sandbox)
+                multiprocess=job.multithreaded_sandbox,
+                wallclock_time_limit=wallclock_time_limit)
 
         # Wait for the processes to conclude, without blocking them on I/O.
         wait_without_std(processes + [manager])
