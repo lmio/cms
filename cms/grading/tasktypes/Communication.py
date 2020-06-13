@@ -85,6 +85,7 @@ class Communication(TaskType):
     """
     # Filename of the manager (the stand-alone, admin-provided program).
     MANAGER_FILENAME = "manager"
+    MANAGERLIB_FILENAME = "managerlib.so"
     # Basename of the stub, used in the stub filename and as the main class in
     # languages that require us to specify it.
     STUB_BASENAME = "stub"
@@ -256,6 +257,10 @@ class Communication(TaskType):
         if not check_manager_present(job, self.MANAGER_FILENAME):
             return
         manager_digest = job.managers[self.MANAGER_FILENAME].digest
+        if self.MANAGERLIB_FILENAME in job.managers:
+            managerlib_digest = job.managers[self.MANAGERLIB_FILENAME].digest
+        else:
+            managerlib_digest = None
 
         # Indices for the objects related to each user process.
         indices = range(self.num_processes)
@@ -284,6 +289,10 @@ class Communication(TaskType):
         job.sandboxes.append(sandbox_mgr.get_root_path())
         sandbox_mgr.create_file_from_storage(
             self.MANAGER_FILENAME, manager_digest, executable=True)
+        if managerlib_digest is not None:
+            sandbox_mgr.create_file_from_storage(
+                self.MANAGERLIB_FILENAME, managerlib_digest)
+
         sandbox_mgr.create_file_from_storage(
             self.INPUT_FILENAME, job.input)
 
