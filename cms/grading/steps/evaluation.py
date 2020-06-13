@@ -159,7 +159,8 @@ def evaluation_step_before_run(sandbox, command,
                                time_limit=None, memory_limit=None,
                                dirs_map=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
-                               multiprocess=False, wait=False):
+                               multiprocess=False, wait=False,
+                               wallclock_time_limit=None):
     """First part of an evaluation step, up to the execution, included.
 
     See evaluation_step for the meaning of the common arguments. This version
@@ -189,10 +190,13 @@ def evaluation_step_before_run(sandbox, command,
     # Set sandbox parameters suitable for evaluation.
     if time_limit is not None:
         sandbox.timeout = time_limit
-        sandbox.wallclock_timeout = 2 * time_limit + 1
+        if wallclock_time_limit is not None:
+            sandbox.wallclock_timeout = wallclock_time_limit
+        else:
+            sandbox.wallclock_timeout = 2 * time_limit + 1
     else:
         sandbox.timeout = None
-        sandbox.wallclock_timeout = None
+        sandbox.wallclock_timeout = wallclock_time_limit
 
     if memory_limit is not None:
         sandbox.address_space = memory_limit * 1024

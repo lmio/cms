@@ -178,6 +178,9 @@
     "_help": "Whether to show contestants' results to teachers.",
     "teacher_show_results": true,
 
+    "_help": "Whether to allow teachers to set contestants' leave time.",
+    "teacher_allow_contestant_leave": false,
+
 
 
     "_section": "ScoringService",

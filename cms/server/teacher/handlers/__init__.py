@@ -31,6 +31,7 @@ from .main import \
     RegisterHandler
 from .contest import \
     ContestHandler, \
+    ContestantLeaveHandler, \
     ImpersonateHandler
 
 
@@ -42,6 +43,7 @@ HANDLERS = [
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
+    (r"/contestant_leave/([0-9]+)", ContestantLeaveHandler),
 ]
 
 

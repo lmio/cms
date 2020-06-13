@@ -354,6 +354,8 @@ class Communication(TaskType):
             # that don't need tight control.
             if len(commands) > 1:
                 trusted_step(sandbox_user[i], commands[:-1])
+            # Quick hack. Add a couple seconds to allow manager to calculate something.
+            wallclock_time_limit = job.time_limit * 2 + 3 if job.time_limit is not None else None
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 commands[-1],
@@ -362,7 +364,8 @@ class Communication(TaskType):
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 stdin_redirect=stdin_redirect,
                 stdout_redirect=stdout_redirect,
-                multiprocess=job.multithreaded_sandbox)
+                multiprocess=job.multithreaded_sandbox,
+                wallclock_time_limit=wallclock_time_limit)
 
         # Wait for the processes to conclude, without blocking them on I/O.
         wait_without_std(processes + [manager])

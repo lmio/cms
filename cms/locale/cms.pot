@@ -1057,3 +1057,12 @@ msgid ""
 "email address. After receiving confirmation we will send details to your "
 "email address."
 msgstr ""
+
+msgid "Leave time"
+msgstr ""
+
+msgid "Contestant has left"
+msgstr ""
+
+msgid "Contestant has returned"
+msgstr ""

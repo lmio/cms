@@ -67,7 +67,8 @@ TEST_STEPS = \
 
 
 def test(contest_start, contest_stop, analysis_start, analysis_end,
-         per_user_time, starting_time, delay_time, extra_time, intervals):
+         per_user_time, starting_time, delay_time, extra_time, leave_time,
+         intervals):
     """Helper to test compute_actual_phase.
 
     It takes all the parameters accepted by compute_actual_phase (with
@@ -112,6 +113,7 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
     starting_time = parse_datetime(starting_time)
     delay_time = parse_timedelta(delay_time)
     extra_time = parse_timedelta(extra_time)
+    leave_time = parse_datetime(leave_time)
 
     assert len(intervals) % 2 == 1
     parsed = list()
@@ -135,7 +137,8 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                 res = compute_actual_phase(
                     end - step, contest_start, contest_stop,
                     analysis_start, analysis_end,
-                    per_user_time, starting_time, delay_time, extra_time)
+                    per_user_time, starting_time, delay_time, extra_time,
+                    leave_time)
                 assert res == (status, begin, end, valid_begin, valid_end), \
                     "Check on %s returned %s instead of %s" % (
                         end - step, res, (status, begin, end,
@@ -145,7 +148,8 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                 res = compute_actual_phase(
                     begin + step, contest_start, contest_stop,
                     analysis_start, analysis_end,
-                    per_user_time, starting_time, delay_time, extra_time)
+                    per_user_time, starting_time, delay_time, extra_time,
+                    leave_time)
                 assert res == (status, begin, end, valid_begin, valid_end), \
                     "Check on %s returned %s instead of %s" % (
                         begin + step, res, (status, begin, end,
@@ -157,7 +161,8 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                 res = compute_actual_phase(
                     begin + step, contest_start, contest_stop,
                     analysis_start, analysis_end,
-                    per_user_time, starting_time, delay_time, extra_time)
+                    per_user_time, starting_time, delay_time, extra_time,
+                    leave_time)
                 assert res == (status, begin, end, valid_begin, valid_end), \
                     "Check on %s returned %s instead of %s" % (
                         begin + step, res, (status, begin, end,
@@ -165,7 +170,8 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                 res = compute_actual_phase(
                     end - step, contest_start, contest_stop,
                     analysis_start, analysis_end,
-                    per_user_time, starting_time, delay_time, extra_time)
+                    per_user_time, starting_time, delay_time, extra_time,
+                    leave_time)
                 assert res == (status, begin, end, valid_begin, valid_end), \
                     "Check on %s returned %s instead of %s" % (
                         end - step, res, (status, begin, end,
@@ -178,51 +184,80 @@ class TestComputeActualPhase(unittest.TestCase):
     def test_traditional():
         # Test "traditional" contests. There's not much variability, so
         # we just test different delay_time/extra_time combinations.
-        test("4", "12", None, None, None, None, "0", "0",
+        test("4", "12", None, None, None, None, "0", "0", None,
              ("4", 0, "12"))
-        test("4", "12", None, None, None, None, "0", "2",
+        test("4", "12", None, None, None, None, "0", "2", None,
              ("4", 0, "14"))
-        test("4", "12", None, None, None, None, "2", "0",
+        test("4", "12", None, None, None, None, "2", "0", None,
              ("4", -1, "6", 0, "14"))
-        test("4", "12", None, None, None, None, "2", "2",
+        test("4", "12", None, None, None, None, "2", "2", None,
              ("4", -1, "6", 0, "16"))
 
         # Almost identical, with starting_time set to make sure it
         # doesn't affect anything.
-        test("4", "12", None, None, None, "7", "0", "0",
+        test("4", "12", None, None, None, "7", "0", "0", None,
              ("4", 0, "12"))
-        test("4", "12", None, None, None, "7", "0", "2",
+        test("4", "12", None, None, None, "7", "0", "2", None,
              ("4", 0, "14"))
-        test("4", "12", None, None, None, "7", "2", "0",
+        test("4", "12", None, None, None, "7", "2", "0", None,
              ("4", -1, "6", 0, "14"))
-        test("4", "12", None, None, None, "7", "2", "2",
+        test("4", "12", None, None, None, "7", "2", "2", None,
              ("4", -1, "6", 0, "16"))
 
         # Test analysis mode. Almost identical to above
-        test("4", "12", "17", "20", None, None, "0", "0",
+        test("4", "12", "17", "20", None, None, "0", "0", None,
              ("4", 0, "12", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, None, "0", "2",
+        test("4", "12", "17", "20", None, None, "0", "2", None,
              ("4", 0, "14", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, None, "2", "0",
+        test("4", "12", "17", "20", None, None, "2", "0", None,
              ("4", -1, "6", 0, "14", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, None, "2", "2",
+        test("4", "12", "17", "20", None, None, "2", "2", None,
              ("4", -1, "6", 0, "16", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, "7", "0", "0",
+        test("4", "12", "17", "20", None, "7", "0", "0", None,
              ("4", 0, "12", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, "7", "0", "2",
+        test("4", "12", "17", "20", None, "7", "0", "2", None,
              ("4", 0, "14", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, "7", "2", "0",
+        test("4", "12", "17", "20", None, "7", "2", "0", None,
              ("4", -1, "6", 0, "14", 2, "17", 3, "20"))
-        test("4", "12", "17", "20", None, "7", "2", "2",
+        test("4", "12", "17", "20", None, "7", "2", "2", None,
              ("4", -1, "6", 0, "16", 2, "17", 3, "20"))
 
         # Test for overlapping of contest and analysis for this users
-        test("4", "12", "12", "20", None, None, "2", "0",
+        test("4", "12", "12", "20", None, None, "2", "0", None,
              ("4", -1, "6", 0, "14", 3, "20"))
-        test("4", "12", "12", "20", None, None, "0", "2",
+        test("4", "12", "12", "20", None, None, "0", "2", None,
              ("4", 0, "14", 3, "20"))
-        test("4", "12", "12", "20", None, None, "1", "1",
+        test("4", "12", "12", "20", None, None, "1", "1", None,
              ("4", -1, "5", 0, "14", 3, "20"))
+
+        # Test leave time
+        test("4", "12", None, None, None, None, "0", "0", "11",
+             ("4", 0, "11", 1, "12"))
+        test("4", "12", None, None, None, None, "0", "2", "11",
+             ("4", 0, "11", 1, "12"))
+        test("4", "12", None, None, None, None, "2", "0", "11",
+             ("4", -1, "6", 0, "11", 1, "12"))
+        test("4", "12", None, None, None, None, "2", "2", "11",
+             ("4", -1, "6", 0, "11", 1, "12"))
+        test("4", "12", None, None, None, None, "0", "0", "4",
+             ("4", 0, "4", 1, "12"))
+        test("4", "12", None, None, None, None, "0", "0", "12",
+             ("4", 0, "12", 1, "12"))
+        test("4", "12", "17", "20", None, None, "0", "0", "11",
+             ("4", 0, "11", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "0", "2", "11",
+             ("4", 0, "11", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "2", "0", "11",
+             ("4", -1, "6", 0, "11", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "2", "2", "11",
+             ("4", -1, "6", 0, "11", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "0", "0", "4",
+             ("4", 0, "4", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "0", "0", "12",
+             ("4", 0, "12", 1, "12", 2, "17", 3, "20"))
+        test("4", "12", "17", "20", None, None, "0", "0", "17",
+             ("4", 0, "12", 2, "17", 3, "20"))
+
 
     @staticmethod
     def test_usaco_like():
@@ -231,110 +266,148 @@ class TestComputeActualPhase(unittest.TestCase):
         # contest time as well as cases where it oversteps the end and
         # (absurdly) the start of the contest. Also try different
         # delay_time/extra_time combinations.
-        test("6", "18", None, None, "6", "9", "0", "0",
+        test("6", "18", None, None, "6", "9", "0", "0", None,
              ("6", -1, "9", 0, "15", +1, "18"))
-        test("6", "18", None, None, "6", "3", "0", "0",
+        test("6", "18", None, None, "6", "3", "0", "0", None,
              ("6", 0, "9", +1, "18"))
-        test("6", "18", None, None, "6", "15", "0", "0",
+        test("6", "18", None, None, "6", "15", "0", "0", None,
              ("6", -1, "15", 0, "18"))
-        test("6", "18", None, None, "6", "9", "0", "1",
+        test("6", "18", None, None, "6", "9", "0", "1", None,
              ("6", -1, "9", 0, "16", +1, "18"))
-        test("6", "18", None, None, "6", "3", "0", "1",
+        test("6", "18", None, None, "6", "3", "0", "1", None,
              ("6", 0, "10", +1, "18"))
-        test("6", "18", None, None, "6", "15", "0", "1",
+        test("6", "18", None, None, "6", "15", "0", "1", None,
              ("6", -1, "15", 0, "19"))
-        test("6", "18", None, None, "6", "9", "1", "0",
+        test("6", "18", None, None, "6", "9", "1", "0", None,
              ("6", -1, "10", 0, "16", +1, "18"))
-        test("6", "18", None, None, "6", "3", "1", "0",
+        test("6", "18", None, None, "6", "3", "1", "0", None,
              ("6", -1, "7", 0, "10", +1, "18"))
-        test("6", "18", None, None, "6", "15", "1", "0",
+        test("6", "18", None, None, "6", "15", "1", "0", None,
              ("6", -1, "16", 0, "19"))
-        test("6", "18", None, None, "6", "9", "1", "1",
+        test("6", "18", None, None, "6", "9", "1", "1", None,
              ("6", -1, "10", 0, "17", +1, "18"))
-        test("6", "18", None, None, "6", "3", "1", "1",
+        test("6", "18", None, None, "6", "3", "1", "1", None,
              ("6", -1, "7", 0, "11", +1, "18"))
-        test("6", "18", None, None, "6", "15", "1", "1",
+        test("6", "18", None, None, "6", "15", "1", "1", None,
              ("6", -1, "16", 0, "20"))
 
         # Test "USACO-like" contests, with unknown starting_time. Just
         # make sure delay_time/extra_time don't affect anything.
-        test("6", "18", None, None, "6", None, "0", "0",
+        test("6", "18", None, None, "6", None, "0", "0", None,
              ("6", -1, "18"))
-        test("6", "18", None, None, "6", None, "0", "1",
+        test("6", "18", None, None, "6", None, "0", "1", None,
              ("6", -1, "18"))
-        test("6", "18", None, None, "6", None, "1", "0",
+        test("6", "18", None, None, "6", None, "1", "0", None,
              ("6", -1, "18"))
-        test("6", "18", None, None, "6", None, "1", "1",
+        test("6", "18", None, None, "6", None, "1", "1", None,
              ("6", -1, "18"))
 
         # Test ridiculous corner cases.
-        test("6", "18", None, None, "3", "2", "0", "0",
+        test("6", "18", None, None, "3", "2", "0", "0", None,
              ("6", 0, "6", +1, "18"))
-        test("6", "18", None, None, "3", "2", "0", "1",
+        test("6", "18", None, None, "3", "2", "0", "1", None,
              ("6", 0, "7", +1, "18"))
-        test("6", "18", None, None, "3", "2", "1", "0",
+        test("6", "18", None, None, "3", "2", "1", "0", None,
              ("6", -1, "7", 0, "7", +1, "18"))
-        test("6", "18", None, None, "3", "2", "1", "1",
+        test("6", "18", None, None, "3", "2", "1", "1", None,
              ("6", -1, "7", 0, "8", +1, "18"))
-        test("6", "18", None, None, "3", "19", "0", "0",
+        test("6", "18", None, None, "3", "19", "0", "0", None,
              ("6", -1, "18", 0, "18"))
-        test("6", "18", None, None, "3", "19", "0", "1",
+        test("6", "18", None, None, "3", "19", "0", "1", None,
              ("6", -1, "18", 0, "19"))
         # These are plainly absurd.
-        test("6", "18", None, None, "3", "19", "1", "0",
+        test("6", "18", None, None, "3", "19", "1", "0", None,
              ("6", -1, "19", 0, "19"))
-        test("6", "18", None, None, "3", "19", "1", "1",
+        test("6", "18", None, None, "3", "19", "1", "1", None,
              ("6", -1, "19", 0, "20"))
 
         # Identical to above. just to check analysis mode.
-        test("6", "18", "21", "23", "6", "9", "0", "0",
+        test("6", "18", "21", "23", "6", "9", "0", "0", None,
              ("6", -1, "9", 0, "15", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "3", "0", "0",
+        test("6", "18", "21", "23", "6", "3", "0", "0", None,
              ("6", 0, "9", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "15", "0", "0",
+        test("6", "18", "21", "23", "6", "15", "0", "0", None,
              ("6", -1, "15", 0, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "9", "0", "1",
+        test("6", "18", "21", "23", "6", "9", "0", "1", None,
              ("6", -1, "9", 0, "16", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "3", "0", "1",
+        test("6", "18", "21", "23", "6", "3", "0", "1", None,
              ("6", 0, "10", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "15", "0", "1",
+        test("6", "18", "21", "23", "6", "15", "0", "1", None,
              ("6", -1, "15", 0, "19", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "9", "1", "0",
+        test("6", "18", "21", "23", "6", "9", "1", "0", None,
              ("6", -1, "10", 0, "16", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "3", "1", "0",
+        test("6", "18", "21", "23", "6", "3", "1", "0", None,
              ("6", -1, "7", 0, "10", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "15", "1", "0",
+        test("6", "18", "21", "23", "6", "15", "1", "0", None,
              ("6", -1, "16", 0, "19", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "9", "1", "1",
+        test("6", "18", "21", "23", "6", "9", "1", "1", None,
              ("6", -1, "10", 0, "17", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "3", "1", "1",
+        test("6", "18", "21", "23", "6", "3", "1", "1", None,
              ("6", -1, "7", 0, "11", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", "15", "1", "1",
+        test("6", "18", "21", "23", "6", "15", "1", "1", None,
              ("6", -1, "16", 0, "20", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", None, "0", "0",
+        test("6", "18", "21", "23", "6", None, "0", "0", None,
              ("6", -1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", None, "0", "1",
+        test("6", "18", "21", "23", "6", None, "0", "1", None,
              ("6", -1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", None, "1", "0",
+        test("6", "18", "21", "23", "6", None, "1", "0", None,
              ("6", -1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "6", None, "1", "1",
+        test("6", "18", "21", "23", "6", None, "1", "1", None,
              ("6", -1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "2", "0", "0",
+        test("6", "18", "21", "23", "3", "2", "0", "0", None,
              ("6", 0, "6", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "2", "0", "1",
+        test("6", "18", "21", "23", "3", "2", "0", "1", None,
              ("6", 0, "7", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "2", "1", "0",
+        test("6", "18", "21", "23", "3", "2", "1", "0", None,
              ("6", -1, "7", 0, "7", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "2", "1", "1",
+        test("6", "18", "21", "23", "3", "2", "1", "1", None,
              ("6", -1, "7", 0, "8", +1, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "19", "0", "0",
+        test("6", "18", "21", "23", "3", "19", "0", "0", None,
              ("6", -1, "18", 0, "18", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "19", "0", "1",
+        test("6", "18", "21", "23", "3", "19", "0", "1", None,
              ("6", -1, "18", 0, "19", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "19", "1", "0",
+        test("6", "18", "21", "23", "3", "19", "1", "0", None,
              ("6", -1, "19", 0, "19", 2, "21", 3, "23"))
-        test("6", "18", "21", "23", "3", "19", "1", "1",
+        test("6", "18", "21", "23", "3", "19", "1", "1", None,
              ("6", -1, "19", 0, "20", 2, "21", 3, "23"))
+
+        # Test leave time
+        test("6", "18", None, None, "6", "9", "0", "0", "11",
+             ("6", -1, "9", 0, "11", +1, "18"))
+        test("6", "18", None, None, "6", "9", "0", "1", "11",
+             ("6", -1, "9", 0, "11", +1, "18"))
+        test("6", "18", None, None, "6", "9", "1", "0", "11",
+             ("6", -1, "10", 0, "11", +1, "18"))
+        test("6", "18", None, None, "6", "9", "1", "1", "11",
+             ("6", -1, "10", 0, "11", +1, "18"))
+        test("6", "18", None, None, "6", None, "0", "0", "11",
+             ("6", -1, "11", +1, "18"))
+        test("6", "18", None, None, "6", "9", "0", "0", "8",
+             ("6", -1, "8", +1, "18"))
+        test("6", "18", None, None, "6", "9", "0", "0", "9",
+             ("6", -1, "9", 0, "9", +1, "18"))
+        test("6", "18", None, None, "6", "9", "0", "0", "15",
+             ("6", -1, "9", 0, "15", +1, "18"))
+        test("6", "18", None, None, "6", "9", "0", "0", "16",
+             ("6", -1, "9", 0, "15", +1, "18"))
+        test("6", "18", "21", "23", "6", "9", "0", "0", "11",
+             ("6", -1, "9", 0, "11", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "0", "1", "11",
+             ("6", -1, "9", 0, "11", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "1", "0", "11",
+             ("6", -1, "10", 0, "11", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "1", "1", "11",
+             ("6", -1, "10", 0, "11", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", None, "0", "0", "11",
+             ("6", -1, "11", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "0", "0", "8",
+             ("6", -1, "8", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "0", "0", "9",
+             ("6", -1, "9", 0, "9", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "0", "0", "15",
+             ("6", -1, "9", 0, "15", +1, "18", 2, "21", 3, "23"))
+        test("6", "18", "21", "23", "6", "9", "0", "0", "16",
+             ("6", -1, "9", 0, "15", +1, "18", 2, "21", 3, "23"))
 
 
 if __name__ == "__main__":

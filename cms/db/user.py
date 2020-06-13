@@ -234,6 +234,13 @@ class Participation(Base):
         nullable=False,
         default=timedelta())
 
+    # Time when the contestant left the contest hall. After this time
+    # the contestant is not allowed to submit solutions or otherwise
+    # participate in the contest. Analysis mode is not affected.
+    leave_time = Column(
+        DateTime,
+        nullable=True)
+
     # Contest-specific password. If this password is not null then the
     # traditional user.password field will be "replaced" by this field's
     # value (only for this participation).

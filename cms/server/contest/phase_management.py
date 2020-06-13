@@ -36,7 +36,7 @@ from functools import wraps
 
 def compute_actual_phase(timestamp, contest_start, contest_stop,
                          analysis_start, analysis_stop, per_user_time,
-                         starting_time, delay_time, extra_time):
+                         starting_time, delay_time, extra_time, leave_time):
     """Determine the current phase and when the active phase is.
 
     The "actual phase" of the contest for a certain user is the status
@@ -92,12 +92,16 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
             (per_user_time is None or isinstance(per_user_time, timedelta)) and
             (starting_time is None or isinstance(starting_time, datetime)) and
             isinstance(delay_time, timedelta) and
-            isinstance(extra_time, timedelta))
+            isinstance(extra_time, timedelta) and
+            (leave_time is None or isinstance(leave_time, datetime)))
 
     assert contest_start <= contest_stop
     assert per_user_time is None or per_user_time >= timedelta()
     assert delay_time >= timedelta()
     assert extra_time >= timedelta()
+
+    if leave_time is not None and starting_time is not None and leave_time < starting_time:
+        starting_time = None
 
     if per_user_time is not None and starting_time is None:
         # "USACO-like" contest, but we still don't know when the user
@@ -105,14 +109,23 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
         actual_start = None
         actual_stop = None
 
-        if contest_start <= timestamp <= contest_stop:
+        if leave_time is None:
+            contest_leave = contest_stop
+        else:
+            contest_leave = min(contest_stop, leave_time)
+
+        if contest_start <= timestamp <= contest_leave:
             actual_phase = -1
             current_phase_begin = contest_start
-            current_phase_end = contest_stop
+            current_phase_end = contest_leave
         elif timestamp < contest_start:
             actual_phase = -2
             current_phase_begin = None
             current_phase_end = contest_start
+        elif contest_leave < timestamp <= contest_stop:
+            actual_phase = +1
+            current_phase_begin = contest_leave
+            current_phase_end = contest_stop
         elif contest_stop < timestamp:
             actual_phase = +2
             current_phase_begin = contest_stop
@@ -139,6 +152,9 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
         actual_stop = intended_stop + delay_time + extra_time
 
         assert contest_start <= actual_start <= actual_stop
+
+        if leave_time is not None:
+            actual_stop = min(actual_stop, leave_time)
 
         if actual_start <= timestamp <= actual_stop:
             actual_phase = 0

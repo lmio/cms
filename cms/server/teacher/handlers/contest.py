@@ -136,7 +136,65 @@ class ContestHandler(BaseHandler):
             self.r_params["header"] = header
             self.r_params["table"] = table
             self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
+            self.r_params["allow_contestant_leave"] = (
+                config.teacher_allow_contestant_leave and
+                contest.phase(self.timestamp) == 0
+            )
             self.render("contest.html", **self.r_params)
+
+
+class ContestantLeaveHandler(BaseHandler):
+    """Set or reset contestant leave time.
+
+    """
+    @tornado.web.authenticated
+    def post(self, participation_id):
+        if not config.teacher_allow_contestant_leave:
+            raise tornado.web.HTTPError(403)
+
+        p = Participation.get_from_id(participation_id, self.sql_session)
+        if p is None:
+            raise tornado.web.HTTPError(404)
+        if (p.contest_id not in config.teacher_active_contests or
+                userattr(p.user) != self.current_user):
+            raise tornado.web.HTTPError(403)
+
+        return_url = self.url("contest", p.contest.id)
+
+        if p.contest.phase(self.timestamp) != 0:
+            return self.redirect(return_url)
+
+        state = self.get_argument("state", "")
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        if state == "left":
+            if p.leave_time is None or p.leave_time > self.timestamp:
+                p.leave_time = self.timestamp
+                logger.info("Teacher set contestant %r on contest %s as left, "
+                            "from IP address %s, at %s.",
+                            p.user.username, p.contest.name, ip_address,
+                            self.timestamp)
+        elif state == "returned":
+            if p.leave_time is not None:
+                p.leave_time = None
+                logger.info("Teacher set contestant %r on contest %s as returned, "
+                            "from IP address %s, at %s.",
+                            p.user.username, p.contest.name, ip_address,
+                            self.timestamp)
+        else:
+            raise tornado.web.HTTPError(400)
+
+        self.sql_session.commit()
+
+        return self.redirect(return_url)
 
 
 class ImpersonateHandler(BaseHandler):
