@@ -32,7 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, itervalues
+from six import iteritems, itervalues
 
 import logging
 
@@ -185,13 +185,8 @@ class AdminWebServer(WebService):
                     .filter(Task.contest_id == contest_id)
             queries['total'] = total_query
 
-            stats = {}
-            keys = list(iterkeys(queries))
-            results = queries[keys[0]].union_all(
-                *(queries[key] for key in keys[1:])).all()
+            stats = {key: queries[key].one()[0] for key, query in iteritems(queries)}
 
-        for i, k in enumerate(keys):
-            stats[k] = results[i][0]
         stats['compiling'] += 2 * stats['total'] - sum(itervalues(stats))
 
         return stats
