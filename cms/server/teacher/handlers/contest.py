@@ -37,7 +37,7 @@ import logging
 
 import tornado.web
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import contains_eager, joinedload, subqueryload
 
 from cms import config
 from cms.db import Contest, Participation, User
@@ -103,14 +103,21 @@ class ContestHandler(BaseHandler):
         if contest is None:
             raise tornado.web.HTTPError(404)
 
+        contest = self.sql_session.query(Contest)\
+            .filter(Contest.id == contest.id)\
+            .options(subqueryload('tasks'))\
+            .options(joinedload('tasks.active_dataset'))\
+            .one()
+
         participations = self.sql_session.query(Participation)\
             .join(Participation.user)\
             .filter(Participation.contest == contest)\
             .filter(userattr(User) == self.current_user)\
+            .options(contains_eager('user'))\
             .options(joinedload('user.school'))\
-            .options(joinedload('submissions'))\
-            .options(joinedload('submissions.token'))\
-            .options(joinedload('submissions.results'))\
+            .options(subqueryload('submissions'))\
+            .options(subqueryload('submissions.token'))\
+            .options(subqueryload('submissions.results'))\
             .all()
 
         header, table = self.get_results_table(contest, participations)
