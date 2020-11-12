@@ -40,10 +40,11 @@ import tornado.web
 from sqlalchemy.orm import contains_eager, joinedload, subqueryload
 
 from cms import config
-from cms.db import Contest, Participation, User
+from cms.db import Contest, Participation, Task, User
 from cms.grading.scoring import task_score
-from cms.server import CommonRequestHandler
+from cms.server import CommonRequestHandler, FileHandlerMixin
 from cmscommon.datetime import make_timestamp
+from cmscommon.mimetypes import get_type_for_file_name
 
 from .base import BaseHandler
 
@@ -55,7 +56,32 @@ def userattr(user):
     return getattr(user, config.teacher_login_kind)
 
 
-class ContestHandler(BaseHandler):
+class BaseContestHandler(BaseHandler):
+    """Base handler for contest-related handlers.
+
+    """
+    def get_contest(self, contest_id):
+        if int(contest_id) not in config.teacher_active_contests:
+            raise tornado.web.HTTPError(404)
+        contest = Contest.get_from_id(contest_id, self.sql_session)
+        if contest is None:
+            raise tornado.web.HTTPError(404)
+        return contest
+
+    def should_show_task_statements(self, contest):
+        if config.teacher_show_task_statements == 'always':
+            return True
+        elif config.teacher_show_task_statements == 'after_start':
+            return contest.phase(self.timestamp) >= 0
+        else:
+            return False
+
+
+class ContestFileHandler(BaseContestHandler, FileHandlerMixin):
+    pass
+
+
+class ContestHandler(BaseContestHandler):
     """Contest result list handler.
 
     """
@@ -99,17 +125,20 @@ class ContestHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, contest_id, format="online"):
-        if int(contest_id) not in config.teacher_active_contests:
-            raise tornado.web.HTTPError(404)
-        contest = Contest.get_from_id(contest_id, self.sql_session)
-        if contest is None:
-            raise tornado.web.HTTPError(404)
+        contest = self.get_contest(contest_id)
 
-        contest = self.sql_session.query(Contest)\
+        show_task_statements = format == 'online' and self.should_show_task_statements(contest)
+
+        contest_query = self.sql_session.query(Contest)\
             .filter(Contest.id == contest.id)\
             .options(subqueryload('tasks'))\
-            .options(joinedload('tasks.active_dataset'))\
-            .one()
+            .options(joinedload('tasks.active_dataset'))
+        if show_task_statements:
+            contest_query = contest_query\
+                .options(subqueryload('tasks.statements'))\
+                .options(subqueryload('tasks.attachments'))\
+                .options(subqueryload('attachments'))
+        contest = contest_query.one()
 
         participations = self.sql_session.query(Participation)\
             .join(Participation.user)\
@@ -142,6 +171,7 @@ class ContestHandler(BaseHandler):
             self.finish()
         else:
             self.r_params["contest"] = contest
+            self.r_params["show_task_statements"] = show_task_statements
             self.r_params["header"] = header
             self.r_params["table"] = table
             self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
@@ -150,6 +180,85 @@ class ContestHandler(BaseHandler):
                 contest.phase(self.timestamp) == 0
             )
             self.render("contest.html", **self.r_params)
+
+
+class TaskStatementHandler(ContestFileHandler):
+    """Shows the statement file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    def get(self, contest_id, task_name, lang_code):
+        contest = self.get_contest(contest_id)
+        if not self.should_show_task_statements(contest):
+            raise tornado.web.HTTPError(404)
+
+        task = self.sql_session.query(Task)\
+            .filter(Task.contest == contest)\
+            .filter(Task.name == task_name)\
+            .one_or_none()
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        if lang_code not in task.statements:
+            raise tornado.web.HTTPError(404)
+
+        statement = task.statements[lang_code].digest
+        self.sql_session.close()
+
+        filename = "%s (%s).pdf" % (task.name, lang_code)
+
+        self.fetch(statement, "application/pdf", filename)
+
+
+class TaskAttachmentHandler(ContestFileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    def get(self, contest_id, task_name, filename):
+        contest = self.get_contest(contest_id)
+        if not self.should_show_task_statements(contest):
+            raise tornado.web.HTTPError(404)
+
+        task = self.sql_session.query(Task)\
+            .filter(Task.contest == contest)\
+            .filter(Task.name == task_name)\
+            .one_or_none()
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        if filename not in task.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = task.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
+
+
+class ContestAttachmentHandler(ContestFileHandler):
+    """Shows an attachment file of the contest.
+
+    """
+    @tornado.web.authenticated
+    def get(self, contest_id, filename):
+        contest = self.get_contest(contest_id)
+        if not self.should_show_task_statements(contest):
+            raise tornado.web.HTTPError(404)
+
+        if filename not in contest.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = contest.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
 
 
 class ContestantLeaveHandler(BaseHandler):
