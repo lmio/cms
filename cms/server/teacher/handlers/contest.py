@@ -60,13 +60,15 @@ class ContestHandler(BaseHandler):
 
     """
     def get_results_table(self, contest, participations):
+        show_results = config.teacher_show_results and contest.phase(self.timestamp) >= 0
+
         header = [
             self._("Username"),
             self._("Contestant"),
             self._("School"),
             self._("Grade"),
         ]
-        if config.teacher_show_results:
+        if show_results:
             for task in contest.tasks:
                 header.append(task.name)
             header.append(self._("Total"))
@@ -83,7 +85,7 @@ class ContestHandler(BaseHandler):
                 p.user.school.name if p.user.school else "",
                 p.user.grade if p.user.grade else "",
             ]
-            if config.teacher_show_results:
+            if show_results:
                 for task in contest.tasks:
                     t_score, t_partial = task_score(p, task, rounded=True)
                     score += t_score
