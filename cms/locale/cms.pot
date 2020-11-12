@@ -1110,6 +1110,9 @@ msgstr ""
 msgid "Back to contest list"
 msgstr ""
 
+msgid "Tasks"
+msgstr ""
+
 msgid "Export to CSV"
 msgstr ""
 

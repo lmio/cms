@@ -159,6 +159,7 @@ class Config:
         self.teacher_login_kind = "district"  # "district" or "school"
         self.teacher_allow_impersonate = False
         self.teacher_show_results = True
+        self.teacher_show_task_statements = "never"  # "never", "after_start" or "always"
         self.teacher_allow_registration = False
         self.teacher_registration_anonymous = False
 
