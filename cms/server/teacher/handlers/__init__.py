@@ -31,6 +31,9 @@ from .main import \
     RegisterHandler
 from .contest import \
     ContestHandler, \
+    TaskStatementHandler, \
+    TaskAttachmentHandler, \
+    ContestAttachmentHandler, \
     ContestantLeaveHandler, \
     ImpersonateHandler
 
@@ -42,6 +45,9 @@ HANDLERS = [
     (r"/register", RegisterHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/([a-z]+)", ContestHandler),
+    (r"/contest/([0-9]+)/task/(.+)/statement/(.+)", TaskStatementHandler),
+    (r"/contest/([0-9]+)/task/(.+)/attachment/(.+)", TaskAttachmentHandler),
+    (r"/contest/([0-9]+)/attachment/(.+)", ContestAttachmentHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
     (r"/contestant_leave/([0-9]+)", ContestantLeaveHandler),
 ]

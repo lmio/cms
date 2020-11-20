@@ -5,11 +5,57 @@
 <div class="span12">
 
 <div class="page-header">
-    <h1>{{ contest.description }}</h1>
+  <h1>{{ contest.description }}</h1>
+  <a href="{{ url() }}" style="float: right">{% trans %}Back to contest list{% endtrans %}</a>
 </div>
 
+{% if show_task_statements %}
+{% if contest.tasks|length > 0 %}
+<div>
+  <h3>{% trans %}Tasks{% endtrans %}</h3>
+  <ul>
+    {% for task in contest.tasks %}
+      <li>
+        {% if task.statements|length == 0 %}
+          {{ task.name }}
+        {% elif task.statements|length == 1 %}
+          {% for lang_code in task.statements %}
+            <a href="{{ url("contest", contest.id, "task", task.name, "statement", lang_code) }}">{{ task.name }}</a>
+          {% endfor %}
+        {% else %}
+          {{ task.name }} [
+          {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+            {% if statement.language in task.primary_statements %}<strong>{% endif %}
+            <a href="{{ url("contest", contest.id, "task", task.name, "statement", statement.language) }}">{{ statement.language }}</a>
+            {% if statement.language in task.primary_statements %}</strong>{% endif %}
+          {% endfor %}
+          ]
+        {% endif %}
+        {% if task.attachments|length > 0 %}
+          <ul>
+            {% for att_filename in task.attachments %}
+              <li><a href="{{ url("contest", contest.id, "task", task.name, "attachment", att_filename) }}">{{ att_filename }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if contest.attachments|length > 0 %}
+<div>
+  <h3>{% trans %}Attachments{% endtrans %}</h3>
+  <ul>
+    {% for att_filename in contest.attachments %}
+      <li><a href="{{ url("contest", contest.id, "attachment", att_filename) }}">{{ att_filename }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endif %}
+
 <p>
-  <a href="{{ url() }}">{% trans %}Back to contest list{% endtrans %}</a>
   <a style="float: right" href="{{ url("contest", contest.id, "csv") }}">{% trans %}Export to CSV{% endtrans %}</a>
 </p>
 

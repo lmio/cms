@@ -181,6 +181,10 @@
     "_help": "Whether to allow teachers to set contestants' leave time.",
     "teacher_allow_contestant_leave": false,
 
+    "_help": "Whether and when to allow teachers to download task statements",
+    "_help": "and attachments. May be 'never', 'after_start', or 'always'.",
+    "teacher_show_task_statements": "never",
+
 
 
     "_section": "ScoringService",
