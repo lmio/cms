@@ -404,7 +404,7 @@ class DumpImporter(object):
         if cls is User and args['username'] in self.users:
             existing_user = self.users[args['username']]
             if self.update_users:
-                for k, v in args.iteritems():
+                for k, v in iteritems(args):
                     setattr(existing_user, k, v)
             return existing_user
 
