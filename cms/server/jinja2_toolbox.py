@@ -3,6 +3,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2022 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,7 +29,8 @@ from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, \
+    PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE
 from cms.db import SubmissionResult, UserTestResult
 from cms.grading import format_status_text
 from cms.grading.languagemanager import get_language
@@ -151,6 +153,9 @@ def instrument_generic_toolbox(env):
 
     env.globals["FEEDBACK_LEVEL_FULL"] = FEEDBACK_LEVEL_FULL
     env.globals["FEEDBACK_LEVEL_RESTRICTED"] = FEEDBACK_LEVEL_RESTRICTED
+
+    env.globals["PARTICIPATION_LOCATION_ONSITE"] = PARTICIPATION_LOCATION_ONSITE
+    env.globals["PARTICIPATION_LOCATION_REMOTE"] = PARTICIPATION_LOCATION_REMOTE
 
     env.filters["all"] = all_
     env.filters["any"] = any_

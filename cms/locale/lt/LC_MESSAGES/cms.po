@@ -1222,3 +1222,12 @@ msgstr ""
 "el. paštą. Tokiu atveju į mokyklos oficialų el. paštą išsiųsime prašymą "
 "patvirtinti pageidaujamą el. paštą. Tik sulaukę patvirtinimo, galėsime "
 "siųsti informaciją į pageidaujamą el. paštą."
+
+msgid "Participation location"
+msgstr "Sprendimo vieta"
+
+msgid "On-site"
+msgstr "Mokykla"
+
+msgid "Remote"
+msgstr "Namai"

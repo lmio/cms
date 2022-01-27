@@ -135,6 +135,19 @@ function update_additional_answer(element, invoker)
         </td>
         <td><input type="text" name="extra_time" value="{{ participation.extra_time.total_seconds()|int }}"></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Where the user is participating from and how supervised they are."></span>
+          Participation location
+        </td>
+        <td>
+          <select name="location">
+            <option value="" {% if participation.location is none %}selected{% endif %}></option>
+            <option value="{{ PARTICIPATION_LOCATION_ONSITE }}" {% if participation.location == PARTICIPATION_LOCATION_ONSITE %}selected{% endif %}>On-site</option>
+            <option value="{{ PARTICIPATION_LOCATION_REMOTE }}" {% if participation.location == PARTICIPATION_LOCATION_REMOTE %}selected{% endif %}>Remote</option>
+          </select>
+        </td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />

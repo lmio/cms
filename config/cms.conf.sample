@@ -181,6 +181,10 @@
     "_help": "Whether to show contestants' results to teachers.",
     "teacher_show_results": true,
 
+    "_help": "Whether to allow teachers to set contestants' participation",
+    "_help": "location (on-site vs remote).",
+    "teacher_enable_participation_locations": true,
+
     "_help": "Whether and when to allow teachers to download task statements",
     "_help": "and attachments. May be 'never', 'after_start', or 'always'.",
     "teacher_show_task_statements": "never",

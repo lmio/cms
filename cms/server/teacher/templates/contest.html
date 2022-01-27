@@ -65,6 +65,9 @@
       {% for head in header %}
       <th>{{ head }}</th>
       {% endfor %}
+      {% if enable_participation_location %}
+      <th style="width: 1%">{% trans %}Participation location{% endtrans %}</th>
+      {% endif %}
       {% if allow_impersonate %}
       <th style="width: 1%"></th>
       {% endif %}
@@ -76,6 +79,23 @@
       {% for item in row %}
       <td>{{ item }}</td>
       {% endfor %}
+      {% if enable_participation_location %}
+      <td style="white-space: nowrap">
+        {% if enable_participation_location_edit %}
+        <form class="form-horizontal" style="margin: 0" enctype="multipart/form-data" action="{{ url("participation_location", p.id) }}" method="POST">
+          {{ xsrf_form_html|safe }}
+          <button type="{% if p.location == PARTICIPATION_LOCATION_ONSITE %}button{% else %}submit{% endif %}" name="location" value="onsite" class="btn{% if p.location == PARTICIPATION_LOCATION_ONSITE %} active{% endif %}">{% trans %}On-site{% endtrans %}</button>
+          <button type="{% if p.location == PARTICIPATION_LOCATION_REMOTE %}button{% else %}submit{% endif %}" name="location" value="remote" class="btn{% if p.location == PARTICIPATION_LOCATION_REMOTE %} active{% endif %}">{% trans %}Remote{% endtrans %}</button>
+        </form>
+        {% else %}
+          {% if p.location == PARTICIPATION_LOCATION_ONSITE %}
+            {% trans %}On-site{% endtrans %}
+          {% elif p.location == PARTICIPATION_LOCATION_REMOTE %}
+            {% trans %}Remote{% endtrans %}
+          {% endif %}
+        {% endif %}
+      </td>
+      {% endif %}
       {% if allow_impersonate %}
       <td style="white-space: nowrap"><a href="{{ url("impersonate", p.id) }}" class="btn" target="_blank">{% trans %}Log in as contestant{% endtrans %}</a></td>
       {% endif %}

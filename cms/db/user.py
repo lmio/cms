@@ -5,7 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2022 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
@@ -33,8 +33,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
-    Interval
+    Interval, Enum
 
+from cms import PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE
 from cmscommon.crypto import generate_random_password, build_password
 from . import CastingArray, Codename, Base, Admin, Contest, District, School
 
@@ -233,6 +234,12 @@ class Participation(Base):
         Boolean,
         nullable=False,
         default=False)
+
+    # Where the user is participating from and how supervised they are.
+    location = Column(
+        Enum(PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE,
+             name="participation_location"),
+        nullable=True)
 
     # An unrestricted participation (e.g. contest time,
     # maximum number of submissions, minimum interval between submissions,

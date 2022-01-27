@@ -1145,3 +1145,12 @@ msgid ""
 "email address. After receiving confirmation we will send details to your "
 "email address."
 msgstr ""
+
+msgid "Participation location"
+msgstr ""
+
+msgid "On-site"
+msgstr ""
+
+msgid "Remote"
+msgstr ""
