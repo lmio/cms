@@ -225,6 +225,7 @@ class ParticipationHandler(BaseHandler):
             self.get_datetime(attrs, "leave_time")
             self.get_bool(attrs, "hidden")
             self.get_bool(attrs, "unrestricted")
+            self.get_string(attrs, "location", empty=None)
 
             # Update the participation.
             participation.set_attrs(attrs)

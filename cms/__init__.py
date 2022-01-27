@@ -41,6 +41,7 @@ __all__ = [
     "TOKEN_MODE_DISABLED", "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE",
     "TOKEN_MODE_MIXED",
     "FEEDBACK_LEVEL_FULL", "FEEDBACK_LEVEL_RESTRICTED",
+    "PARTICIPATION_LOCATION_ONSITE", "PARTICIPATION_LOCATION_REMOTE",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # conf
@@ -76,6 +77,11 @@ FEEDBACK_LEVEL_FULL = "full"
 # Restricted set of information (no killing signal, time or memory, testcases
 # can be omitted).
 FEEDBACK_LEVEL_RESTRICTED = "restricted"
+
+# Participation location
+
+PARTICIPATION_LOCATION_ONSITE = "onsite"
+PARTICIPATION_LOCATION_REMOTE = "remote"
 
 
 from .conf import Address, ServiceCoord, ConfigError, async_config, config

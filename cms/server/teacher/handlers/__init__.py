@@ -34,6 +34,7 @@ from .contest import \
     TaskStatementHandler, \
     TaskAttachmentHandler, \
     ContestAttachmentHandler, \
+    ContestantLocationHandler, \
     ContestantLeaveHandler, \
     ImpersonateHandler
 
@@ -50,6 +51,7 @@ HANDLERS = [
     (r"/contest/([0-9]+)/attachment/(.+)", ContestAttachmentHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
     (r"/contestant_leave/([0-9]+)", ContestantLeaveHandler),
+    (r"/participation_location/([0-9]+)", ContestantLocationHandler),
 ]
 
 

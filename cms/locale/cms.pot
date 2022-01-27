@@ -1071,7 +1071,16 @@ msgid ""
 "email address."
 msgstr ""
 
+msgid "Participation location"
+msgstr ""
+
 msgid "Leave time"
+msgstr ""
+
+msgid "On-site"
+msgstr ""
+
+msgid "Remote"
 msgstr ""
 
 msgid "Contestant has left"

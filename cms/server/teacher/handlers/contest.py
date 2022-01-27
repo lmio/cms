@@ -39,7 +39,7 @@ import tornado.web
 
 from sqlalchemy.orm import contains_eager, joinedload, subqueryload
 
-from cms import config
+from cms import config, PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE
 from cms.db import Contest, Participation, Task, User
 from cms.grading.scoring import task_score
 from cms.server import CommonRequestHandler, FileHandlerMixin
@@ -175,6 +175,13 @@ class ContestHandler(BaseContestHandler):
             self.r_params["header"] = header
             self.r_params["table"] = table
             self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
+            self.r_params["enable_participation_location"] = (
+                config.teacher_enable_participation_locations
+            )
+            self.r_params["enable_participation_location_edit"] = (
+                config.teacher_enable_participation_locations and
+                contest.phase(self.timestamp) <= 0
+            )
             self.r_params["allow_contestant_leave"] = (
                 config.teacher_allow_contestant_leave and
                 contest.phase(self.timestamp) == 0
@@ -259,6 +266,51 @@ class ContestAttachmentHandler(ContestFileHandler):
             mimetype = 'application/octet-stream'
 
         self.fetch(attachment, mimetype, filename)
+
+
+class ContestantLocationHandler(BaseHandler):
+    """Set contestant participation location.
+
+    """
+    @tornado.web.authenticated
+    def post(self, participation_id):
+        if not config.teacher_enable_participation_locations:
+            raise tornado.web.HTTPError(403)
+
+        p = Participation.get_from_id(participation_id, self.sql_session)
+        if p is None:
+            raise tornado.web.HTTPError(404)
+        if (p.contest_id not in config.teacher_active_contests or
+                userattr(p.user) != self.current_user):
+            raise tornado.web.HTTPError(403)
+
+        return_url = self.url("contest", p.contest.id)
+
+        if p.contest.phase(self.timestamp) > 0:
+            return self.redirect(return_url)
+
+        location = self.get_argument("location", "")
+        if location not in (PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE):
+            raise tornado.web.HTTPError(400)
+
+        try:
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        p.location = location
+        logger.info("Teacher set location to %s for contestant %r on contest %s, "
+                    "from IP address %s, at %s.",
+                    location, p.user.username, p.contest.name, ip_address,
+                    self.timestamp)
+
+        self.sql_session.commit()
+
+        return self.redirect(return_url)
 
 
 class ContestantLeaveHandler(BaseHandler):

@@ -38,10 +38,11 @@ from datetime import timedelta
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
-    Interval
+    Interval, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
+from cms import PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE
 from cmscommon.crypto import generate_random_password, build_password
 
 from . import CastingArray, Codename, Base, Admin, Contest, District, School
@@ -254,6 +255,12 @@ class Participation(Base):
         Boolean,
         nullable=False,
         default=False)
+
+    # Where the user is participating from and how supervised they are.
+    location = Column(
+        Enum(PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE,
+             name="participation_location"),
+        nullable=True)
 
     # An unrestricted participation (e.g. contest time,
     # maximum number of submissions, minimum interval between submissions,
