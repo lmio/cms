@@ -137,6 +137,10 @@
     "_help": "STL documentation path in the system (exposed in CWS).",
     "stl_path": "/usr/share/cppreference/doc/html/",
 
+    "_help": "Python documentation path in the system (exposed in CWS).",
+    "_help": "This path is optional - if unset, the documentation handler",
+    "_help": "will not be exposed under /python.",
+    "python_doc_path": "/usr/share/doc/python3.7-doc/html/",
 
 
     "_section": "AdminWebServer",

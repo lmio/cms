@@ -539,6 +539,7 @@ class DocumentationHandler(ContestHandler):
     @multi_contest
     def get(self):
         self.render("documentation.html",
+                    python_doc_configured=config.python_doc_path is not None,
                     COMPILATION_MESSAGES=COMPILATION_MESSAGES,
                     EVALUATION_MESSAGES=EVALUATION_MESSAGES,
                     **self.r_params)
