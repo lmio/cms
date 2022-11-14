@@ -99,8 +99,14 @@ class ContestWebServer(WebService):
             shard=shard,
             listen_address=listen_address)
 
+        documentation_handlers = {
+            "/stl": config.stl_path,
+        }
+        if config.python_doc_path:
+            documentation_handlers["/python"] = config.python_doc_path
+
         self.wsgi_app = SharedDataMiddleware(
-            self.wsgi_app, {"/stl": config.stl_path},
+            self.wsgi_app, documentation_handlers,
             cache=True, cache_timeout=SECONDS_IN_A_YEAR,
             fallback_mimetype="application/octet-stream")
 
