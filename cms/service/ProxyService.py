@@ -29,6 +29,8 @@
 
 """
 
+import hashlib
+import hmac
 import json
 import logging
 import string
@@ -44,6 +46,7 @@ from cms import config
 from cms.db import SessionGen, Participation, Task, Submission, \
     get_submissions, get_active_contest_list
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
+from cmscommon.binary import hex_to_bin
 from cmscommon.datetime import make_timestamp
 
 
@@ -68,6 +71,15 @@ def encode_id(entity_id):
         else:
             encoded_id += char
     return encoded_id
+
+
+def encode_username(username):
+    """Hash the username to anonymize it.
+
+    username (unicode): the username to encode.
+    return (unicode): encoded (hashed) username.
+    """
+    return hmac.new(hex_to_bin(config.secret_key), username.encode(), hashlib.sha1).hexdigest()
 
 
 def safe_put_data(ranking, resource, data, operation):
@@ -132,6 +144,20 @@ def get_ranking_contests(index):
         return {contests}
 
 
+def get_ranking_anonymized(index):
+    """Get whether the contestants' names should be anonymized when sending
+    to the RWS specified by index.
+
+    index (int): The index of the RWS as specified in the config.
+
+    return (bool): Whether the contestants' names should be anonymized.
+
+    """
+    if index >= len(config.ranking_anonymized):
+        return False
+    return config.ranking_anonymized[index]
+
+
 class ProxyOperation(QueueItem):
     def __init__(self, type_, data, contest_id=None):
         self.type_ = type_
@@ -188,7 +214,7 @@ class ProxyExecutor(Executor):
     # before trying again.
     FAILURE_WAIT = 60.0
 
-    def __init__(self, ranking, contests):
+    def __init__(self, ranking, contests, anonymized):
         """Create a proxy for the ranking at the given URL.
 
         ranking (bytes): a complete URL (containing protocol, username,
@@ -201,6 +227,7 @@ class ProxyExecutor(Executor):
         self._ranking = ranking
         self._visible_ranking = safe_url(ranking)
         self.contests = contests
+        self.anonymized = anonymized
 
     def can_handle_contest(self, contest_id):
         """Determine whether data about contest_id should be sent to this RWS.
@@ -243,6 +270,12 @@ class ProxyExecutor(Executor):
 
         for entry in entries:
             data[entry.item.type_].update(entry.item.data)
+
+        if self.anonymized and data[self.USER_TYPE]:
+            data[self.USER_TYPE] = {
+                key: dict(value, f_name='---', l_name='---')
+                for key, value in data[self.USER_TYPE].items()
+            }
 
         try:
             for i in range(self.TYPE_COUNT):
@@ -309,7 +342,8 @@ class ProxyService(TriggeredService):
         self.rankings = list()
         for i, ranking in enumerate(config.rankings):
             contests = get_ranking_contests(i)
-            self.add_executor(ProxyExecutor(ranking, contests))
+            anonymized = get_ranking_anonymized(i)
+            self.add_executor(ProxyExecutor(ranking, contests, anonymized))
 
         # Enqueue the dispatch of some initial data to rankings. Needs
         # to be done before the sweeper is started, as otherwise RWS
@@ -379,7 +413,7 @@ class ProxyService(TriggeredService):
                     user = participation.user
                     team = participation.team
                     if not participation.hidden:
-                        users[encode_id(user.username)] = {
+                        users[encode_username(user.username)] = {
                             "f_name": user.first_name,
                             "l_name": user.last_name,
                             "team": encode_id(team.code)
@@ -427,7 +461,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.participation.user.username),
+            "user": encode_username(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 
@@ -463,7 +497,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.participation.user.username),
+            "user": encode_username(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 

@@ -171,6 +171,7 @@ class Config:
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
         self.ranking_contests = []
+        self.ranking_anonymized = []
 
         # PrintingService
         self.max_print_length = 10_000_000  # 10 MB
