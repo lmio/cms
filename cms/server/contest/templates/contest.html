@@ -198,12 +198,14 @@ $(document).ready(function () {
                             <li{% if page == "documentation" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("documentation") }}">{% trans %}Documentation{% endtrans %}</a>
                             </li>
-    {% if actual_phase == 0 or participation.unrestricted %}{# FIXME maybe >= 0? #}
+    {% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted %}
         {% if testing_enabled %}
                             <li{% if page == "testing" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{% trans %}Testing{% endtrans %}</a>
                             </li>
         {% endif %}
+    {% endif %}
+    {% if actual_phase == 0 or participation.unrestricted %}{# FIXME maybe >= 0? #}
         {% if printing_enabled %}
                             <li{% if page == "printing" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("printing") }}">{% trans %}Printing{% endtrans %}</a>

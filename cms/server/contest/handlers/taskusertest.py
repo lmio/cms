@@ -68,7 +68,7 @@ class UserTestInterfaceHandler(ContestHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def get(self):
         participation = self.current_user
@@ -124,7 +124,7 @@ class UserTestHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def post(self, task_name):
         if not self.r_params["testing_enabled"]:
@@ -170,7 +170,7 @@ class UserTestStatusHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, user_test_num):
         if not self.r_params["testing_enabled"]:
@@ -225,7 +225,7 @@ class UserTestDetailsHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, user_test_num):
         if not self.r_params["testing_enabled"]:
@@ -250,7 +250,7 @@ class UserTestIOHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, user_test_num, io):
         if not self.r_params["testing_enabled"]:
@@ -284,7 +284,7 @@ class UserTestFileHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, user_test_num, filename):
         if not self.r_params["testing_enabled"]:
