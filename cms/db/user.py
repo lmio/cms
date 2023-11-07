@@ -147,6 +147,11 @@ class User(Base):
         Unicode,
         nullable=True)
 
+    # Time of the registration
+    registration_timestamp = Column(
+        DateTime,
+        nullable=True)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 

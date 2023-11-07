@@ -275,7 +275,8 @@ class RegisterHandler(ContestHandler):
 
         # Everything's ok. Create the user and participation.
         # Set password on both.
-        user = User(username=username, password=password, **data)
+        user = User(username=username, password=password,
+                    registration_timestamp=self.timestamp, **data)
         participation = Participation(contest=self.contest, user=user,
                                       password=password)
         self.sql_session.add(user)
