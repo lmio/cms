@@ -125,6 +125,7 @@ class RegisterHandler(BaseHandler):
         for d in district_list:
             d.schools.sort(key=lambda s: lt_sort_key(s.name))
         params["district_list"] = district_list
+        params["registration_anonymous"] = config.teacher_registration_anonymous
         return params
 
     def get(self):
@@ -136,9 +137,13 @@ class RegisterHandler(BaseHandler):
         if not config.teacher_allow_registration:
             raise tornado.web.HTTPError(404)
 
-        first_name = self.get_argument("first_name", "")
-        last_name = self.get_argument("last_name", "")
-        email = self.get_argument("email", "")
+        if not config.teacher_registration_anonymous:
+            first_name = self.get_argument("first_name", "")
+            last_name = self.get_argument("last_name", "")
+            email = self.get_argument("email", "")
+        else:
+            first_name = last_name = ""
+            email = None
         district_id = self.get_argument("district", "")
         school_id = self.get_argument("school", "")
 
@@ -152,14 +157,15 @@ class RegisterHandler(BaseHandler):
             return None
 
         errors = []
-        if not first_name:
-            errors.append("first_name")
-        if not last_name:
-            errors.append("last_name")
-        if not email:
-            email = None
-        elif not self.email_re.match(email):
-            errors.append("email")
+        if not config.teacher_registration_anonymous:
+            if not first_name:
+                errors.append("first_name")
+            if not last_name:
+                errors.append("last_name")
+            if not email:
+                email = None
+            elif not self.email_re.match(email):
+                errors.append("email")
 
         try:
             district_id = int(district_id)

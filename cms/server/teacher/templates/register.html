@@ -60,6 +60,7 @@ $(document).ready(function () {
         <form class="form-horizontal" action="{{ url("register") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <fieldset>
+    {% if not registration_anonymous %}
                 <div class="control-group{% if errors is defined and "first_name" in errors %} error{% endif %}">
                     <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
                     <div class="controls">
@@ -72,6 +73,7 @@ $(document).ready(function () {
                         <input type="text" class="input-xlarge" name="last_name" value="{{ handler.get_argument("last_name", "") }}">
                     </div>
                 </div>
+    {% endif %}
                 <div class="control-group{% if errors is defined and "district" in errors %} error{% endif %}">
                     <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
                     <div class="controls">
@@ -104,6 +106,7 @@ $(document).ready(function () {
                     <div class="control-label">{% trans %}School's official email address to which details will be sent{% endtrans %}</div>
                     <div class="controls" style="padding-top: 5px"><span id="school-email"></span></div>
                 </div>
+    {% if not registration_anonymous %}
                 <div class="control-group">
                   {% trans %}If you want to use a different email address, enter it here. In that case we will send a request to confirm your email address to the school's official email address. After receiving confirmation we will send details to your email address.{% endtrans %}
                 </div>
@@ -113,10 +116,10 @@ $(document).ready(function () {
                         <input type="email" class="input-xlarge" name="email" value="{{ handler.get_argument("email", "") }}">
                     </div>
                 </div>
+    {% endif %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
-                        <button type="reset" class="btn btn-large">{% trans %}Reset{% endtrans %}</button>
                     </div>
                 </div>
             </fieldset>
