@@ -272,7 +272,8 @@ class RegistrationHandler(ContestHandler):
         # Store new user
         user = User(first_name, last_name, username, password, email=email,
                     country=country, district=district, city=city,
-                    school=school, grade=grade, registered_by=registered_by)
+                    school=school, grade=grade, registered_by=registered_by,
+                    registration_timestamp=self.timestamp)
         self.sql_session.add(user)
 
         return user, ret_password
