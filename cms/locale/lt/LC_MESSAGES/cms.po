@@ -2,15 +2,15 @@
 # Copyright © 2010-2015 CMS authors
 # This file is distributed under the same license as CMS.
 # Martynas Budriūnas <martynas.budriunas@gmail.com>, 2012.
-# Vytis Banaitis <vytis.banaitis@gmail.com>, 2014, 2017-2018.
+# Vytis Banaitis <vytis.banaitis@gmail.com>, 2014-2024.
 # Motiejus Jakštys <desired.mta@gmail.com>, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version:  0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
-"PO-Revision-Date: 2017-03-26 17:00+0300\n"
+"POT-Creation-Date: 2021-12-20 17:01+0200\n"
+"PO-Revision-Date: 2024-01-21 17:00+0200\n"
 "Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
 "Language: lt\n"
 "Language-Team: Lithuanian\n"
@@ -19,7 +19,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 2.6.0\n"
 
 msgid "N/A"
 msgstr "Nėra"
@@ -348,6 +348,9 @@ msgstr "Skaičiuojami taškai..."
 msgid "Evaluated"
 msgstr "Įvertinta"
 
+msgid "status"
+msgstr "būsena"
+
 msgid "Token request received"
 msgstr "Žetono užklausa gauta"
 
@@ -518,6 +521,12 @@ msgstr "Slaptažodis"
 
 msgid "Login"
 msgstr "Prisijungti"
+
+msgid "Don't have an account?"
+msgstr "Neturi paskyros?"
+
+msgid "Register"
+msgstr "Registruokis"
 
 msgid "New message"
 msgstr "Nauja žinutė"
@@ -846,6 +855,67 @@ msgstr "Paruošiama..."
 msgid "no print jobs yet"
 msgstr "spausdinimo darbų dar nėra"
 
+msgid "The passwords do not match!"
+msgstr "Slaptažodžiai nesutampa!"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Šis vartotojo vardas jau užimtas, pasirink kitokį."
+
+msgid "This user is already registered in the contest."
+msgstr "Šis vartotojas jau registruotas šiose varžybose."
+
+msgid "No such user."
+msgstr "Tokio vartotojo nėra."
+
+msgid "The password is not correct."
+msgstr "Slaptažodis neteisingas."
+
+msgid "Registration"
+msgstr "Registracija"
+
+msgid "Please fill in the fields to register"
+msgstr "Užpildyk registracijos formą"
+
+msgid "New user"
+msgstr "Naujas vartotojas"
+
+msgid "Join contest"
+msgstr "Prisijunkti prie varžybų"
+
+msgid "First name"
+msgstr "Vardas"
+
+msgid "Last name"
+msgstr "Pavardė"
+
+msgid "E-mail"
+msgstr "El. paštas"
+
+msgid "Representing"
+msgstr "Atstovauju"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] "Turi būti %(min_length)s ar daugiau simbolių."
+msgstr[1] "Turi būti %(min_length)s ar daugiau simbolių."
+msgstr[2] "Turi būti %(min_length)s ar daugiau simbolių."
+
+msgid "Confirm password"
+msgstr "Patvirtink slaptažodį"
+
+msgid "Registered in the contest successfully!"
+msgstr "Registracija varžyboms sėkminga!"
+
+msgid "Your username is:"
+msgstr "Tavo vartotojo vardas yra:"
+
+msgid "Your password is stored securely."
+msgstr "Tavo slaptažodis talpinamas saugiai."
+
+msgid "Back to login"
+msgstr "Grįžti į prisijungimą"
+
 msgid "Compilation output"
 msgstr "Kompiliavimo išvestis"
 
@@ -863,24 +933,6 @@ msgstr "Standartinė išvestis"
 
 msgid "Standard error"
 msgstr "Standartinė klaidų išvestis"
-
-msgid "None"
-msgstr "Nėra"
-
-msgid "Download"
-msgstr "Atsisiųsti"
-
-msgid "Played"
-msgstr "Panaudotas"
-
-msgid "Play!"
-msgstr "Naudoti!"
-
-msgid "Wait..."
-msgstr "Laukite..."
-
-msgid "No tokens"
-msgstr "Žetonų nėra"
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
@@ -1012,29 +1064,20 @@ msgstr "Šiuo metu neturi žetonų šiam uždaviniui."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Tačiau turi palaukti iki %(expiration_time)s, kad galėtum jį naudoti."
 
-msgid "Public score"
-msgstr "Vieši taškai"
+msgid "Unofficial submissions"
+msgstr "Neoficialūs pateikti sprendimai"
 
-msgid "Total score"
-msgstr "Visi taškai"
-
-msgid "Score"
-msgstr "Taškai"
-
-msgid "Official"
-msgstr "Oficialus"
-
-msgid "Token"
-msgstr "Žetonas"
-
-msgid "no submissions yet"
-msgstr "pateiktų sprendimų dar nėra"
+msgid "Official submissions"
+msgstr "Oficialūs pateikti sprendimai"
 
 msgid "Submission details"
 msgstr "Pateikto sprendimo detalės"
 
 msgid "Close"
 msgstr "Uždaryti"
+
+msgid "Download"
+msgstr "Atsisiųsti"
 
 msgid "Submit a test"
 msgstr "Pateikti testą"
@@ -1064,3 +1107,41 @@ msgstr "Testo detalės"
 msgid "Evaluation outcome"
 msgstr "Vertinimo išeiga"
 
+msgid "Wait..."
+msgstr "Laukite..."
+
+msgid "None"
+msgstr "Nėra"
+
+msgid "Public score"
+msgstr "Vieši taškai"
+
+msgid "Total score"
+msgstr "Visi taškai"
+
+msgid "Score"
+msgstr "Taškai"
+
+msgid "Token"
+msgstr "Žetonas"
+
+msgid "no submissions"
+msgstr "pateiktų sprendimų nėra"
+
+msgid "Played"
+msgstr "Panaudotas"
+
+msgid "Play!"
+msgstr "Naudoti!"
+
+msgid "No tokens"
+msgstr "Žetonų nėra"
+
+msgid "Invalid file"
+msgstr "Netinkamas failas"
+
+msgid "Print job has too many pages"
+msgstr "Per daug puslapių"
+
+msgid "Sent to printer"
+msgstr "Išsiųsta į spausdintuvą"
