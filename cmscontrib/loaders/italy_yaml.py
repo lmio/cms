@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2019 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
@@ -28,7 +28,7 @@ import logging
 import os
 import os.path
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import yaml
 
@@ -40,7 +40,6 @@ from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
-from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
 
@@ -117,6 +116,14 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def make_datetime(t):
+    if isinstance(t, datetime):
+        if t.tzinfo is not None:
+            t = t.astimezone(timezone.utc).replace(tzinfo=None)
+        return t
+    return datetime.utcfromtimestamp(t)
 
 
 def make_timedelta(t):
