@@ -25,6 +25,7 @@ function clearErrors() {
 }
 
 $(document).ready(function() {
+    {% if contest.registration_allow_join %}
     const passwordHelp = $("#password-input span.help-block").text();
 
     $("#register-pill").click(function(e) {
@@ -51,6 +52,7 @@ $(document).ready(function() {
         $("#form-divider").before($("#credentials"));
         $("#form-divider").hide();
     });
+    {% endif %}
 
     $("#signup").submit(function(e) {
         clearErrors();
@@ -111,10 +113,12 @@ $(document).ready(function() {
     <div id="signup-mask">
         <h1>{% trans %}Registration{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
+        {% if contest.registration_allow_join %}
         <ul class="nav nav-pills">
             <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
             <li id="join-pill"><a href="#" data-toggle="tab">{% trans %}Join contest{% endtrans %}</a></li>
         </ul>
+        {% endif %}
         <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
             {{ xsrf_form_html|safe }}
             {% set next_page = handler.get_argument("next", none) %}
@@ -139,11 +143,11 @@ $(document).ready(function() {
                     <div class="control-group">
                         <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
                         <div class="controls">
-                            <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="email" class="input-xlarge" name="email" id="email" autocomplete="email">
                         </div>
                     </div>
 
-                    {% if teams|length > 0 %}
+                    {% if contest.registration_require_team %}
                     <div class="control-group">
                         <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
                         <div class="controls">
@@ -163,7 +167,7 @@ $(document).ready(function() {
                     <div id="username-input" class="control-group">
                         <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_\-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block"></span>
                         </div>
                     </div>

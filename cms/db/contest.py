@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -116,6 +116,18 @@ class Contest(Base):
 
     # Whether the registration of new users is enabled.
     allow_registration = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to allow joining with an existing account.
+    registration_allow_join = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to require to select a team for registration.
+    registration_require_team = Column(
         Boolean,
         nullable=False,
         default=False)

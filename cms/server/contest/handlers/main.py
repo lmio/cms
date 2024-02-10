@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
 #
@@ -82,11 +82,19 @@ class RegistrationHandler(ContestHandler):
 
     MAX_INPUT_LENGTH = 50
     MIN_PASSWORD_LENGTH = 6
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
             raise tornado_web.HTTPError(404)
+
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
 
         create_new_user = self.get_argument("new_user") == "true"
 
@@ -94,6 +102,9 @@ class RegistrationHandler(ContestHandler):
         if create_new_user:
             user = self._create_user()
         else:
+            if not self.contest.registration_allow_join:
+                raise tornado_web.HTTPError(400)
+
             user = self._get_user()
 
             # Check if the participation exists
@@ -113,6 +124,10 @@ class RegistrationHandler(ContestHandler):
 
         self.sql_session.commit()
 
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
         self.finish(user.username)
 
     @multi_contest
@@ -122,8 +137,9 @@ class RegistrationHandler(ContestHandler):
 
         self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
         self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
-        self.r_params["teams"] = self.sql_session.query(Team)\
-                                     .order_by(Team.name).all()
+        if self.contest.registration_require_team:
+            self.r_params["teams"] = self.sql_session.query(Team)\
+                                         .order_by(Team.name).all()
 
         self.render("register.html", **self.r_params)
 
@@ -134,12 +150,13 @@ class RegistrationHandler(ContestHandler):
             username = self.get_argument("username")
             password = self.get_argument("password")
             email = self.get_argument("email")
-            if len(email) == 0:
-                email = None
 
             if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
             if not 1 <= len(last_name) <= self.MAX_INPUT_LENGTH:
+                raise ValueError()
+            if not 1 <= len(email) <= self.MAX_INPUT_LENGTH \
+                    or not self.email_re.match(email):
                 raise ValueError()
             if not 1 <= len(username) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
@@ -185,8 +202,7 @@ class RegistrationHandler(ContestHandler):
         return user
 
     def _get_team(self):
-        # If we have teams, we assume that the 'team' field is mandatory
-        if self.sql_session.query(Team).count() > 0:
+        if self.contest.registration_require_team:
             try:
                 team_code = self.get_argument("team")
                 team = self.sql_session.query(Team)\
