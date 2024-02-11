@@ -1090,3 +1090,9 @@ msgstr ""
 
 msgid "Output file"
 msgstr ""
+
+msgid "Here are your login details. Please write them down."
+msgstr ""
+
+msgid "Your password is:"
+msgstr ""

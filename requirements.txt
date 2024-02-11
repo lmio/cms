@@ -28,3 +28,6 @@ pyyaml>=5.3,<5.4  # http://pyyaml.org/wiki/PyYAML
 # Only for printing:
 pycups>=1.9,<1.10  # https://pypi.python.org/pypi/pycups
 PyPDF2>=1.26,<1.27  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+
+# LMIO extensions:
+unidecode>=1.1,<2.0  # https://github.com/avian2/unidecode/blob/master/ChangeLog

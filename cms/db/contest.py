@@ -132,6 +132,12 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Whether to autogenerate username and password for registration.
+    registration_auto_credentials = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Whether to enforce that the IP address of the request matches
     # the IP address or subnet specified for the participation (if
     # present).

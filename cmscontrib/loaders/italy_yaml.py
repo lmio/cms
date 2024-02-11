@@ -233,6 +233,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "allow_registration")
         load(conf, args, "registration_allow_join")
         load(conf, args, "registration_require_team")
+        load(conf, args, "registration_auto_credentials")
 
         args["attachments"] = {}
         for filename in load(conf, None, "attachments", conv=lambda val: val or []):

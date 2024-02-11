@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,7 +25,6 @@
 
 import binascii
 import random
-from string import ascii_lowercase
 
 import bcrypt
 from Cryptodome import Random
@@ -47,6 +47,7 @@ __all__ = [
 
 
 _RANDOM = Random.new()
+GENERATED_PASSWORD_ALPHABET = "abcdefghijkmnopqrstuvwxyz23456789"
 
 
 def get_random_key():
@@ -151,7 +152,7 @@ def generate_random_password():
     return (str): a random string.
 
     """
-    return "".join((random.choice(ascii_lowercase) for _ in range(6)))
+    return "".join((random.choice(GENERATED_PASSWORD_ALPHABET) for _ in range(8)))
 
 
 def parse_authentication(authentication):

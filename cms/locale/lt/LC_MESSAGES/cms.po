@@ -1160,3 +1160,9 @@ msgstr "Duomenų failas"
 
 msgid "Output file"
 msgstr "Rezultatų failas"
+
+msgid "Here are your login details. Please write them down."
+msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti."
+
+msgid "Your password is:"
+msgstr "Tavo slaptažodis yra:"

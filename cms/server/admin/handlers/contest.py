@@ -109,6 +109,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "registration_allow_join")
             self.get_bool(attrs, "registration_require_team")
+            self.get_bool(attrs, "registration_auto_credentials")
             self.get_bool(attrs, "ip_restriction")
             self.get_bool(attrs, "ip_autologin")
 
