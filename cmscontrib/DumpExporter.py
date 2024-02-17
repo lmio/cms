@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
-# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -48,7 +48,7 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Announcement, Participation, enumerate_files, District, School
+    Announcement, Participation, enumerate_files, District, School, Team
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -151,9 +151,6 @@ class DumpExporter:
                     .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
         else:
-            # FIXME: this is ATM broken, because if you export a contest, you
-            # then export the users who participated in it and then all of the
-            # contests those users participated in.
             self.contests_ids = contest_ids
             self.users_ids = []
             self.tasks_ids = []
@@ -341,6 +338,12 @@ class DumpExporter:
             # Skip generated data if requested
             if self.skip_generated and other_cls in (SubmissionResult,
                                                      UserTestResult):
+                continue
+
+            # Skip participations if contest is not included
+            if cls in (User, Team) and other_cls is Participation:
+                participations = getattr(obj, prp.key)
+                data[prp.key] = [self.get_id(p) for p in participations if p.contest_id in self.contests_ids]
                 continue
 
             val = getattr(obj, prp.key)

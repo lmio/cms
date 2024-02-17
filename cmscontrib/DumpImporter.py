@@ -8,7 +8,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -42,6 +42,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
@@ -52,7 +53,7 @@ from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
     Submission, SubmissionResult, User, Participation, UserTest, \
     UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files, \
-    District, School
+    District, School, Team, Admin
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -130,7 +131,8 @@ class DumpImporter:
 
     def __init__(self, drop, import_source,
                  load_files, load_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs):
+                 skip_submissions, skip_user_tests, skip_users, update_users,
+                 skip_print_jobs):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
@@ -138,6 +140,7 @@ class DumpImporter:
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
         self.skip_users = skip_users
+        self.update_users = update_users
         self.skip_print_jobs = skip_print_jobs
 
         self.import_source = import_source
@@ -231,6 +234,18 @@ class DumpImporter:
                     self.datas["_version"] = version + 1
 
                 assert self.datas["_version"] == model_version
+
+                if not self.skip_users:
+                    users = session.query(User).options(subqueryload(User.participations)).all()
+                    self.users = {u.username: u for u in users}
+                else:
+                    self.users = {}
+
+                admins = session.query(Admin).all()
+                self.admins = {a.username: a for a in admins}
+
+                teams = session.query(Team).all()
+                self.teams = {t.code: t for t in teams}
 
                 districts = session.query(District).all()
                 self.districts = {d.name: d for d in districts}
@@ -397,6 +412,22 @@ class DumpImporter:
             val = data[prp.key]
             args[prp.key] = decode_value(col.type, val)
 
+        if cls is User and args['username'] in self.users:
+            existing_user = self.users[args['username']]
+            if self.update_users:
+                for k, v in args.items():
+                    setattr(existing_user, k, v)
+            return existing_user
+
+        if cls is Admin:
+            if args['username'] in self.admins:
+                return self.admins[args['username']]
+            else:
+                args['enabled'] = False
+
+        if cls is Team and args['code'] in self.teams:
+            return self.teams[args['code']]
+
         return cls(**args)
 
     def add_relationships(self, data, obj):
@@ -417,9 +448,20 @@ class DumpImporter:
 
         cls = type(obj)
 
+        if cls is User and obj.username in self.users and not self.update_users:
+            return
+        if cls is Admin and obj.username in self.admins:
+            return
+        if cls is Team and obj.code in self.teams:
+            return
+
         for prp in cls._rel_props:
             if prp.key not in data:
                 # Relationships are always optional
+                continue
+            if cls in (User, Team) and prp.mapper.class_ is Participation:
+                # Don't override participation lists, we may need to add to them.
+                # Will be handled from Participations side.
                 continue
 
             val = data[prp.key]
@@ -499,8 +541,11 @@ def main():
                         help="don't import submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
                         help="don't import user tests")
-    parser.add_argument("-X", "--no-users", action="store_true",
-                        help="don't import users")
+    users_group = parser.add_mutually_exclusive_group()
+    users_group.add_argument("-X", "--no-users", action="store_true",
+                             help="don't import users")
+    users_group.add_argument("-u", "--update-users", action="store_true",
+                             help="update already existing users")
     parser.add_argument("-P", "--no-print-jobs", action="store_true",
                         help="don't import print jobs")
     parser.add_argument("import_source", action="store", type=utf8_decoder,
@@ -516,6 +561,7 @@ def main():
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
                             skip_users=args.no_users,
+                            update_users=args.update_users,
                             skip_print_jobs=args.no_print_jobs)
     success = importer.do_import()
     return 0 if success is True else 1

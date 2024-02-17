@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -137,7 +138,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def do_import(self, drop=False, load_files=True,
                   skip_generated=False, skip_submissions=False,
-                  skip_users=False):
+                  skip_users=False, update_users=False):
         """Create an importer and call do_import in a convenient way"""
         return DumpImporter(
             drop,
@@ -148,6 +149,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             skip_submissions=skip_submissions,
             skip_user_tests=False,
             skip_users=skip_users,
+            update_users=update_users,
             skip_print_jobs=False).do_import()
 
     def write_dump(self, dump):
@@ -304,6 +306,35 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
         self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
 
+    def test_import_doesnt_update_users(self):
+        """Test importing everything keeps existing users."""
+        self.existing_user = self.add_user(
+            username="username", last_name="old last name")
+        self.session.commit()
+
+        self.write_dump(TestDumpImporter.DUMP)
+        self.write_files(TestDumpImporter.FILES)
+
+        self.assertTrue(self.do_import())
+
+        self.assertContestInDb("contestname", "contest description 你好",
+                               [("taskname", "task title")],
+                               [("username", "old last name")])
+
+    def test_import_update_users(self):
+        """Test importing everything, update existing users."""
+        self.existing_user = self.add_user(
+            username="username", last_name="old last name")
+        self.session.commit()
+
+        self.write_dump(TestDumpImporter.DUMP)
+        self.write_files(TestDumpImporter.FILES)
+
+        self.assertTrue(self.do_import(update_users=True))
+
+        self.assertContestInDb("contestname", "contest description 你好",
+                               [("taskname", "task title")],
+                               [("username", "Last Name")])
 
     def test_import_old(self):
         """Test importing an old dump.
