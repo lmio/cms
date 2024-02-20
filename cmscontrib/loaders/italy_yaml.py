@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2019 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
@@ -27,7 +28,7 @@ import logging
 import os
 import os.path
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import yaml
 
@@ -39,7 +40,6 @@ from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
-from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
 
@@ -116,6 +116,14 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def make_datetime(t):
+    if isinstance(t, datetime):
+        if t.tzinfo is not None:
+            t = t.astimezone(timezone.utc).replace(tzinfo=None)
+        return t
+    return datetime.utcfromtimestamp(t)
 
 
 def make_timedelta(t):
@@ -217,6 +225,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
+        load(conf, args, "score_precision")
+
+        load(conf, args, "languages")
+        load(conf, args, "allowed_localizations")
+
         tasks = load(conf, None, ["tasks", "problemi"])
         participations = load(conf, None, ["users", "utenti"])
         participations = [] if participations is None else participations
@@ -262,10 +275,16 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, ["first_name", "nome"])
         load(conf, args, ["last_name", "cognome"])
 
+        load(conf, args, "email")
+
         if "first_name" not in args:
             args["first_name"] = ""
         if "last_name" not in args:
             args["last_name"] = args["username"]
+
+        primary_language = load(conf, None, "primary_language")
+        if primary_language is not None:
+            args["preferred_languages"] = [primary_language]
 
         logger.info("User parameters loaded.")
 
@@ -359,21 +378,40 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             primary_language = load(conf, None, "primary_language")
             if primary_language is None:
                 primary_language = 'it'
-            paths = [os.path.join(self.path, "statement", "statement.pdf"),
-                     os.path.join(self.path, "testo", "testo.pdf")]
-            for path in paths:
-                if os.path.exists(path):
-                    digest = self.file_cacher.put_file_from_path(
-                        path,
-                        "Statement for task %s (lang: %s)" %
-                        (name, primary_language))
-                    break
+            statement_languages = load(conf, None, "statement_languages")
+            if statement_languages is None:
+                paths = [os.path.join(self.path, "statement", "statement.pdf"),
+                         os.path.join(self.path, "testo", "testo.pdf")]
+                for path in paths:
+                    if os.path.exists(path):
+                        digest = self.file_cacher.put_file_from_path(
+                            path,
+                            "Statement for task %s (lang: %s)" %
+                            (name, primary_language))
+                        break
+                else:
+                    logger.critical("Couldn't find any task statement, aborting.")
+                    sys.exit(1)
+                args["statements"] = {
+                    primary_language: Statement(primary_language, digest)
+                }
             else:
-                logger.critical("Couldn't find any task statement, aborting.")
-                sys.exit(1)
-            args["statements"] = {
-                primary_language: Statement(primary_language, digest)
-            }
+                statements = {}
+                for language in statement_languages:
+                    path = os.path.join(
+                        self.path,
+                        "statement",
+                        "statement-%s.pdf" % language)
+                    if os.path.exists(path):
+                        digest = self.file_cacher.put_file_from_path(
+                            path,
+                            "Statement for task %s (lang: %s)" %
+                            (name, language))
+                        statements[language] = Statement(language, digest)
+                    else:
+                        logger.warning("Statement for language %s was not found",
+                                       language)
+                args["statements"] = statements
 
             args["primary_statements"] = [primary_language]
 
@@ -691,7 +729,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "Output %d for task %s" % (i, task.name))
             args["testcases"] += [
                 Testcase("%03d" % i, False, input_digest, output_digest)]
-            if args["task_type"] == "OutputOnly":
+            if args["task_type"] == "OutputOnly" and conf.get('attach_inputs', True):
                 task.attachments.set(
                     Attachment("input_%03d.txt" % i, input_digest))
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
@@ -797,7 +835,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         files.append(os.path.join(self.path, "gen", "GEN"))
 
         # Statement
-        files.append(os.path.join(self.path, "statement", "statement.pdf"))
+        for filename in os.listdir(os.path.join(self.path, "statement")):
+            files.append(os.path.join(self.path, "statement", filename))
         files.append(os.path.join(self.path, "testo", "testo.pdf"))
 
         # Managers
