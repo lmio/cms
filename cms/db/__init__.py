@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
@@ -75,7 +76,7 @@ __all__ = [
     # util
     "test_db_connection", "get_contest_list", "is_contest_id",
     "ask_for_contest", "get_submissions", "get_submission_results",
-    "get_datasets_to_judge", "enumerate_files"
+    "get_datasets_to_judge", "enumerate_files", "get_active_contest_list",
 ]
 
 
@@ -110,7 +111,7 @@ from .drop import drop_db
 
 from .util import test_db_connection, get_contest_list, is_contest_id, \
     ask_for_contest, get_submissions, get_submission_results, \
-    get_datasets_to_judge, enumerate_files
+    get_datasets_to_judge, enumerate_files, get_active_contest_list
 
 
 configure_mappers()

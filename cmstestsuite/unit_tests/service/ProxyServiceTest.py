@@ -54,7 +54,7 @@ class TestProxyService(DatabaseMixin, unittest.TestCase):
         self.addCleanup(patcher.stop)
         self.requests_put.return_value.status_code = 200
 
-        self.contest = self.add_contest()
+        self.contest = self.add_contest(active=True)
         self.contest.score_precision = 2
 
         self.task = self.add_task(contest=self.contest)
@@ -96,7 +96,7 @@ class TestProxyService(DatabaseMixin, unittest.TestCase):
 
     def test_startup(self):
         """Test that data is sent in the right order at startup."""
-        ProxyService(0, self.contest.id)
+        ProxyService(0)
 
         gevent.sleep(0.1)
 

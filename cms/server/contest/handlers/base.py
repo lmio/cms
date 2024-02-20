@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2019 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,7 +40,7 @@ except ImportError:
 from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
-from cms.db import Contest
+from cms.db import get_active_contest_list
 from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
 from cmscommon.datetime import utc as utc_tzinfo
@@ -167,7 +168,7 @@ class ContestListHandler(BaseHandler):
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS.
         contest_list = dict()
-        for contest in self.sql_session.query(Contest).all():
+        for contest in get_active_contest_list(self.sql_session):
             contest_list[contest.name] = contest
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)

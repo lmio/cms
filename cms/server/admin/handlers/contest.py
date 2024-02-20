@@ -7,6 +7,7 @@
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -126,6 +127,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "analysis_enabled")
             self.get_datetime(attrs, "analysis_start")
             self.get_datetime(attrs, "analysis_stop")
+
+            self.get_bool(attrs, "active")
 
             # Update the contest.
             contest.set_attrs(attrs)

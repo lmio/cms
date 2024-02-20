@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -74,6 +75,25 @@ def get_contest_list(session=None):
             return get_contest_list(session)
 
     return session.query(Contest).all()
+
+
+def get_active_contest_list(session=None):
+    """Return all active contest objects available on the database.
+
+    session (Session): if specified, use such session for connecting
+        to the database; otherwise, create a temporary one and discard
+        it after the operation (this means that no further expansion
+        of lazy properties of the returned Contest objects will be
+        possible).
+
+    return ([Contest]): the list of active contests in the DB.
+
+    """
+    if session is None:
+        with SessionGen() as session:
+            return get_active_contest_list(session)
+
+    return session.query(Contest).filter_by(active=True).all()
 
 
 def is_contest_id(contest_id):

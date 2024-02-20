@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -152,6 +153,7 @@ class Config:
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
+        self.ranking_contests = []
 
         # PrintingService
         self.max_print_length = 10_000_000  # 10 MB
