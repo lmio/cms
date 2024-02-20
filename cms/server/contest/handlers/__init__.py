@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -31,6 +32,7 @@ from .main import \
     LogoutHandler, \
     RegistrationHandler, \
     StartHandler, \
+    ContestAttachmentViewHandler, \
     NotificationsHandler, \
     PrintingHandler, \
     DocumentationHandler
@@ -62,6 +64,7 @@ HANDLERS = [
     (r"/logout", LogoutHandler),
     (r"/register", RegistrationHandler),
     (r"/start", StartHandler),
+    (r"/attachments/(.*)", ContestAttachmentViewHandler),
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),

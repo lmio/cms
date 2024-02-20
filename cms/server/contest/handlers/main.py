@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
 #
@@ -49,7 +50,8 @@ from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
 from cmscommon.crypto import hash_password, validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
-from .contest import ContestHandler
+from cmscommon.mimetypes import get_type_for_file_name
+from .contest import ContestHandler, FileHandler
 from ..phase_management import actual_phase_required
 
 
@@ -269,6 +271,27 @@ class LogoutHandler(ContestHandler):
     def post(self):
         self.clear_cookie(self.contest.name + "_login")
         self.redirect(self.contest_url())
+
+
+class ContestAttachmentViewHandler(FileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @tornado_web.authenticated
+    @actual_phase_required(0, 3)
+    @multi_contest
+    def get(self, filename):
+        if filename not in self.contest.attachments:
+            raise tornado_web.HTTPError(404)
+
+        attachment = self.contest.attachments[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(attachment, mimetype, filename)
 
 
 class NotificationsHandler(ContestHandler):
