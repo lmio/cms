@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
@@ -119,6 +119,51 @@ class Contest(Base):
         Boolean,
         nullable=False,
         default=False)
+
+    # Whether to allow student registration by their parents. May be used
+    # regardless of allow_registration.
+    allow_registration_by_parent = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to allow joining with an existing account.
+    registration_allow_join = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to require to select a team for registration.
+    registration_require_team = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to autogenerate username and password for registration.
+    registration_auto_credentials = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Should registration ask for country name.
+    registration_require_country = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Should registration include school related fields. Useful only if
+    # allow_registration is True.
+    registration_require_school_details = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Allowed grades in registration. Useful only if allow_registration
+    # and registration_require_school_details are True.
+    registration_allowed_grades = Column(
+        ARRAY(Integer),
+        nullable=False,
+        default=[])
 
     # Whether to enforce that the IP address of the request matches
     # the IP address or subnet specified for the participation (if

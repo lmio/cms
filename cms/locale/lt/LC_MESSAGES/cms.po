@@ -1160,3 +1160,89 @@ msgstr "Duomenų failas"
 
 msgid "Output file"
 msgstr "Rezultatų failas"
+
+msgid "Here are your login details. Please write them down."
+msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti."
+
+msgid "Your password is:"
+msgstr "Tavo slaptažodis yra:"
+
+msgid ""
+"This form is for contestants aged 14 or older, or younger contestants whose "
+"parents have submitted acceptance letters for them to register and "
+"participate in the contest. Other contestants, please contact supervising "
+"teacher."
+msgstr ""
+"Ši forma skirta dalyviams turintiems 14 ar daugiau metų arba jaunesniems, "
+"kurių tėvai/globėjai pateikė sutikimus registruotis sistemoje ir dalyvauti "
+"olimpiadoje. Kiti dalyviai turėtų kreiptis į informatikos mokytoją."
+
+msgid "District"
+msgstr "Savivaldybė"
+
+msgid "Country"
+msgstr "Valstybė"
+
+msgid "City"
+msgstr "Miestas"
+
+msgid "School"
+msgstr "Mokykla"
+
+msgid "Grade"
+msgstr "Klasė"
+
+msgid "Student"
+msgstr "Mokinys"
+
+msgid "Guest"
+msgstr "Svečias"
+
+#, python-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
+"\"_blank\">Personal Data Management Policy</a>, <br />or my parents have "
+"submitted an acceptance letter for me to register and participate in the "
+"contest."
+msgstr ""
+"Man yra 14 ar daugiau metų ir susipažinau su <a href=\"%(policy_url)s\" "
+"target=\"_blank\">asmens duomenų tvarkymo nuostatomis</a>, <br />arba mano "
+"tėvai/globėjai pateikė sutikimą registruotis sistemoje ir dalyvauti "
+"olimpiadoje."
+
+#, python-format
+msgid ""
+"I am 14 years or older and agree to the <a href=\"%(policy_url)s\" target="
+"\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+"Man yra 14 ar daugiau metų ir susipažinau su <a href=\"%(policy_url)s\" "
+"target=\"_blank\">asmens duomenų tvarkymo nuostatomis</a>."
+
+msgid ""
+"Login details will be sent to the provided email address before the contest."
+msgstr ""
+"Prisijungimo duomenys bus nusiųsti į pateiktą el.pašto adresą prieš varžybas."
+
+msgid "Register a contestant"
+msgstr "Dalyvio registracija"
+
+msgid "Student's first name"
+msgstr "Mokinio vardas"
+
+msgid "Student's last name"
+msgstr "Mokinio pavardė"
+
+msgid "Student's email"
+msgstr "Mokinio el. paštas"
+
+msgid "Submitter's full name"
+msgstr "Pildančio asmens vardas, pavardė"
+
+#, python-format
+msgid ""
+"I am legal guardian of this child and agree to the <a href=\""
+"%(policy_url)s\" target=\"_blank\">Personal Data Management Policy</a>."
+msgstr ""
+"Aš esu šio vaiko įstatyminis atstovas, susipažinau ir sutinku su <a href=\""
+"%(policy_url)s\" target=\"_blank\">asmens duomenų tvarkymo nuostatomis LMIO "
+"mokyklos ir miesto/rajono etapuose</a>."

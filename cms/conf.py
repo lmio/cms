@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2018 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -123,6 +123,7 @@ class Config:
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
         self.secret_key = self.secret_key_default
         self.tornado_debug = False
+        self.data_management_policy_url = None
 
         # ContestWebServer.
         self.contest_listen_address = [""]

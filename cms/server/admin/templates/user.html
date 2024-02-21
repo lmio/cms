@@ -170,6 +170,13 @@
         </td>
         <td><input type="text" name="grade" value="{{ user.grade if user.grade is not none else "" }}" /></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Person who registered this participant and agreed to data management policy, if any."></span>
+          Registered by
+        </td>
+        <td><input type="text" name="registered_by" value="{{ user.registered_by if user.registered_by is not none else "" }}" /></td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />

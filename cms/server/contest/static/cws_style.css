@@ -225,13 +225,15 @@ div.register_box form {
     margin-bottom: 0;
 }
 
-div.register_box form fieldset div.control-group:last-child {
-    margin-bottom: 0;
-}
-
 div.register_box {
     max-width: 450px;
     margin: 20px auto;
+}
+
+@media (min-width: 768px) {
+    div.register_box fieldset div.control-group div.controls select {
+        width: 280px;
+    }
 }
 
 /* Some fixes and enhancements of Bootstrap */
@@ -1049,3 +1051,7 @@ td.token_rules p:last-child {
     background-color: white;
     border: 1px solid #e5e5e5;
 }
+
+
+/* Missing style from bootstrap.css */
+select{background-color:#ffffff;border:1px solid #cccccc;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);-moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);-webkit-transition:border linear 0.2s,box-shadow linear 0.2s;-moz-transition:border linear 0.2s,box-shadow linear 0.2s;-ms-transition:border linear 0.2s,box-shadow linear 0.2s;-o-transition:border linear 0.2s,box-shadow linear 0.2s;transition:border linear 0.2s,box-shadow linear 0.2s;}

@@ -7,97 +7,8 @@
 {% block body %}
 
 <script>
-const registerFields = [
-    "first_name",
-    "last_name",
-    "email",
-    {% if contest.registration_require_country %}
-    "country",
-    {% endif %}
-    {% if not contest.registration_auto_credentials %}
-    "password-confirm",
-    {% endif %}
-    {% if contest.registration_require_school_details %}
-    "role-student",
-    "role-guest",
-    {% endif %}
-];
-const joinFields = [
-    {% if contest.registration_auto_credentials %}
-    "username",
-    "password",
-    {% endif %}
-];
-{% if contest.registration_require_school_details %}
-const schoolFields = [
-    "district",
-    "city",
-    "school",
-    "grade",
-];
-{% endif %}
-
-function clearErrors() {
-    // Reset error text
-    $("#password-input").removeClass("error");
-    $("#password-input span.help-block").hide().text("");
-    $("#password-confirm-input").removeClass("error");
-    $("#password-confirm-input span.help-block").hide().text("");
-    $("#username-input").removeClass("error");
-    $("#username-input span.help-block").hide().text("");
-}
-
 $(document).ready(function() {
-    function showField(fieldName) {
-        $(`#${fieldName}`).prop("disabled", false);
-        $(`#${fieldName}`).closest(".control-group").show();
-    }
-
-    function hideField(fieldName) {
-        $(`#${fieldName}`).prop("disabled", true);
-        $(`#${fieldName}`).closest(".control-group").hide();
-    }
-
-    {% if contest.registration_allow_join %}
-    const passwordHelp = $("#password-input span.help-block").text();
-
-    $("#register-pill").click(function(e) {
-        clearErrors();
-        $("#password-input span.help-block").show().text(passwordHelp);
-        $('input[name=new_user]').val(true);
-        joinFields.forEach(hideField);
-        registerFields.forEach(showField);
-        {% if contest.registration_require_school_details %}
-        if ($('input[type=radio][name="role"]:checked').val() === 'student') {
-            schoolFields.forEach(showField);
-        }
-        {% endif %}
-        $("#profile").after($("#participation"));
-        $("#form-divider").show();
-    });
-
-    $("#join-pill").click(function(e) {
-        clearErrors();
-        $('input[name=new_user]').val(false);
-        registerFields.forEach(hideField);
-        {% if contest.registration_require_school_details %}
-        schoolFields.forEach(hideField);
-        {% endif %}
-        joinFields.forEach(showField);
-        $("#credentials").after($("#participation"));
-        $("#form-divider").hide();
-    });
-    {% endif %}
-
     {% if contest.registration_require_school_details %}
-    $('input[type=radio][name="role"]').change(function(ev) {
-        if (ev.target.value === 'student') {
-            schoolFields.forEach(showField);
-        } else {
-            schoolFields.forEach(hideField);
-        }
-    });
-
     let $select_district = $('select[name="district"]');
     let $select_school = $('select[name="school"]');
     let $no_school = $select_school.children('option[value=""]').clone();
@@ -120,12 +31,20 @@ $(document).ready(function() {
     {% endif %}
 
     $("#signup").submit(function(e) {
-        clearErrors();
+        {% if not contest.registration_auto_credentials %}
+        // Reset error text
+        $("#password-input").removeClass("error");
+        $("#password-input span.help-block").hide().text("");
+        $("#password-confirm-input").removeClass("error");
+        $("#password-confirm-input span.help-block").hide().text("");
+        $("#username-input").removeClass("error");
+        $("#username-input span.help-block").hide().text("");
+        {% endif %}
 
-        let isNewUser = $('input[name=new_user]').val() == 'true';
+        const withCredentials = {% if not contest.registration_auto_credentials %}true{% else %}false{% endif %};
 
         // Check that passwords are the same
-        if (isNewUser && registerFields.includes("password-confirm") && $("#password").val() !== $("#password-confirm").val()) {
+        if (withCredentials && $("#password").val() !== $("#password-confirm").val()) {
             $("#password-confirm-input").addClass("error");
             $("#password-confirm-input span.help-block").show().text("{% trans %}The passwords do not match!{% endtrans %}");
             $("#password-confirm").focus();
@@ -138,22 +57,15 @@ $(document).ready(function() {
             $.post(url, data).done(function(data) {
                 $("#signup-mask").hide();
                 $("#confirmed-mask").show();
-                let [username, password] = data.split(":");
-                $("#show-username").text(username);
-                $("#show-password").text(password || "");
+                {% if not contest.registration_auto_credentials %}
+                $("#show-username").text(data);
+                {% endif %}
             }).fail(function(data) {
                 if (data.status === 409) {
-                    if (isNewUser) {
-                        // Username is already used
-                        $("#username-input").addClass("error");
-                        $("#username-input span.help-block").show().text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
-                        $("#username").focus();
-                    } else {
-                        // User is already participating in this contest
-                        $("#username-input").addClass("error");
-                        $("#username-input span.help-block").show().text("{% trans %}This user is already registered in the contest.{% endtrans %}");
-                        $("#username").focus();
-                    }
+                    // Username is already used
+                    $("#username-input").addClass("error");
+                    $("#username-input span.help-block").show().text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
+                    $("#username").focus();
                 } else if (data.status === 404) {
                     // Invalid username
                     $("#username-input").addClass("error");
@@ -178,40 +90,27 @@ $(document).ready(function() {
 
 <div class="register_box hero-unit">
     <div id="signup-mask">
-        <h1>{% trans %}Registration{% endtrans %}</h1>
+        <h1>{% trans %}Register a contestant{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
-        {% if policy_url and contest.allow_registration_by_parent %}
-        <p>{% trans %}This form is for contestants aged 14 or older, or younger contestants whose parents have submitted acceptance letters for them to register and participate in the contest. Other contestants, please contact supervising teacher.{% endtrans %}</p>
-        {% endif %}
-        {% if contest.registration_allow_join %}
-        <ul class="nav nav-pills">
-            <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
-            <li id="join-pill"><a href="#" data-toggle="tab">{% trans %}Join contest{% endtrans %}</a></li>
-        </ul>
-        {% endif %}
-        <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
+        <form id="signup" class="form-horizontal" action="{{ contest_url('register_by_parent') }}">
             {{ xsrf_form_html|safe }}
-            {% set next_page = handler.get_argument("next", none) %}
-            {% if next_page is not none %}
-            <input type="hidden" name="next" value="{{ next_page }}">
-            {% endif %}
             <input type="hidden" name="new_user" value="true" />
             <fieldset>
                 <div id="profile">
                     <div class="control-group">
-                        <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
+                        <label class="control-label" for="first_name">{% trans %}Student's first name{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
+                        <label class="control-label" for="last_name">{% trans %}Student's last name{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
+                        <label class="control-label" for="email">{% trans %}Student's email{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="email" class="input-xlarge" name="email" id="email" autocomplete="email">
                         </div>
@@ -225,20 +124,11 @@ $(document).ready(function() {
                     </div>
                     {% endif %}
                     {% if contest.registration_require_school_details %}
+                    <input type="hidden" name="role" value="student" />
                     <div class="control-group">
-                        <div class="controls">
-                            <label class="inline radio"><input required type="radio" name="role" value="student" id="role-student" />
-                                <span>{% trans %}Student{% endtrans %}</span>
-                            </label>
-                            <label class="inline radio"><input required type="radio" name="role" value="guest" id="role-guest" />
-                                <span>{% trans %}Guest{% endtrans %}</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="control-group" style="display: none">
                         <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="district" name="district" class="form-control" disabled>
+                            <select required id="district" name="district" class="form-control">
                                 <option value="">---</option>
                                 {% for d in district_list %}
                                 <option value="{{ d.id }}">{{ d.name }}</option>
@@ -246,16 +136,16 @@ $(document).ready(function() {
                             </select>
                         </div>
                     </div>
-                    <div class="control-group" style="display: none">
+                    <div class="control-group">
                         <label class="control-label" for="city">{% trans %}City{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="city" id="city" disabled>
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="city" id="city">
                         </div>
                     </div>
-                    <div class="control-group" style="display: none">
+                    <div class="control-group">
                         <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="school" name="school" class="form-control" disabled>
+                            <select required id="school" name="school" class="form-control">
                                 <option value="">---</option>
                                 {% for d in district_list %}
                                 <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
@@ -267,10 +157,10 @@ $(document).ready(function() {
                             </select>
                         </div>
                     </div>
-                    <div class="control-group" style="display: none">
+                    <div class="control-group">
                         <label class="control-label" for="grade">{% trans %}Grade{% endtrans %}</label>
                         <div class="controls">
-                            <select required id="grade" name="grade" class="form-control" disabled>
+                            <select required id="grade" name="grade" class="form-control">
                                 <option value="">--</option>
                                 {% for i in contest.registration_allowed_grades or range(1, 13) %}
                                 <option value="{{ i }}">{{ i }}</option>
@@ -298,7 +188,6 @@ $(document).ready(function() {
 
                 {% if not contest.registration_auto_credentials %}
                 <hr id="form-divider">
-                {% endif %}
 
                 <div id="credentials">
                     <div id="username-input" class="control-group" {% if contest.registration_auto_credentials %}style="display: none"{% endif %}>
@@ -331,16 +220,20 @@ $(document).ready(function() {
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
+
+                <div class="control-group">
+                    <label class="control-label" for="registered_by">{% trans %}Submitter's full name{% endtrans %}</label>
+                    <div class="controls">
+                        <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="registered_by" id="registered_by">
+                    </div>
+                </div>
 
                 {% if policy_url %}
                 <div class="control-group">
                     <div class="controls">
                         <label class="checkbox"><input required type="checkbox" name="accept_terms" value="yes" />
-                            {% if contest.allow_registration_by_parent %}
-                            <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>, <br />or my parents have submitted an acceptance letter for me to register and participate in the contest.{% endtrans %}</span>
-                            {% else %}
-                            <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>.{% endtrans %}</span>
-                            {% endif %}
+                            <span>{% trans policy_url=policy_url %}I am legal guardian of this child and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>.{% endtrans %}</span>
                         </label>
                     </div>
                 </div>
@@ -357,23 +250,19 @@ $(document).ready(function() {
     </div>
 
     <div id="confirmed-mask" style="display: none;">
-        <h1>{% trans %}Registration{% endtrans %}</h1>
+        <h1>{% trans %}Register a contestant{% endtrans %}</h1>
 
         <p>{% trans %}Registered in the contest successfully!{% endtrans %}</p>
 
         {% if contest.registration_auto_credentials %}
-        <p>{% trans %}Here are your login details. Please write them down.{% endtrans %}</p>
-        {% endif %}
+        <p>{% trans %}Login details will be sent to the provided email address before the contest.{% endtrans %}</p>
+        {% else %}
 
         <p>{% trans %}Your username is:{% endtrans %}</p>
 
         <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
         </p>
 
-        {% if contest.registration_auto_credentials %}
-        <p>{% trans %}Your password is:{% endtrans %}</p>
-        <p id="show-password" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;"></p>
-        {% else %}
         <p>{% trans %}Your password is stored securely.{% endtrans %}</p>
         {% endif %}
 

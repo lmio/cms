@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
 #
@@ -32,23 +32,27 @@
 import ipaddress
 import json
 import logging
+import random
 import re
 
 try:
     import tornado4.web as tornado_web
 except ImportError:
     import tornado.web as tornado_web
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.orm.exc import NoResultFound
+from unidecode import unidecode
 
 from cms import config
-from cms.db import PrintJob, User, Participation, Team
+from cms.db import PrintJob, User, Participation, Team, District, School
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
-from cmscommon.crypto import hash_password, validate_password
+from cms.util import lt_sort_key
+from cmscommon.crypto import hash_password, validate_password, generate_random_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 from .contest import ContestHandler, FileHandler
@@ -82,19 +86,76 @@ class RegistrationHandler(ContestHandler):
 
     MAX_INPUT_LENGTH = 50
     MIN_PASSWORD_LENGTH = 6
+    email_re = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+    def render_params(self):
+        params = super().render_params()
+
+        params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
+        params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
+        if self.contest.registration_require_team:
+            params["teams"] = self.sql_session.query(Team)\
+                                  .order_by(Team.name).all()
+
+        if self.contest.registration_require_school_details:
+            district_list = (self.sql_session.query(District)
+                             .options(subqueryload(District.schools))
+                             .all())
+            district_list.sort(key=lambda d: lt_sort_key(d.name))
+            for d in district_list:
+                d.schools.sort(key=lambda s: lt_sort_key(s.name))
+            params["district_list"] = district_list
+
+        params["policy_url"] = config.data_management_policy_url
+        return params
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado_web.HTTPError(404)
+        self.render("register.html", **self.r_params)
 
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
             raise tornado_web.HTTPError(404)
 
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        user, password = self.do_register()
+
+        logger.info("New user registered from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        if password is not None:
+            resp = f"{user.username}:{password}"
+        else:
+            resp = user.username
+        self.finish(resp)
+
+    def do_register(self, require_registered_by=False):
+        if config.data_management_policy_url:
+            accept_terms = self.get_argument("accept_terms", None)
+            if accept_terms != 'yes':
+                raise tornado_web.HTTPError(400)
+
         create_new_user = self.get_argument("new_user") == "true"
 
         # Get or create user
         if create_new_user:
-            user = self._create_user()
+            user, password = self._create_user(require_registered_by=require_registered_by)
         else:
+            if not self.contest.registration_allow_join:
+                raise tornado_web.HTTPError(400)
+
             user = self._get_user()
+            password = None
 
             # Check if the participation exists
             contest = self.contest
@@ -113,46 +174,93 @@ class RegistrationHandler(ContestHandler):
 
         self.sql_session.commit()
 
-        self.finish(user.username)
+        return user, password
 
-    @multi_contest
-    def get(self):
-        if not self.contest.allow_registration:
-            raise tornado_web.HTTPError(404)
-
-        self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
-        self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
-        self.r_params["teams"] = self.sql_session.query(Team)\
-                                     .order_by(Team.name).all()
-
-        self.render("register.html", **self.r_params)
-
-    def _create_user(self):
+    def _create_user(self, require_registered_by=False):
         try:
             first_name = self.get_argument("first_name")
             last_name = self.get_argument("last_name")
-            username = self.get_argument("username")
-            password = self.get_argument("password")
             email = self.get_argument("email")
-            if len(email) == 0:
-                email = None
 
             if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
             if not 1 <= len(last_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-            if not 1 <= len(username) <= self.MAX_INPUT_LENGTH:
+            if not 1 <= len(email) <= self.MAX_INPUT_LENGTH \
+                    or not self.email_re.match(email):
                 raise ValueError()
-            if not re.match(r"^[A-Za-z0-9_-]+$", username):
-                raise ValueError()
-            if not self.MIN_PASSWORD_LENGTH <= len(password) \
-                    <= self.MAX_INPUT_LENGTH:
-                raise ValueError()
+
+            if self.contest.registration_require_country:
+                country = self.get_argument("country")
+
+                if not 1 <= len(country) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+
+            else:
+                country = None
+
+            if self.contest.registration_require_school_details \
+                    and self.get_argument("role") == 'student':
+                district_id = self.get_argument("district")
+                city = self.get_argument("city")
+                school_id = self.get_argument("school")
+                grade = self.get_argument("grade")
+
+                district_id = int(district_id)
+                district = District.get_from_id(district_id, self.sql_session)
+                if district is None:
+                    raise ValueError()
+                if not 1 <= len(city) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+                school_id = int(school_id)
+                school = School.get_from_id(school_id, self.sql_session)
+                if school is None:
+                    raise ValueError()
+                if school.district != district:
+                    raise ValueError()
+                grade = int(grade)
+                if self.contest.registration_allowed_grades:
+                    if grade not in self.contest.registration_allowed_grades:
+                        raise ValueError()
+                else:
+                    if not 1 <= grade <= 12:
+                        raise ValueError()
+            else:
+                district = city = school = grade = None
+
+            if self.contest.registration_auto_credentials:
+                username = self._generate_username(first_name, last_name)
+                password = generate_random_password()
+            else:
+                username = self.get_argument("username")
+                password = self.get_argument("password")
+
+                if not 1 <= len(username) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+                if not re.match(r"^[A-Za-z0-9_-]+$", username):
+                    raise ValueError()
+                if not self.MIN_PASSWORD_LENGTH <= len(password) \
+                        <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+
+            if require_registered_by:
+                registered_by = self.get_argument("registered_by")
+                if not 1 <= len(registered_by) <= self.MAX_INPUT_LENGTH:
+                    raise ValueError()
+            else:
+                registered_by = None
+
         except (tornado_web.MissingArgumentError, ValueError):
             raise tornado_web.HTTPError(400)
 
+        if self.contest.registration_auto_credentials:
+            hash_method = 'plaintext'
+            ret_password = password
+        else:
+            hash_method = 'bcrypt'
+            ret_password = None
         # Override password with its hash
-        password = hash_password(password)
+        password = hash_password(password, hash_method)
 
         # Check if the username is available
         tot_users = self.sql_session.query(User)\
@@ -162,10 +270,26 @@ class RegistrationHandler(ContestHandler):
             raise tornado_web.HTTPError(409)
 
         # Store new user
-        user = User(first_name, last_name, username, password, email=email)
+        user = User(first_name, last_name, username, password, email=email,
+                    country=country, district=district, city=city,
+                    school=school, grade=grade, registered_by=registered_by,
+                    registration_timestamp=self.timestamp)
         self.sql_session.add(user)
 
-        return user
+        return user, ret_password
+
+    def _generate_username(self, first_name, last_name):
+        prefix = f"{self._to_ascii(first_name)[:3]}{self._to_ascii(last_name)[:3]}"
+        for _i in range(10):
+            username = f"{prefix}{random.randint(0, 9999):04d}"
+            if (self.sql_session.query(User)
+                    .filter(User.username == username).count() == 0):
+                return username
+        else:
+            raise ValueError
+
+    def _to_ascii(self, value):
+        return "".join(re.findall(r"[A-Za-z0-9_-]+", unidecode(value)))
 
     def _get_user(self):
         username = self.get_argument("username")
@@ -185,8 +309,7 @@ class RegistrationHandler(ContestHandler):
         return user
 
     def _get_team(self):
-        # If we have teams, we assume that the 'team' field is mandatory
-        if self.sql_session.query(Team).count() > 0:
+        if self.contest.registration_require_team:
             try:
                 team_code = self.get_argument("team")
                 team = self.sql_session.query(Team)\
@@ -198,6 +321,37 @@ class RegistrationHandler(ContestHandler):
             team = None
 
         return team
+
+
+class RegistrationByParentHandler(RegistrationHandler):
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado_web.HTTPError(404)
+        self.render("register_by_parent.html", **self.r_params)
+
+    @multi_contest
+    def post(self):
+        if not self.contest.allow_registration_by_parent:
+            raise tornado_web.HTTPError(404)
+
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        user, _password = self.do_register(require_registered_by=True)
+
+        logger.info("New user registered by parent from IP address %s, as "
+                    "user %r, on contest %s, at %s", ip_address, user.username,
+                    self.contest.name, self.timestamp)
+
+        if self.contest.registration_auto_credentials:
+            self.finish("ok")
+        else:
+            self.finish(user.username)
 
 
 class LoginHandler(ContestHandler):

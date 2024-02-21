@@ -97,6 +97,9 @@
     "_help": "Whether Tornado prints debug information on stdout.",
     "tornado_debug": false,
 
+    "_help": "URL for the personal data management policy",
+    "_help": "(shown when registering).",
+    "data_management_policy_url": "",
 
 
     "_section": "ContestWebServer",
