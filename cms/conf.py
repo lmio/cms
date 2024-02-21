@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2014-2018 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2023 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -150,6 +150,20 @@ class Config:
         self.admin_listen_port = 8889
         self.admin_cookie_duration = 10 * 60 * 60  # 10 hours
         self.admin_num_proxies_used = None
+
+        # TeacherWebServer.
+        self.teacher_listen_address = ""
+        self.teacher_listen_port = 8890
+        self.teacher_locale = "en_US"
+        self.teacher_active_contests = [1]
+        self.teacher_contest_urls = ["http://localhost:8888/"]
+        self.teacher_login_kind = "district"  # "district" or "school"
+        self.teacher_allow_impersonate = False
+        self.teacher_show_results = True
+        self.teacher_enable_participation_locations = False
+        self.teacher_show_task_statements = "never"  # "never", "after_start" or "always"
+        self.teacher_allow_registration = False
+        self.teacher_registration_anonymous = False
 
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]

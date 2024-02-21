@@ -42,6 +42,7 @@
                               ["localhost", 26015]],
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
+        "TeacherWebServer":  [["localhost", 21200]],
         "ProxyService":      [["localhost", 28600]],
         "PrintingService":   [["localhost", 25123]]
         },
@@ -155,6 +156,47 @@
     "_help": "source IP address. For example, if you're using nginx as",
     "_help": "a proxy, you will likely want to set this value to 1.",
     "admin_num_proxies_used": 0,
+
+
+    "_section": "TeacherWebServer",
+
+    "_help": "Listening HTTP address and port for the TWS. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "teacher_listen_address": "",
+    "teacher_listen_port":    8890,
+
+    "_help": "Language of the TWS.",
+    "teacher_locale": "en_US",
+
+    "_help": "List of contest ids that will be accessible from the TWS.",
+    "teacher_active_contests": [1],
+
+    "_help": "List of urls where each of the active contests is accessible.",
+    "teacher_contest_urls": ["http://localhost:8888/"],
+
+    "_help": "The 'user' of the TWS. May be 'district' or 'school'.",
+    "teacher_login_kind": "district",
+
+    "_help": "Whether to allow teachers to login as their students.",
+    "teacher_allow_impersonate": false,
+
+    "_help": "Whether to show contestants' results to teachers.",
+    "teacher_show_results": true,
+
+    "_help": "Whether to allow teachers to set contestants' participation",
+    "_help": "location (on-site vs remote).",
+    "teacher_enable_participation_locations": true,
+
+    "_help": "Whether and when to allow teachers to download task statements",
+    "_help": "and attachments. May be 'never', 'after_start', or 'always'.",
+    "teacher_show_task_statements": "never",
+
+    "_help": "Whether to enable teacher pre-registration.",
+    "teacher_allow_registration": false,
+
+    "_help": "Whether teacher pre-registration is anonymous.",
+    "teacher_registration_anonymous": false,
 
 
 

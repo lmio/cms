@@ -178,7 +178,7 @@ div.login_box {
 }
 
 @media (min-width: 768px) {
-    div.login_box fieldset div.control-group div.controls input {
+    div.login_box fieldset div.control-group div.controls select {
         width: 280px;
     }
 }
