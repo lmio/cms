@@ -5,6 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014-2016 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2020 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
@@ -335,3 +336,8 @@ def _get_shard_from_addresses(service, addrs):
         else:
             if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
                 return shard
+
+
+LT_ALPHABET = {c: i for i, c in enumerate(' aąbcčdeęėfghiįyjklmnoprsštuųūvzž')}
+def lt_sort_key(s):
+    return tuple(LT_ALPHABET.get(c.lower(), len(LT_ALPHABET) + ord(c)) for c in s)

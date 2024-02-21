@@ -295,9 +295,18 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if primary_language is not None:
             args["preferred_languages"] = [primary_language]
 
+        load(conf, args, "country")
+        district_name = load(conf, None, "district")
+        load(conf, args, "city")
+        school_name = load(conf, None, "school")
+        load(conf, args, "grade")
+
         logger.info("User parameters loaded.")
 
-        return User(**args)
+        user = User(**args)
+        user.district_name = district_name
+        user.school_name = school_name
+        return user
 
     def get_team(self):
         """See docstring in class TeamLoader."""
