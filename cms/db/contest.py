@@ -301,6 +301,10 @@ class Contest(Base):
         Interval,
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
+    min_user_test_interval_grace_period = Column(
+        Interval,
+        CheckConstraint("min_user_test_interval_grace_period > '0 seconds'"),
+        nullable=True)
 
     # The scores for this contest will be rounded to this number of
     # decimal places.

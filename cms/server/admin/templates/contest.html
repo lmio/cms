@@ -353,6 +353,13 @@
       </td>
       <td><input type="text" name="min_user_test_interval" value="{{ contest.min_user_test_interval.total_seconds()|int if contest.min_user_test_interval is not none else "" }}"></td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="The amount of time (in seconds) until the end of participation in which the minimum interval between user tests is not enforced."></span>
+        Minimum user test interval grace period
+      </td>
+      <td><input type="text" name="min_user_test_interval_grace_period" value="{{ contest.min_user_test_interval_grace_period.total_seconds()|int if contest.min_user_test_interval_grace_period is not none else "" }}"></td>
+    </tr>
     <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
     <tr>
       <td>

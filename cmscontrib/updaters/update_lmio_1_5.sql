@@ -20,4 +20,13 @@ alter table contests
 alter table contests
     rename column allowed_grades to registration_allowed_grades;
 
+alter table contests
+    add column min_submission_interval_grace_period interval,
+    add column min_user_test_interval_grace_period interval;
+alter table contests
+    add constraint min_submission_interval_grace_period_check
+        check (min_submission_interval_grace_period > '00:00:00'::interval),
+    add constraint min_user_test_interval_grace_period_check
+        check (min_user_test_interval_grace_period > '00:00:00'::interval);
+
 rollback; -- change this to: commit;

@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -110,7 +111,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
                "at most %d submissions on this task."),
             task.max_submission_number)
 
-    if not is_last_minutes(timestamp, participation):
+    if not is_last_minutes(timestamp, participation, contest.min_submission_interval_grace_period):
         if not check_min_interval(sql_session, contest.min_submission_interval,
                                   timestamp, participation, contest=contest):
             raise UnacceptableSubmission(
@@ -281,23 +282,24 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
                "at most %d tests on this task."),
             task.max_user_test_number)
 
-    if not check_min_interval(sql_session, contest.min_user_test_interval,
-                              timestamp, participation, contest=contest,
-                              cls=UserTest):
-        raise UnacceptableUserTest(
-            N_("Tests too frequent!"),
-            N_("Among all tasks, you can test again "
-               "after %d seconds from last test."),
-            contest.min_user_test_interval.total_seconds())
+    if not is_last_minutes(timestamp, participation, contest.min_user_test_interval_grace_period):
+        if not check_min_interval(sql_session, contest.min_user_test_interval,
+                                  timestamp, participation, contest=contest,
+                                  cls=UserTest):
+            raise UnacceptableUserTest(
+                N_("Tests too frequent!"),
+                N_("Among all tasks, you can test again "
+                   "after %d seconds from last test."),
+                contest.min_user_test_interval.total_seconds())
 
-    if not check_min_interval(sql_session, task.min_user_test_interval,
-                              timestamp, participation, task=task,
-                              cls=UserTest):
-        raise UnacceptableUserTest(
-            N_("Tests too frequent!"),
-            N_("For this task, you can test again "
-               "after %d seconds from last test."),
-            task.min_user_test_interval.total_seconds())
+        if not check_min_interval(sql_session, task.min_user_test_interval,
+                                  timestamp, participation, task=task,
+                                  cls=UserTest):
+            raise UnacceptableUserTest(
+                N_("Tests too frequent!"),
+                N_("For this task, you can test again "
+                   "after %d seconds from last test."),
+                task.min_user_test_interval.total_seconds())
 
     # Process the data we received and ensure it's valid.
 

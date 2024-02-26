@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,7 +34,8 @@ the current situation. Also include some support functions, which are
 exported as they may be of general interest.
 
 """
-from datetime import datetime
+from datetime import datetime, timedelta
+from typing import Optional
 
 from sqlalchemy import desc, func
 
@@ -178,7 +180,7 @@ def check_min_interval(
             or timestamp - submission.timestamp >= min_interval)
 
 
-def is_last_minutes(timestamp: datetime, participation: Participation):
+def is_last_minutes(timestamp: datetime, participation: Participation, delta: Optional[timedelta]):
     """
     timestamp (datetime): the current timestamp.
     participation (Participation): the participation to be checked.
@@ -187,8 +189,7 @@ def is_last_minutes(timestamp: datetime, participation: Participation):
     return (bool): whether it is the last `delta` of the participation.
     """
 
-    if participation.unrestricted \
-            or participation.contest.min_submission_interval_grace_period is None:
+    if participation.unrestricted or delta is None:
         return False
 
     if participation.contest.per_user_time is None:
@@ -198,5 +199,4 @@ def is_last_minutes(timestamp: datetime, participation: Participation):
 
     end_time += participation.delay_time + participation.extra_time
     time_left = end_time - timestamp
-    return time_left <= \
-        participation.contest.min_submission_interval_grace_period
+    return time_left <= delta
