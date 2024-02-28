@@ -323,7 +323,7 @@ class Communication(TaskType):
                           for i in indices),
             writable_files=[self.OUTPUT_FILENAME],
             stdin_redirect=self.INPUT_FILENAME,
-            multiprocess=job.multithreaded_sandbox)
+            multiprocess=config.trusted_sandbox_max_processes > 1)
 
         # Start the user submissions compiled with the stub.
         language = get_language(job.language)
