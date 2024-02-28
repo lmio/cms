@@ -487,8 +487,8 @@ class RemoteServiceClient(RemoteServiceBase):
                 self.remote_address.port,
                 type=socket.SOCK_STREAM)
         except socket.gaierror:
-            logger.warning("Cannot resolve %s.", self.remote_address)
-            raise
+            logger.debug("Cannot resolve %s.", self.remote_address)
+            return
 
         for family, type, proto, _canonname, sockaddr in addresses:
             try:
