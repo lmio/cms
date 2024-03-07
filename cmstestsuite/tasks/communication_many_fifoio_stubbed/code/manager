@@ -1,29 +1,27 @@
-#!/usr/bin/python2 -sS
+#!/usr/bin/python3 -sS
 
-from __future__ import print_function
-
-import io
 import sys
 
 fifo_path_from_user1, fifo_path_to_user1, \
     fifo_path_from_user2, fifo_path_to_user2 = sys.argv[1:]
 
 # The order these are opened is very important.  It must match the stub.
-fifo_to_user1 = io.open(fifo_path_to_user1, "wb", buffering=0)
-fifo_from_user1 = io.open(fifo_path_from_user1, "rb", buffering=0)
-fifo_to_user2 = io.open(fifo_path_to_user2, "wb", buffering=0)
-fifo_from_user2 = io.open(fifo_path_from_user2, "rb", buffering=0)
+fifo_to_user1 = open(fifo_path_to_user1, "w")
+fifo_from_user1 = open(fifo_path_from_user1, "r")
+fifo_to_user2 = open(fifo_path_to_user2, "w")
+fifo_from_user2 = open(fifo_path_from_user2, "r")
 
-input_value = int(io.open("input.txt", "rb").readline())
+with open("input.txt", "r") as f:
+    input_value = int(f.readline())
 
 correct = True
 
 # Speak the to program a few times, check what it does, and output the last
 # line.
-for i in range(10, 20) + [0]:
+for i in [*range(10, 20), 0]:
     x = i + input_value
     # Write a question to the candidate executable.
-    fifo_to_user1.write("%d\n" % x)
+    print(x, file=fifo_to_user1, flush=True)
     # Read their response.
     l = fifo_from_user1.readline()
     # EOF?
@@ -38,7 +36,7 @@ for i in range(10, 20) + [0]:
     correct = correct and (int(l.split()[1]) == x)
 
     # Write a question to the candidate executable.
-    fifo_to_user2.write("%d\n" % x)
+    print(x, file=fifo_to_user2, flush=True)
     # Read their response.
     l = fifo_from_user2.readline()
     # EOF?
@@ -53,11 +51,12 @@ for i in range(10, 20) + [0]:
     correct = correct and (int(l.split()[1]) == -x)
 else:
     # Tell stub to exit.
-    fifo_to_user1.write("0\n")
-    fifo_to_user2.write("0\n")
+    print(0, file=fifo_to_user1, flush=True)
+    print(0, file=fifo_to_user2, flush=True)
 
 # This file exists just for convenience.
-io.open("output.txt", "wb").write(l + "\n")
+with open("output.txt", "w") as f:
+    print(l, file=f)
 
 # This is the final score.
 if correct:
