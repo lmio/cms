@@ -267,7 +267,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% else %}
                 <tr class="partiallycorrect">
             {% endif %}
-                    <td class="idx">{{ tc["idx"] }}</td>
+                    <td class="idx">{{ tc["idx"] if feedback_level == FEEDBACK_LEVEL_FULL else loop.index }}</td>
                     <td class="outcome">{{ _(tc["outcome"]) }}</td>
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
@@ -291,7 +291,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 </tr>
         {% else %}
                 <tr class="undefined">
-                    <td class="idx">{{ loop.index }}</td>
+                    <td class="idx">{{ tc["idx"] if feedback_level == FEEDBACK_LEVEL_FULL else loop.index }}</td>
             {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <td colspan="4">
             {% else %}
