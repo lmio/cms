@@ -173,6 +173,7 @@ class RegistrationHandler(ContestHandler):
         self.sql_session.add(participation)
 
         self.sql_session.commit()
+        self.service.proxy_service.user_registered(participation_id=participation.id)
 
         return user, password
 
