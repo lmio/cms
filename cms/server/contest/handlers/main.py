@@ -180,21 +180,27 @@ class RegistrationHandler(ContestHandler):
         try:
             first_name = self.get_argument("first_name")
             last_name = self.get_argument("last_name")
-            email = self.get_argument("email")
+            email = self.get_argument("email", "")
 
             if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
             if not 1 <= len(last_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-            if not 1 <= len(email) <= self.MAX_INPUT_LENGTH \
-                    or not self.email_re.match(email):
-                raise ValueError()
+            if email:
+                if not len(email) <= self.MAX_INPUT_LENGTH \
+                        or not self.email_re.match(email):
+                    raise ValueError()
+            else:
+                email = None
 
             if self.contest.registration_require_country:
-                country = self.get_argument("country")
+                country = self.get_argument("country", "")
 
-                if not 1 <= len(country) <= self.MAX_INPUT_LENGTH:
-                    raise ValueError()
+                if country:
+                    if not len(country) <= self.MAX_INPUT_LENGTH:
+                        raise ValueError()
+                else:
+                    country = None
 
             else:
                 country = None
