@@ -449,6 +449,39 @@ class ProxyService(TriggeredService):
                 self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks,
                                             contest.id))
 
+    def operations_for_registration(self, participation):
+        user = participation.user
+        team = participation.team
+
+        ops = [
+            ProxyOperation(
+                ProxyExecutor.USER_TYPE,
+                {
+                    encode_username(user.username): {
+                        "f_name": user.first_name,
+                        "l_name": user.last_name,
+                        "team": encode_id(team.code)
+                        if team is not None else None,
+                    },
+                },
+                participation.contest_id,
+            ),
+        ]
+        if team is not None:
+            ops.append(
+                ProxyOperation(
+                    ProxyExecutor.TEAM_TYPE,
+                    {
+                        encode_id(team.code): {
+                            "name": team.name,
+                        }
+                    },
+                    participation.contest_id,
+                )
+            )
+
+        return ops
+
     def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
 
@@ -529,6 +562,27 @@ class ProxyService(TriggeredService):
         """
         logger.info("Reinitializing rankings.")
         self.initialize()
+
+    @rpc_method
+    def user_registered(self, participation_id):
+        """Notice that a new user has registered.
+
+        Usually called by ContestWebServer when it's processing user
+        registration.
+
+        participation_id (int): the id of the participation that was
+        registered.
+
+        """
+        with SessionGen() as session:
+            participation = Participation.get_from_id(participation_id, session)
+
+            if participation.hidden:
+                return
+
+            # Update RWS.
+            for operation in self.operations_for_registration(participation):
+                self.enqueue(operation)
 
     @rpc_method
     def submission_scored(self, submission_id):
