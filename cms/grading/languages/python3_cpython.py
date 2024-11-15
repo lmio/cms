@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,6 +35,7 @@ class Python3CPython(CompiledLanguage):
     """
 
     MAIN_FILENAME = "__main__.pyc"
+    PYTHON_BIN = "/usr/bin/python3"
 
     @property
     def name(self):
@@ -58,7 +60,7 @@ class Python3CPython(CompiledLanguage):
 
         commands = []
         files_to_package = []
-        commands.append(["/usr/bin/python3", "-m", "compileall", "-b", "."])
+        commands.append([self.PYTHON_BIN, "-m", "compileall", "-b", "."])
         for idx, source_filename in enumerate(source_filenames):
             basename = os.path.splitext(os.path.basename(source_filename))[0]
             pyc_filename = "%s.pyc" % basename
@@ -78,4 +80,4 @@ class Python3CPython(CompiledLanguage):
             self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
         args = args if args is not None else []
-        return [["/usr/bin/python3", executable_filename] + args]
+        return [[self.PYTHON_BIN, executable_filename] + args]
