@@ -1158,6 +1158,9 @@ msgstr "Kol kas nėra jokių pranešimų."
 msgid "Input file"
 msgstr "Duomenų failas"
 
+msgid "Standard input"
+msgstr "Standartinė įvestis"
+
 msgid "Output file"
 msgstr "Rezultatų failas"
 

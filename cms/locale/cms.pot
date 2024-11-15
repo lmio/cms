@@ -1088,6 +1088,9 @@ msgstr ""
 msgid "Input file"
 msgstr ""
 
+msgid "Standard input"
+msgstr ""
+
 msgid "Output file"
 msgstr ""
 

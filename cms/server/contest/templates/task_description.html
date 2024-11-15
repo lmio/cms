@@ -110,18 +110,26 @@
         </tr>
 {% endif %}
 {% if task.active_dataset.task_type == 'Batch' and task_type.compilation == task_type.COMPILATION_ALONE %}
-    {% if task_type.input_filename != '' %}
         <tr>
             <th>{% trans %}Input file{% endtrans %}</th>
-            <td colspan="2">{{ task_type.input_filename }}</td>
-        </tr>
+            <td colspan="2">
+    {% if task_type.input_filename != '' %}
+                {{ task_type.input_filename }}
+    {% else %}
+                <i>{% trans %}Standard input{% endtrans %}</i>
     {% endif %}
-    {% if task_type.output_filename != '' %}
+            </td>
+        </tr>
         <tr>
             <th>{% trans %}Output file{% endtrans %}</th>
-            <td colspan="2">{{ task_type.output_filename }}</td>
-        </tr>
+            <td colspan="2">
+    {% if task_type.output_filename != '' %}
+                {{ task_type.output_filename }}
+    {% else %}
+                <i>{% trans %}Standard output{% endtrans %}</i>
     {% endif %}
+            </td>
+        </tr>
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format) %}
 {% if compilation_commands is not none %}
