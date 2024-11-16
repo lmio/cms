@@ -34,7 +34,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 2.7 (for Python, with executable ``python2`` or ``python3``; in addition you will need ``zip``);
+* `Python <http://www.python.org/>`_ >= 3.8 (for Python, with executable ``python3``; in addition you will need ``zip``);
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 

@@ -17,7 +17,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     openjdk-8-jdk-headless \
     php-cli \
     postgresql-client \
-    python2 \
     python3-pip \
     python3.12 \
     python3.12-dev \
