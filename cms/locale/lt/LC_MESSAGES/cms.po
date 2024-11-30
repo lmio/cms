@@ -486,8 +486,8 @@ msgstr "Tekstas"
 msgid "Ask question"
 msgstr "Užduoti klausimą"
 
-msgid "Reset"
-msgstr "Atstatyti"
+msgid "Clear"
+msgstr "Išvalyti"
 
 msgid "no answer yet"
 msgstr "dar neatsakyta"

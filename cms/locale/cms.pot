@@ -447,7 +447,7 @@ msgstr ""
 msgid "Ask question"
 msgstr ""
 
-msgid "Reset"
+msgid "Clear"
 msgstr ""
 
 msgid "no answer yet"
