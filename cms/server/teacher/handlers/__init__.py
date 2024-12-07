@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2022 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,8 +28,8 @@ from .contest import \
     ContestAttachmentHandler, \
     ContestantLocationHandler, \
     ContestantLeaveHandler, \
-    ImpersonateHandler
-
+    ImpersonateHandler, \
+    SubmissionArchiveHandler
 
 HANDLERS = [
     (r"/", MainHandler),
@@ -41,6 +41,7 @@ HANDLERS = [
     (r"/contest/([0-9]+)/task/(.+)/statement/(.+)", TaskStatementHandler),
     (r"/contest/([0-9]+)/task/(.+)/attachment/(.+)", TaskAttachmentHandler),
     (r"/contest/([0-9]+)/attachment/(.+)", ContestAttachmentHandler),
+    (r"/contest/([0-9]+)/submission_archive", SubmissionArchiveHandler),
     (r"/impersonate/([0-9]+)", ImpersonateHandler),
     (r"/participation_location/([0-9]+)", ContestantLocationHandler),
     (r"/contestant_leave/([0-9]+)", ContestantLeaveHandler),

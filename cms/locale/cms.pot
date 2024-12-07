@@ -1193,6 +1193,9 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
+msgid "Download submissions"
+msgstr ""
+
 msgid "Export to CSV"
 msgstr ""
 

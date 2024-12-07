@@ -27,6 +27,24 @@
   <div class="hr"></div>
 </div>
 
+<h2 id="title_submission_archives" class="toggling_off">Submission archives</h2>
+<div id="submission_archives" style="display: none;">
+  {% if district.submission_archives %}
+    <ul>
+      {% for archive in district.submission_archives %}
+        <li>
+          <a href="{{ url("file", archive.digest, "submissions_" + archive.contest.name + ".zip") }}">{{ archive.contest.name }}</a>
+          {% if admin.permission_all %}
+            - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("district", district.id, "submission_archive", archive.id) }}'); ">Delete</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+  No submission archives.
+  {% endif %}
+</div>
+
 <h2 id="title_schools" class="toggling_on">School list</h2>
 <div id="schools">
   <a href="{{ url("school", "add", district.id) }}">Add a new school</a>

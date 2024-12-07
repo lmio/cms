@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2019 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import DateTime, Integer, Unicode
 
-from . import Base
+from . import Base, Digest, Contest
 
 
 class District(Base):
@@ -61,6 +61,12 @@ class District(Base):
     users = relationship(
         "User",
         cascade="all",
+        passive_deletes=True,
+        back_populates="district")
+
+    submission_archives = relationship(
+        "DistrictSubmissionArchive",
+        cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="district")
 
@@ -161,4 +167,43 @@ class TeacherRegistration(Base):
     # Time of the registration
     timestamp = Column(
         DateTime,
+        nullable=False)
+
+
+class DistrictSubmissionArchive(Base):
+    """Class to store an archive of district participants' submissions.
+
+    """
+
+    __tablename__ = 'district_submission_archives'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # District (id and object) this archive belongs to.
+    district_id = Column(
+        Integer,
+        ForeignKey(District.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    district = relationship(
+        District)
+
+    # Contest (id and object) whose participants' submissions are contained in
+    # this archive.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    contest = relationship(
+        Contest)
+
+    # Digest of the archive.
+    digest = Column(
+        Digest,
         nullable=False)

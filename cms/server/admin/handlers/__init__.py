@@ -5,7 +5,7 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
-# Copyright © 2018 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2018-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -83,7 +83,8 @@ from .school import \
     AddDistrictHandler, \
     SchoolHandler, \
     AddSchoolHandler, \
-    TeacherRegistrationsHandler
+    TeacherRegistrationsHandler, \
+    SubmissionArchiveHandler
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
@@ -128,6 +129,7 @@ HANDLERS = [
 
     (r"/districtlist", DistrictListHandler),
     (r"/district/([0-9]+)", DistrictHandler),
+    (r"/district/([0-9]+)/submission_archive/([0-9]+)", SubmissionArchiveHandler),
     (r"/district/add", AddDistrictHandler),
     (r"/school/([0-9]+)", SchoolHandler),
     (r"/school/add/([0-9]+)", AddSchoolHandler),

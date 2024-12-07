@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2022 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,7 +33,7 @@ except ImportError:
 from sqlalchemy.orm import contains_eager, joinedload, subqueryload
 
 from cms import config, PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_REMOTE
-from cms.db import Contest, Participation, Task, User
+from cms.db import Contest, Participation, Task, User, DistrictSubmissionArchive
 from cms.grading.scoring import task_score
 from cms.server import FileHandlerMixin
 from cmscommon.datetime import make_timestamp
@@ -158,6 +158,16 @@ class ContestHandler(BaseContestHandler):
         else:
             self.r_params["contest"] = contest
             self.r_params["show_task_statements"] = show_task_statements
+            self.r_params["submission_archive"] = (
+                config.teacher_login_kind == "district"
+                and (
+                    self.sql_session.query(DistrictSubmissionArchive)
+                    .filter(
+                        DistrictSubmissionArchive.district_id == self.current_user.id,
+                        DistrictSubmissionArchive.contest_id == contest.id,
+                    ).first() is not None
+                )
+            )
             self.r_params["header"] = header
             self.r_params["table"] = table
             self.r_params["allow_impersonate"] = config.teacher_allow_impersonate
@@ -386,3 +396,30 @@ class ImpersonateHandler(BaseHandler):
                                domain=domain,
                                expires_days=None)
         self.redirect(url)
+
+
+class SubmissionArchiveHandler(ContestFileHandler):
+    """Serve the district's submissions archive.
+
+    """
+    @tornado_web.authenticated
+    def get(self, contest_id):
+        if config.teacher_login_kind != "district":
+            raise tornado_web.HTTPError(404)
+
+        contest = self.get_contest(contest_id)
+        archive = (
+            self.sql_session.query(DistrictSubmissionArchive)
+            .filter(
+                DistrictSubmissionArchive.district_id == self.current_user.id,
+                DistrictSubmissionArchive.contest_id == contest.id,
+            )
+            .first()
+        )
+        if archive is None:
+            raise tornado_web.HTTPError(404)
+
+        digest = archive.digest
+        self.sql_session.close()
+
+        self.fetch(digest, "application/zip", "submissions.zip")

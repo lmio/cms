@@ -1276,6 +1276,9 @@ msgstr "Grįžti į varžybų sąrašą"
 msgid "Tasks"
 msgstr "Užduotys"
 
+msgid "Download submissions"
+msgstr "Parsisiųsti sprendimus"
+
 msgid "Export to CSV"
 msgstr "Parsisiųsti CSV formatu"
 

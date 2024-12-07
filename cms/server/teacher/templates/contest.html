@@ -55,6 +55,13 @@
 {% endif %}
 {% endif %}
 
+{% if submission_archive %}
+<div>
+  <h3>{% trans %}Submissions{% endtrans %}</h3>
+  <a href="{{ url("contest", contest.id, "submission_archive") }}">{% trans %}Download submissions{% endtrans %}</a>
+</div>
+{% endif %}
+
 <p>
   <a style="float: right" href="{{ url("contest", contest.id, "csv") }}">{% trans %}Export to CSV{% endtrans %}</a>
 </p>

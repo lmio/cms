@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,8 +34,8 @@ from cms import ConfigError
 from . import SessionGen, Digest, Contest, Participation, Statement, \
     Attachment, Task, Manager, Dataset, Testcase, Submission, File, \
     SubmissionResult, Executable, UserTest, UserTestFile, UserTestManager, \
-    UserTestResult, UserTestExecutable, PrintJob, ContestAttachment
-
+    UserTestResult, UserTestExecutable, PrintJob, ContestAttachment, \
+    DistrictSubmissionArchive
 
 logger = logging.getLogger(__name__)
 
@@ -354,6 +354,10 @@ def enumerate_files(
         queries.append(contest_q.join(Contest.participations)
                        .join(Participation.printjobs)
                        .with_entities(PrintJob.digest))
+
+    if contest is None:
+        queries.append(session.query(DistrictSubmissionArchive)
+                       .with_entities(DistrictSubmissionArchive.digest))
 
     # union(...).execute() would be executed outside of the session.
     digests = set(r[0] for r in session.execute(union(*queries)))

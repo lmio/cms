@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2017 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
@@ -70,7 +70,7 @@ __all__ = [
     # printjob
     "PrintJob",
     # school
-    "District", "School", "TeacherRegistration",
+    "District", "School", "TeacherRegistration", "DistrictSubmissionArchive",
     # init
     "init_db",
     # drop
@@ -100,7 +100,8 @@ from .base import Base
 from .fsobject import FSObject, LargeObject
 from .admin import Admin
 from .contest import Contest, Announcement, ContestAttachment
-from .school import District, School, TeacherRegistration
+from .school import District, School, TeacherRegistration, \
+    DistrictSubmissionArchive
 from .user import User, Team, Participation, Message, Question
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \

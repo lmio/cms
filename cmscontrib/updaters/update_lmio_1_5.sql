@@ -36,4 +36,13 @@ alter table contests
     add constraint contests_check5
         check (registration_start is null or registration_stop is null or registration_start <= registration_stop);
 
+create table district_submission_archives (
+    id serial primary key,
+    district_id integer not null references districts on update cascade on delete cascade,
+    contest_id integer not null references contests on update cascade on delete cascade,
+    digest digest not null
+);
+create index ix_district_submission_archives_contest_id on district_submission_archives (contest_id);
+create index ix_district_submission_archives_district_id on district_submission_archives (district_id);
+
 rollback; -- change this to: commit;

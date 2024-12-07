@@ -365,6 +365,12 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
+    district_submission_archives = relationship(
+        "DistrictSubmissionArchive",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
+
     def phase(self, timestamp):
         """Return: -1 if contest isn't started yet at time timestamp,
                     0 if the contest is active at time timestamp,

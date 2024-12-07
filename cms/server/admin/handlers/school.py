@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2019 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,12 @@ import csv
 
 from sqlalchemy.orm import joinedload
 
-from cms.db import District, School, TeacherRegistration
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
+
+from cms.db import District, School, TeacherRegistration, DistrictSubmissionArchive
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -247,3 +252,24 @@ class TeacherRegistrationsHandler(BaseHandler):
             for reg in registrations
         ])
         self.finish()
+
+
+class SubmissionArchiveHandler(BaseHandler):
+    """Delete an archive.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, district_id, archive_id):
+        archive = self.safe_get_item(DistrictSubmissionArchive, archive_id)
+        district = self.safe_get_item(District, district_id)
+
+        # Protect against URLs providing incompatible parameters.
+        if archive.district is not district:
+            raise tornado_web.HTTPError(404)
+
+        self.sql_session.delete(archive)
+        self.try_commit()
+
+        # Page to redirect to.
+        self.write(f"{district.id}")

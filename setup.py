@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
-# Copyright © 2014 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2014-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
@@ -171,6 +171,7 @@ setup(
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
             "cmsDistrictImporter=cmscontrib.DistrictImporter:main",
+            "cmsGenerateDistrictSubmissionArchives=cmscontrib.GenerateDistrictSubmissionArchives:main",
             "cmsMake=cmstaskenv.cmsMake:main",
         ],
         "cms.grading.tasktypes": [
