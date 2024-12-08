@@ -122,6 +122,24 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Start time of the registration for the contest in the UTC timezone.
+                                  If empty, registration starts as soon as it is enabled.
+                                  Example: '2015-12-31 15:00:00'."></span>
+        Registration start time (in UTC)
+      </td>
+      <td><input type="text" name="registration_start" value="{{ contest.registration_start if contest.registration_start is not none else "" }}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="End time of the registration for the contest in the UTC timezone.
+                                  If empty, registration continues as long as it is enabled.
+                                  Example: '2015-12-31 18:00:00'."></span>
+        Registration end time (in UTC)
+      </td>
+      <td><input type="text" name="registration_stop" value="{{ contest.registration_stop if contest.registration_stop is not none else "" }}"></td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="If checked, contestants will be able to autonomously create a participation for an existing user account."></span>
         <label for="registration_allow_join">Allow joining</label>
       </td>

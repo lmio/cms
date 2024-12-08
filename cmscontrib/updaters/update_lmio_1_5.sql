@@ -29,4 +29,11 @@ alter table contests
     add constraint min_user_test_interval_grace_period_check
         check (min_user_test_interval_grace_period > '00:00:00'::interval);
 
+alter table contests
+    add column registration_start timestamp,
+    add column registration_stop timestamp;
+alter table contests
+    add constraint contests_check5
+        check (registration_start is null or registration_stop is null or registration_start <= registration_stop);
+
 rollback; -- change this to: commit;

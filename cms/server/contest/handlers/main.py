@@ -113,12 +113,17 @@ class RegistrationHandler(ContestHandler):
     def get(self):
         if not self.contest.allow_registration:
             raise tornado_web.HTTPError(404)
+        if self.contest.registration_phase(self.timestamp) != 0:
+            self.redirect(self.contest_url())
+            return
         self.render("register.html", **self.r_params)
 
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
             raise tornado_web.HTTPError(404)
+        if self.contest.registration_phase(self.timestamp) != 0:
+            raise tornado_web.HTTPError(405)
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)

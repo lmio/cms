@@ -118,7 +118,15 @@ $(document).ready(function () {
                 </form>
                 {% if contest.allow_registration %}
                 <p style="margin: 9px 0 0;">
-                    {% trans %}Don't have an account?{% endtrans %} <a href="{{ contest_url('register') }}">{% trans %}Register{% endtrans %}</a>
+                    {% if registration_phase == -1 %}
+                        {% trans registration_start_time=contest.registration_start|format_datetime_smart %}
+                            Registration will start at {{ registration_start_time }}.
+                        {% endtrans %}
+                    {% elif registration_phase == 0 %}
+                        {% trans %}Don't have an account?{% endtrans %} <a href="{{ contest_url('register') }}">{% trans %}Register{% endtrans %}</a>
+                    {% elif registration_phase == 1 %}
+                        {% trans %}Registration has ended.{% endtrans %}
+                    {% endif %}
                 </p>
                 {% endif %}
             </div>

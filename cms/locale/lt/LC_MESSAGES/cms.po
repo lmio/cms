@@ -1164,6 +1164,13 @@ msgstr "Standartinė įvestis"
 msgid "Output file"
 msgstr "Rezultatų failas"
 
+#, python-format
+msgid "Registration will start at %(registration_start_time)s."
+msgstr "Registracija prasidės %(registration_start_time)s."
+
+msgid "Registration has ended."
+msgstr "Registracija baigėsi."
+
 msgid "Here are your login details. Please write them down."
 msgstr "Žemiau pateikti tavo prisijungimo duomenys. Prašome juos užsirašyti."
 

@@ -164,6 +164,9 @@ $(document).ready(function() {
                     $("#password-input").addClass("error");
                     $("#password-input span.help-block").show().text("{% trans %}The password is not correct.{% endtrans %}");
                     $("#password").focus();
+                } else if (data.status === 405) {
+                    // Registration is not active.
+                    window.location = "{{ contest_url() }}";
                 }
             }).always(function() {
                 $("#submit-button-loading").hide();

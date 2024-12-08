@@ -54,6 +54,11 @@ class Contest(Base):
         CheckConstraint("stop <= analysis_start"),
         CheckConstraint("analysis_start <= analysis_stop"),
         CheckConstraint("token_gen_initial <= token_gen_max"),
+        CheckConstraint(
+            "registration_start IS NULL "
+            "OR registration_stop IS NULL "
+            "OR registration_start <= registration_stop"
+        )
     )
 
     # Auto increment primary key.
@@ -119,6 +124,15 @@ class Contest(Base):
         Boolean,
         nullable=False,
         default=False)
+
+    # Beginning and end of the registration period. If null, the registration
+    # period extends infinitely in that direction.
+    registration_start = Column(
+        DateTime,
+        nullable=True)
+    registration_stop = Column(
+        DateTime,
+        nullable=True)
 
     # Whether to allow student registration by their parents. May be used
     # regardless of allow_registration.
@@ -374,6 +388,24 @@ class Contest(Base):
             elif timestamp <= self.analysis_stop:
                 return 2
         return 3
+
+    def registration_phase(self, timestamp):
+        """Return: -2 if registration is not enabled
+                   -1 if registration hasn't started yet at time timestamp
+                    0 if registration is active at time timestamp
+                    1 if registration has ended at time timestamp
+
+        timestamp (datetime): the time we are interested in.
+        return (int): registration phase as above.
+
+        """
+        if not self.allow_registration:
+            return -2
+        if self.registration_start is not None and timestamp < self.registration_start:
+            return -1
+        if self.registration_stop is not None and timestamp > self.registration_stop:
+            return 1
+        return 0
 
 
 class ContestAttachment(Base):

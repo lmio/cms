@@ -1094,6 +1094,13 @@ msgstr ""
 msgid "Output file"
 msgstr ""
 
+#, python-format
+msgid "Registration will start at %(registration_start_time)s."
+msgstr ""
+
+msgid "Registration has ended."
+msgstr ""
+
 msgid "Here are your login details. Please write them down."
 msgstr ""
 

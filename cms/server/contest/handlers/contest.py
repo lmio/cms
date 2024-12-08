@@ -11,7 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
-# Copyright © 2019-2020 Vytis Banaitis <vytis.banaitis@gmail.com>
+# Copyright © 2019-2024 Vytis Banaitis <vytis.banaitis@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -172,6 +172,7 @@ class ContestHandler(BaseHandler):
             ret["contest_url"] = self.contest_url
 
         ret["phase"] = self.contest.phase(self.timestamp)
+        ret["registration_phase"] = self.contest.registration_phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
