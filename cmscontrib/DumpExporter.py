@@ -48,7 +48,8 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Announcement, Participation, enumerate_files, District, School, Team
+    Announcement, Participation, enumerate_files, District, School, Team, \
+    DistrictSubmissionArchive
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -344,6 +345,10 @@ class DumpExporter:
             if cls in (User, Team) and other_cls is Participation:
                 participations = getattr(obj, prp.key)
                 data[prp.key] = [self.get_id(p) for p in participations if p.contest_id in self.contests_ids]
+                continue
+
+            # Skip submission archives
+            if other_cls is DistrictSubmissionArchive:
                 continue
 
             val = getattr(obj, prp.key)

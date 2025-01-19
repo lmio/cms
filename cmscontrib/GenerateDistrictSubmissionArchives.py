@@ -82,6 +82,8 @@ def collect_archive(contest, district, session, replace, timezone):
         .filter(
             Participation.contest_id == contest.id,
             User.district_id == district.id,
+            Submission.official == True,
+            Participation.hidden == False,
         )
         .join(Task)
         .outerjoin(SubmissionResult)
