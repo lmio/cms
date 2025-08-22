@@ -919,6 +919,10 @@ class IsolateSandbox(SandboxBase):
         self.add_mapped_directory(
             self._home, dest=self._home_dest, options="rw")
 
+        # Create temporary directory on /dev/shm to prevent communication
+        # between sandboxes.
+        self.dirs.append((None, "/dev/shm", "tmp"))
+
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
@@ -1080,7 +1084,9 @@ class IsolateSandbox(SandboxBase):
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for src, dest, options in self.dirs:
-            s = dest + "=" + src
+            s = dest
+            if src is not None:
+                s += "=" + src
             if options is not None:
                 s += ":" + options
             res += ["--dir=%s" % s]
