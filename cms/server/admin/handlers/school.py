@@ -22,6 +22,13 @@
 
 import csv
 
+import collections
+try:
+    collections.MutableMapping
+except:
+    # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
+    collections.MutableMapping = collections.abc.MutableMapping
+
 from sqlalchemy.orm import joinedload
 
 try:
