@@ -42,6 +42,7 @@ def make_tombstone(session):
         if exe.digest != Digest.TOMBSTONE:
             count += 1
         exe.digest = Digest.TOMBSTONE
+    session.flush()
     logger.info("Replaced %d executables with the tombstone.", count)
 
 
