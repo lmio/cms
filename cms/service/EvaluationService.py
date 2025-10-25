@@ -653,7 +653,23 @@ class EvaluationService(TriggeredService):
             if result.job_success:
                 result.job.to_user_test(object_result)
             else:
-                object_result.evaluation_tries += 1
+                if result.job.plus is not None and \
+                   result.job.plus.get("tombstone") is True:
+                    executable_digests = [
+                        e.digest for e in
+                        object_result.executables.values()]
+                    if Digest.TOMBSTONE in executable_digests:
+                        logger.info("User test %d's compilation on dataset "
+                                    "%d has been invalidated since the "
+                                    "executable was the tombstone",
+                                    object_result.user_test_id,
+                                    object_result.dataset_id)
+                        with session.begin_nested():
+                            object_result.invalidate_compilation()
+                        self.user_test_enqueue_operations(
+                            object_result.user_test)
+                else:
+                    object_result.evaluation_tries += 1
 
         else:
             logger.error("Invalid operation type %r.", operation.type_)

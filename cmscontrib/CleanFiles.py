@@ -28,8 +28,9 @@ tombstone digest, to make executables removable in the clean pass.
 import argparse
 import logging
 import sys
+from itertools import chain
 
-from cms.db import SessionGen, Digest, Executable, enumerate_files
+from cms.db import SessionGen, Digest, Executable, UserTestExecutable, enumerate_files
 from cms.db.filecacher import FileCacher
 
 
@@ -38,7 +39,10 @@ logger = logging.getLogger()
 
 def make_tombstone(session):
     count = 0
-    for exe in session.query(Executable).all():
+    for exe in chain(
+        session.query(Executable).all(),
+        session.query(UserTestExecutable).all(),
+    ):
         if exe.digest != Digest.TOMBSTONE:
             count += 1
         exe.digest = Digest.TOMBSTONE
