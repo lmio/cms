@@ -295,7 +295,7 @@ def get_datasets_to_judge(task):
 def enumerate_files(
         session, contest=None,
         skip_submissions=False, skip_user_tests=False, skip_users=False,
-        skip_print_jobs=False, skip_generated=False):
+        skip_print_jobs=False, skip_generated=False, skip_executables=False):
     """Enumerate all the files (by digest) referenced by the
     contest.
 
@@ -329,7 +329,7 @@ def enumerate_files(
         queries.append(submission_q.join(Submission.files)
                        .with_entities(File.digest))
 
-        if not skip_generated:
+        if not skip_generated and not skip_executables:
             queries.append(submission_q.join(Submission.results)
                            .join(SubmissionResult.executables)
                            .with_entities(Executable.digest))
@@ -344,8 +344,9 @@ def enumerate_files(
 
         if not skip_generated:
             user_test_result_q = user_test_q.join(UserTest.results)
-            queries.append(user_test_result_q.join(UserTestResult.executables)
-                           .with_entities(UserTestExecutable.digest))
+            if not skip_executables:
+                queries.append(user_test_result_q.join(UserTestResult.executables)
+                               .with_entities(UserTestExecutable.digest))
             queries.append(user_test_result_q
                            .filter(UserTestResult.output != None)
                            .with_entities(UserTestResult.output))

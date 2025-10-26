@@ -49,7 +49,7 @@ from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
     Announcement, Participation, enumerate_files, District, School, Team, \
-    DistrictSubmissionArchive
+    DistrictSubmissionArchive, Executable, UserTestExecutable
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -138,7 +138,8 @@ class DumpExporter:
 
     def __init__(self, contest_ids, export_target,
                  dump_files, dump_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs):
+                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs,
+                 tombstone):
         if contest_ids is None:
             with SessionGen() as session:
                 contests = session.query(Contest).all()
@@ -162,6 +163,7 @@ class DumpExporter:
         self.skip_user_tests = skip_user_tests
         self.skip_users = skip_users
         self.skip_print_jobs = skip_print_jobs
+        self.tombstone = tombstone
         self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
@@ -213,7 +215,8 @@ class DumpExporter:
                         skip_user_tests=self.skip_user_tests,
                         skip_users=self.skip_users,
                         skip_print_jobs=self.skip_print_jobs,
-                        skip_generated=self.skip_generated)
+                        skip_generated=self.skip_generated,
+                        skip_executables=self.tombstone)
                     for file_ in files:
                         if not self.safe_get_file(file_,
                                                   os.path.join(files_dir,
@@ -306,6 +309,15 @@ class DumpExporter:
 
         for prp in cls._col_props:
             col, = prp.columns
+
+            # Replace executable with tombstone if requested
+            if (
+                self.tombstone
+                and cls in (Executable, UserTestExecutable)
+                and prp.key == "digest"
+            ):
+                data[prp.key] = encode_value(col.type, Digest.TOMBSTONE)
+                continue
 
             val = getattr(obj, prp.key)
             data[prp.key] = encode_value(col.type, val)
@@ -429,6 +441,8 @@ def main():
                         help="don't export users")
     parser.add_argument("-P", "--no-print-jobs", action="store_true",
                         help="don't export print jobs")
+    parser.add_argument('-t', '--tombstone', action='store_true',
+                        help="replace executables with tombstone instead of exporting them")
     parser.add_argument("export_target", action="store",
                         type=utf8_decoder, nargs='?', default="",
                         help="target directory or archive for export")
@@ -443,7 +457,8 @@ def main():
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
                             skip_users=args.no_users,
-                            skip_print_jobs=args.no_print_jobs)
+                            skip_print_jobs=args.no_print_jobs,
+                            tombstone=args.tombstone)
     success = exporter.do_export()
     return 0 if success is True else 1
 

@@ -53,7 +53,7 @@ from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
     Submission, SubmissionResult, User, Participation, UserTest, \
     UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files, \
-    District, School, Team, Admin
+    District, School, Team, Admin, Executable, UserTestExecutable
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -132,7 +132,7 @@ class DumpImporter:
     def __init__(self, drop, import_source,
                  load_files, load_model, skip_generated,
                  skip_submissions, skip_user_tests, skip_users, update_users,
-                 skip_print_jobs):
+                 skip_print_jobs, tombstone):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
@@ -142,6 +142,7 @@ class DumpImporter:
         self.skip_users = skip_users
         self.update_users = update_users
         self.skip_print_jobs = skip_print_jobs
+        self.tombstone = tombstone
 
         self.import_source = import_source
         self.import_dir = import_source
@@ -313,7 +314,8 @@ class DumpImporter:
                             skip_user_tests=self.skip_user_tests,
                             skip_print_jobs=self.skip_print_jobs,
                             skip_users=self.skip_users,
-                            skip_generated=self.skip_generated)
+                            skip_generated=self.skip_generated,
+                            skip_executables=self.tombstone)
 
                 session.commit()
             else:
@@ -427,6 +429,10 @@ class DumpImporter:
 
         if cls is Team and args['code'] in self.teams:
             return self.teams[args['code']]
+
+        # Replace executable with tombstone if requested
+        if self.tombstone and cls in (Executable, UserTestExecutable):
+            args['digest'] = Digest.TOMBSTONE
 
         return cls(**args)
 
@@ -548,6 +554,8 @@ def main():
                              help="update already existing users")
     parser.add_argument("-P", "--no-print-jobs", action="store_true",
                         help="don't import print jobs")
+    parser.add_argument('-t', '--tombstone', action='store_true',
+                        help="replace executables with tombstone instead of importing them")
     parser.add_argument("import_source", action="store", type=utf8_decoder,
                         help="source directory or compressed file")
 
@@ -562,7 +570,8 @@ def main():
                             skip_user_tests=args.no_user_tests,
                             skip_users=args.no_users,
                             update_users=args.update_users,
-                            skip_print_jobs=args.no_print_jobs)
+                            skip_print_jobs=args.no_print_jobs,
+                            tombstone=args.tombstone)
     success = importer.do_import()
     return 0 if success is True else 1
 
