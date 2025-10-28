@@ -25,3 +25,5 @@ pyyaml>=5.3,<6.1  # http://pyyaml.org/wiki/PyYAML
 
 # LMIO extensions:
 unidecode>=1.1,<2.0  # https://github.com/avian2/unidecode/blob/master/ChangeLog
+
+setuptools<80.9  # Due to pkg_resources deprecation
