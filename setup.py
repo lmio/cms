@@ -200,6 +200,7 @@ setup(
             "PHP=cms.grading.languages.php:Php",
             "Python 3 / CPython=cms.grading.languages.python3_cpython:Python3CPython",
             "Python 3.11 / CPython=cms.grading.languages.python311_cpython:Python311CPython",
+            "Python 3.13 / CPython=cms.grading.languages.python313_cpython:Python313CPython",
             "Rust=cms.grading.languages.rust:Rust",
         ],
     },
