@@ -186,6 +186,7 @@ setup(
             "GroupMul=cms.grading.scoretypes.GroupMul:GroupMul",
             "GroupThreshold=cms.grading.scoretypes.GroupThreshold:GroupThreshold",
             "SharedGroupThreshold=cms.grading.scoretypes.SharedGroupThreshold:SharedGroupThreshold",
+            "SimpleGroupMin=cms.grading.scoretypes.simple_group:SimpleGroupMin",
         ],
         "cms.grading.languages": [
             "C++11 / g++=cms.grading.languages.cpp11_gpp:Cpp11Gpp",

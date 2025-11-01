@@ -707,6 +707,7 @@ td.token_rules p:last-child {
 #submission_detail table.testcase-list {
     table-layout: fixed;
     width: 100%;
+    height: 1px; /* Required for .score to fill its cell */
 }
 
 #submission_detail table.testcase-list thead th.idx {
@@ -720,6 +721,10 @@ td.token_rules p:last-child {
 #submission_detail table.testcase-list thead th.execution-time,
 #submission_detail table.testcase-list thead th.memory-used {
     width: 100px;
+}
+
+#submission_detail table.testcase-list thead th.score {
+    width: 10%;
 }
 
 #submission_detail table.testcase-list tbody tr:not(.undefined) td.outcome {
@@ -748,6 +753,42 @@ td.token_rules p:last-child {
 
 #submission_detail table.testcase-list tbody tr.partiallycorrect td.outcome .outcome {
     background-color: #edd400;
+}
+
+#submission_detail table.testcase-list tbody tr td.score {
+    padding: 5px;
+    height: 100%;
+}
+
+#submission_detail table.testcase-list tbody tr td.score .score {
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    line-height: 24px;
+    border-radius: 5px;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    color: white;
+}
+
+#submission_detail table.testcase-list tbody tr td.score .score.correct {
+    background-color: #4e9a06;
+}
+
+#submission_detail table.testcase-list tbody tr td.score .score.notcorrect {
+    background-color: #cc0000;
+}
+
+#submission_detail table.testcase-list tbody tr td.score .score.partiallycorrect {
+    background-color: #edd400;
+}
+
+#submission_detail table.testcase-list tbody tr td.score .score.undefined {
+    background-color: #babdb6;
+    color: black;
 }
 
 
