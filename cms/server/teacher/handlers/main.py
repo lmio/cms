@@ -70,10 +70,7 @@ class LoginHandler(BaseHandler):
         next_page = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            if next_page != "/":
-                next_page = self.url(*next_page.strip("/").split("/"))
-            else:
-                next_page = self.url()
+            next_page = self.url.from_url(next_page)
         else:
             next_page = self.url()
         error_page = self.url("login", **error_args)
