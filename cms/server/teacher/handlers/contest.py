@@ -43,6 +43,7 @@ from cms import config, PARTICIPATION_LOCATION_ONSITE, PARTICIPATION_LOCATION_RE
 from cms.db import Contest, Participation, Task, User, DistrictSubmissionArchive
 from cms.grading.scoring import task_score
 from cms.server import FileHandlerMixin
+from cms.server.contest.handlers.base import BaseHandler as CWSBaseHandler
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -396,7 +397,7 @@ class ImpersonateHandler(BaseHandler):
                     "user %r, on contest %s, at %s.", ip_address,
                     p.user.username, p.contest.name, self.timestamp)
         password = p.password if p.password is not None else p.user.password
-        self.set_secure_cookie(p.contest.name + "_login",
+        self.set_secure_cookie(CWSBaseHandler.LOGIN_COOKIE_NAME,
                                json.dumps([p.user.username,
                                            password,
                                            make_timestamp(self.timestamp)]),

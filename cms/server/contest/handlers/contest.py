@@ -150,8 +150,7 @@ class ContestHandler(BaseHandler):
             user logged in for the running contest.
 
         """
-        cookie_name = self.contest.name + "_login"
-        cookie = self.get_secure_cookie(cookie_name)
+        cookie = self.get_secure_cookie(self.LOGIN_COOKIE_NAME)
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
@@ -164,9 +163,9 @@ class ContestHandler(BaseHandler):
             self.sql_session, self.contest, self.timestamp, cookie, ip_address)
 
         if cookie is None:
-            self.clear_cookie(cookie_name)
+            self.clear_cookie(self.LOGIN_COOKIE_NAME)
         elif self.refresh_cookie:
-            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
+            self.set_secure_cookie(self.LOGIN_COOKIE_NAME, cookie, expires_days=None)
 
         return participation
 
