@@ -62,6 +62,7 @@ class BaseHandler(CommonRequestHandler):
     This will also handle the contest list on the homepage.
 
     """
+    LOGIN_COOKIE_NAME = "login"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

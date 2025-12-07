@@ -396,11 +396,10 @@ class LoginHandler(ContestHandler):
             self.sql_session, self.contest, self.timestamp, username, password,
             ip_address)
 
-        cookie_name = self.contest.name + "_login"
         if cookie is None:
-            self.clear_cookie(cookie_name)
+            self.clear_cookie(self.LOGIN_COOKIE_NAME)
         else:
-            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
+            self.set_secure_cookie(self.LOGIN_COOKIE_NAME, cookie, expires_days=None)
 
         if participation is None:
             self.redirect(error_page)
@@ -433,7 +432,7 @@ class LogoutHandler(ContestHandler):
     """
     @multi_contest
     def post(self):
-        self.clear_cookie(self.contest.name + "_login")
+        self.clear_cookie(self.LOGIN_COOKIE_NAME)
         self.redirect(self.contest_url())
 
 
