@@ -111,8 +111,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "submissions_download_allowed")
             self.get_bool(attrs, "allow_questions")
             self.get_bool(attrs, "allow_user_tests")
-            self.get_bool(attrs, "block_hidden_participations")
-            self.get_bool(attrs, "allow_password_authentication")
+            # self.get_bool(attrs, "block_hidden_participations")
+            # self.get_bool(attrs, "allow_password_authentication")
             self.get_bool(attrs, "allow_registration")
             self.get_datetime(attrs, "registration_start", empty=None)
             self.get_datetime(attrs, "registration_stop", empty=None)
@@ -122,8 +122,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "registration_auto_credentials")
             self.get_bool(attrs, "registration_require_country")
             self.get_bool(attrs, "registration_require_school_details")
-            self.get_bool(attrs, "ip_restriction")
-            self.get_bool(attrs, "ip_autologin")
+            # self.get_bool(attrs, "ip_restriction")
+            # self.get_bool(attrs, "ip_autologin")
 
             allowed_grades = self.get_argument("registration_allowed_grades", "")
             if allowed_grades:

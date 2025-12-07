@@ -52,10 +52,7 @@ def get_password(participation):
     return (str): the password that is on record for them.
 
     """
-    if participation.password is None:
-        return participation.user.password
-    else:
-        return participation.password
+    return participation.user.password
 
 
 def validate_login(
@@ -64,13 +61,9 @@ def validate_login(
 
     Given the information the user provided (the username and the
     password) and some context information (contest, to determine which
-    users are allowed to log in, how and with which restrictions;
-    timestamp for cookie creation; IP address to check against) try to
+    users are allowed to log in; timestamp for cookie creation) try to
     authenticate the user and return its participation and the cookie
     to set to help authenticate future visits.
-
-    After finding the participation, IP login and hidden users
-    restrictions are checked.
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
@@ -91,10 +84,6 @@ def validate_login(
         logger.info("Unsuccessful login attempt from IP address %s, as user "
                     "%r, on contest %s, at %s: " + msg, ip_address,
                     username, contest.name, timestamp, *args)
-
-    if not contest.allow_password_authentication:
-        log_failed_attempt("password authentication not allowed")
-        return None, None
 
     participation = sql_session.query(Participation) \
         .join(Participation.user) \
@@ -122,22 +111,6 @@ def validate_login(
         log_failed_attempt("wrong password")
         return None, None
 
-    if config.restricted_contest and not participation.unrestricted:
-        logger.warning(
-            "Restricted login error from IP address %s, as user %r, on contest "
-            "%s, at %s", ip_address, participation.user.username,
-            participation.contest.name, timestamp)
-        return None, None
-
-    if contest.ip_restriction and participation.ip is not None \
-            and not any(ip_address in network for network in participation.ip):
-        log_failed_attempt("unauthorized IP address")
-        return None, None
-
-    if contest.block_hidden_participations and participation.hidden:
-        log_failed_attempt("participation is hidden and unauthorized")
-        return None, None
-
     logger.info("Successful login attempt from IP address %s, as user %r, on "
                 "contest %s, at %s", ip_address, username, contest.name,
                 timestamp)
@@ -159,25 +132,16 @@ def authenticate_request(
 
     Given the information the user's browser provided (the cookie) and
     some context information (contest, to determine which users are
-    allowed to log in, how and with which restrictions; timestamp for
-    cookie validation/creation, IP address to either do autologin or to
-    check against) try to authenticate the user and return its
-    participation and the cookie to refresh to help authenticate future
-    visits.
+    allowed to log in; timestamp for cookie validation/creation) try to
+    authenticate the user and return its participation and the cookie
+    to refresh to help authenticate future visits.
 
-    There are two way a user can authenticate:
-    - if IP autologin is enabled, we look for a participation whose IP
-      address matches the remote IP address; if a match is found, the
-      user is authenticated as that participation;
-    - if username/password authentication is enabled, and the cookie
-      is valid, the corresponding participation is returned, together
-      with a refreshed cookie.
+    Only username/password authentication is allowed. If the cookie is
+    valid, the corresponding participation is returned, together with a
+    refreshed cookie.
 
-    After finding the participation, IP login and hidden users
-    restrictions are checked.
-
-    In case of any error, or of a login by other sources, no new cookie
-    is returned and the old one, if any, should be cleared.
+    In case of any error, no new cookie is returned and the old one, if
+    any, should be cleared.
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
@@ -194,44 +158,10 @@ def authenticate_request(
         cookie has to be set return it as well, otherwise return None.
 
     """
-    participation = None
-
-    if contest.ip_autologin:
-        try:
-            participation = _authenticate_request_by_ip_address(
-                sql_session, contest, ip_address)
-            # If the login is IP-based, the cookie should be cleared.
-            if participation is not None:
-                cookie = None
-        except AmbiguousIPAddress:
-            return None, None
-
-    if participation is None \
-            and contest.allow_password_authentication:
-        participation, cookie = _authenticate_request_from_cookie(
-            sql_session, contest, timestamp, cookie)
+    participation, cookie = _authenticate_request_from_cookie(
+        sql_session, contest, timestamp, cookie)
 
     if participation is None:
-        return None, None
-
-    if config.restricted_contest and not participation.unrestricted:
-        return None, None
-
-    # Check if user is using the right IP (or is on the right subnet).
-    if contest.ip_restriction and participation.ip is not None \
-            and not any(ip_address in network for network in participation.ip):
-        logger.info(
-            "Unsuccessful authentication from IP address %s, on contest %s, "
-            "as %s, at %s: unauthorized IP address",
-            ip_address, contest.name, participation.user.username, timestamp)
-        return None, None
-
-    # Check that the user is not hidden if hidden users are blocked.
-    if contest.block_hidden_participations and participation.hidden:
-        logger.info(
-            "Unsuccessful authentication from IP address %s, on contest %s, "
-            "as %s, at %s: participation is hidden and unauthorized",
-            ip_address, contest.name, participation.user.username, timestamp)
         return None, None
 
     return participation, cookie

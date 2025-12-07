@@ -201,7 +201,7 @@
         <label for="block_hidden_participations">Block hidden participations</label>
       </td>
       <td>
-        <input type="checkbox" id="block_hidden_participations" name="block_hidden_participations" {{ "checked" if contest.block_hidden_participations else "" }}/>
+        <input type="checkbox" id="block_hidden_participations" name="block_hidden_participations" {{ "checked" if contest.block_hidden_participations else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -210,7 +210,7 @@
         <label for="allow_password_authentication">Allow password authentication</label>
       </td>
       <td>
-        <input type="checkbox" id="allow_password_authentication" name="allow_password_authentication" {{ "checked" if contest.allow_password_authentication else "" }}/>
+        <input type="checkbox" id="allow_password_authentication" name="allow_password_authentication" {{ "checked" if contest.allow_password_authentication else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -219,7 +219,7 @@
         <label for="ip_restriction">IP based login restriction</label>
       </td>
       <td>
-        <input type="checkbox" id="ip_restriction" name="ip_restriction" {{ "checked" if contest.ip_restriction else "" }}/>
+        <input type="checkbox" id="ip_restriction" name="ip_restriction" {{ "checked" if contest.ip_restriction else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -228,7 +228,7 @@
         <label for="ip_autologin">IP based autologin</label>
       </td>
       <td>
-        <input type="checkbox" id="ip_autologin" name="ip_autologin" {{ "checked" if contest.ip_autologin else "" }}/>
+        <input type="checkbox" id="ip_autologin" name="ip_autologin" {{ "checked" if contest.ip_autologin else "" }} disabled/>
       </td>
     </tr>
 

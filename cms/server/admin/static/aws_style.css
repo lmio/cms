@@ -100,6 +100,11 @@ input:focus, textarea:focus {
     border: 1px solid #FFD69C;
 }
 
+input:disabled, textarea:disabled {
+    border: 1px solid #707070;
+    background-color: #E0E0E0;
+}
+
 ul.normal_list {
     list-style: disc;
     list-style-position: inside;
@@ -558,6 +563,12 @@ body.admin textarea {
 body.admin input:focus,
 body.admin textarea:focus {
     border: 1px solid #FFD69C   ;
+}
+
+body.admin input:disabled,
+body.admin textarea:disabled {
+    border: 1px solid #707070;
+    background-color: #E0E0E0;
 }
 
 body.admin #sidebar {
