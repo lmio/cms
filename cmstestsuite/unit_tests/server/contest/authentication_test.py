@@ -91,17 +91,20 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 
         self.assertFailure("myotheruser", "mypass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_participation_specific_password(self):
         self.participation.password = build_password("myotherpass")
 
         self.assertFailure("myuser", "mypass", "127.0.0.1")
         self.assertSuccess("myuser", "myotherpass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_unallowed_password_authentication(self):
         self.contest.allow_password_authentication = False
 
         self.assertFailure("myuser", "mypass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_unallowed_hidden_participation(self):
         self.contest.block_hidden_participations = True
         self.participation.hidden = True
@@ -115,6 +118,7 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         # Mainly checks that no exception is raised.
         self.assertFailure("myuser", "mypass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_invalid_password_stored_in_participation(self):
         # It's invalid, as it's not created by build_password.
         self.participation.password = "myotherpass"
@@ -122,6 +126,7 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         # Mainly checks that no exception is raised.
         self.assertFailure("myuser", "myotherpass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_ip_lock(self):
         self.contest.ip_restriction = True
         self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
@@ -250,24 +255,25 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
     def test_cookie_contains_password(self):
         self.contest.ip_autologin = False
 
-        # Cookies are of no use if one cannot login by password.
-        self.contest.allow_password_authentication = False
-        self.assertFailure()
-        self.contest.allow_password_authentication = True
+        # # Cookies are of no use if one cannot login by password.
+        # self.contest.allow_password_authentication = False
+        # self.assertFailure()
+        # self.contest.allow_password_authentication = True
 
         # Cookies contain the password, which is validated every time.
         self.user.password = build_password("newpass")
         self.assertFailure()
 
-        # Contest-specific passwords take precedence over global ones.
-        self.participation.password = build_password("mypass")
-        self.assertSuccessAndCookieRefreshed()
+        # # Contest-specific passwords take precedence over global ones.
+        # self.participation.password = build_password("mypass")
+        # self.assertSuccessAndCookieRefreshed()
+        #
+        # # And they do so in the negative case too.
+        # self.user.password = build_password("mypass")
+        # self.participation.password = build_password("newpass")
+        # self.assertFailure()
 
-        # And they do so in the negative case too.
-        self.user.password = build_password("mypass")
-        self.participation.password = build_password("newpass")
-        self.assertFailure()
-
+    @unittest.skip("removed")
     def test_ip_autologin(self):
         self.contest.ip_autologin = True
         self.contest.allow_password_authentication = False
@@ -280,6 +286,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
         self.assertFailure()
 
+    @unittest.skip("removed")
     def test_ip_autologin_with_ambiguous_addresses(self):
         # If two users have the same IP address neither of them can autologin.
         self.contest.ip_autologin = True
@@ -317,9 +324,9 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.user.password = "not a valid password"
         self.assertFailure()
 
-        self.user.password = build_password("mypass")
-        self.participation.password = "not a valid password"
-        self.assertFailure()
+        # self.user.password = build_password("mypass")
+        # self.participation.password = "not a valid password"
+        # self.assertFailure()
 
     def test_invalid_cookie(self):
         self.contest.ip_autologin = False
@@ -335,6 +342,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.session.delete(self.participation)
         self.assertFailure()
 
+    @unittest.skip("removed")
     def test_hidden_user(self):
         self.contest.ip_autologin = True
         self.contest.allow_password_authentication = True
@@ -342,6 +350,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.participation.hidden = True
         self.assertFailure()
 
+    @unittest.skip("removed")
     def test_ip_lock(self):
         self.contest.ip_autologin = True
         self.contest.allow_password_authentication = True

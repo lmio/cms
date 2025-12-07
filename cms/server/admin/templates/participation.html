@@ -84,8 +84,7 @@ function update_additional_answer(element, invoker)
           Password
         </td>
         <td>
-          {% set hashed_password = participation.password %}
-          {% include "fragments/hashed_password_form.html" %}
+          <input type="text" name="password" disabled />
         </td>
       </tr>
       <tr>
@@ -109,7 +108,7 @@ function update_additional_answer(element, invoker)
                                     Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."></span>
           IP address or subnet
         </td>
-        <td><input type="text" name="ip" value="{{ participation.ip|map("string")|join(", ") if participation.ip is not none else "" }}"/></td>
+        <td><input type="text" name="ip" value="{{ participation.ip|map("string")|join(", ") if participation.ip is not none else "" }}" disabled/></td>
       </tr>
       <tr>
         <td>
