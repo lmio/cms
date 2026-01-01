@@ -144,6 +144,11 @@ class User(Base):
         DateTime,
         nullable=True)
 
+    # Time of last login
+    last_login_timestamp = Column(
+        DateTime,
+        nullable=True)
+
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 

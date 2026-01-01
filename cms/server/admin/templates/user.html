@@ -177,6 +177,20 @@
         </td>
         <td><input type="text" name="registered_by" value="{{ user.registered_by if user.registered_by is not none else "" }}" /></td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="Time when the user registered themselves, or empty if the user was created by an admin."></span>
+          Registration time (in UTC)
+        </td>
+        <td>{{ user.registration_timestamp if user.registration_timestamp is not none else "" }}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Time when the user last logged into the system, or empty if they have never logged in."></span>
+          Last login time (in UTC)
+        </td>
+        <td>{{ user.last_login_timestamp if user.last_login_timestamp is not none else "" }}</td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />
