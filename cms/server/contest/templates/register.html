@@ -183,9 +183,6 @@ $(document).ready(function() {
     <div id="signup-mask">
         <h1>{% trans %}Registration{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
-        {% if policy_url and contest.allow_registration_by_parent %}
-        <p>{% trans %}This form is for contestants aged 14 or older, or younger contestants whose parents have submitted acceptance letters for them to register and participate in the contest. Other contestants, please contact supervising teacher.{% endtrans %}</p>
-        {% endif %}
         {% if contest.registration_allow_join %}
         <ul class="nav nav-pills">
             <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
@@ -339,11 +336,7 @@ $(document).ready(function() {
                 <div class="control-group">
                     <div class="controls">
                         <label class="checkbox"><input required type="checkbox" name="accept_terms" value="yes" />
-                            {% if contest.allow_registration_by_parent %}
-                            <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>, <br />or my parents have submitted an acceptance letter for me to register and participate in the contest.{% endtrans %}</span>
-                            {% else %}
                             <span>{% trans policy_url=policy_url %}I am 14 years or older and agree to the <a href="{{ policy_url }}" target="_blank">Personal Data Management Policy</a>.{% endtrans %}</span>
-                            {% endif %}
                         </label>
                     </div>
                 </div>
