@@ -116,7 +116,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "allow_registration")
             self.get_datetime(attrs, "registration_start", empty=None)
             self.get_datetime(attrs, "registration_stop", empty=None)
-            self.get_bool(attrs, "allow_registration_by_parent")
+            # self.get_bool(attrs, "allow_registration_by_parent")
             self.get_bool(attrs, "registration_allow_join")
             self.get_bool(attrs, "registration_require_team")
             self.get_bool(attrs, "registration_auto_credentials")

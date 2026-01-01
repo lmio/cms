@@ -336,37 +336,6 @@ class RegistrationHandler(ContestHandler):
         return team
 
 
-class RegistrationByParentHandler(RegistrationHandler):
-    @multi_contest
-    def get(self):
-        if not self.contest.allow_registration_by_parent:
-            raise tornado_web.HTTPError(404)
-        self.render("register_by_parent.html", **self.r_params)
-
-    @multi_contest
-    def post(self):
-        if not self.contest.allow_registration_by_parent:
-            raise tornado_web.HTTPError(404)
-
-        try:
-            ip_address = ipaddress.ip_address(self.request.remote_ip)
-        except ValueError:
-            logger.warning("Invalid IP address provided by Tornado: %s",
-                           self.request.remote_ip)
-            return None
-
-        user, _password = self.do_register(require_registered_by=True)
-
-        logger.info("New user registered by parent from IP address %s, as "
-                    "user %r, on contest %s, at %s", ip_address, user.username,
-                    self.contest.name, self.timestamp)
-
-        if self.contest.registration_auto_credentials:
-            self.finish("ok")
-        else:
-            self.finish(user.username)
-
-
 class LoginHandler(ContestHandler):
     """Login handler.
 
