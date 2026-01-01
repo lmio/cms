@@ -403,6 +403,10 @@ class LoginHandler(ContestHandler):
         if user is None:
             self.redirect(error_page)
         else:
+            # Remember the login time.
+            user.last_login_timestamp = self.timestamp
+            self.sql_session.commit()
+
             self.redirect(next_page)
 
 
