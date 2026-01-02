@@ -30,7 +30,6 @@
 
 """
 
-import ipaddress
 import logging
 
 import collections
@@ -46,10 +45,9 @@ except ImportError:
     import tornado.web as tornado_web
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest
+from cms.db import Contest, Submission, Task, UserTest, Participation
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
-from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import get_timezone
 from .base import BaseHandler
 from ..phase_management import compute_actual_phase
@@ -132,40 +130,22 @@ class ContestHandler(BaseHandler):
         The name is get_current_user because tornado requires that
         name.
 
-        The participation is obtained from one of the possible sources:
-        - if IP autologin is enabled, the remote IP address is matched
-          with the participation IP address; if a match is found, that
-          participation is returned; in case of errors, None is returned;
-        - if username/password authentication is enabled, and the cookie
-          is valid, the corresponding participation is returned, and the
-          cookie is refreshed.
-
-        After finding the participation, IP login and hidden users
-        restrictions are checked.
-
-        In case of any error, or of a login by other sources, the
-        cookie is deleted.
+        The participation is obtained for the currently logged-in user
+        and the current contest.
 
         return (Participation|None): the participation object for the
             user logged in for the running contest.
 
         """
-        cookie = self.get_secure_cookie(self.LOGIN_COOKIE_NAME)
+        user = super().get_current_user()
 
-        try:
-            ip_address = ipaddress.ip_address(self.request.remote_ip)
-        except ValueError:
-            logger.warning("Invalid IP address provided by Tornado: %s",
-                           self.request.remote_ip)
+        if user is None:
             return None
 
-        participation, cookie = authenticate_request(
-            self.sql_session, self.contest, self.timestamp, cookie, ip_address)
-
-        if cookie is None:
-            self.clear_cookie(self.LOGIN_COOKIE_NAME)
-        elif self.refresh_cookie:
-            self.set_secure_cookie(self.LOGIN_COOKIE_NAME, cookie, expires_days=None)
+        participation = self.sql_session.query(Participation) \
+            .filter(Participation.contest == self.contest) \
+            .filter(Participation.user == user) \
+            .first()
 
         return participation
 

@@ -392,16 +392,15 @@ class LoginHandler(ContestHandler):
                            self.request.remote_ip)
             return None
 
-        participation, cookie = validate_login(
-            self.sql_session, self.contest, self.timestamp, username, password,
-            ip_address)
+        user, cookie = validate_login(
+            self.sql_session, self.timestamp, username, password, ip_address)
 
         if cookie is None:
             self.clear_cookie(self.LOGIN_COOKIE_NAME)
         else:
             self.set_secure_cookie(self.LOGIN_COOKIE_NAME, cookie, expires_days=None)
 
-        if participation is None:
+        if user is None:
             self.redirect(error_page)
         else:
             self.redirect(next_page)

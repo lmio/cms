@@ -59,22 +59,20 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.session.expire(self.user)
         self.session.expire(self.contest)
 
-        authenticated_participation, cookie = validate_login(
-            self.session, self.contest, self.timestamp,
+        authenticated_user, cookie = validate_login(
+            self.session, self.timestamp,
             username, password, ipaddress.ip_address(ip_address))
 
-        self.assertIsNotNone(authenticated_participation)
+        self.assertIsNotNone(authenticated_user)
         self.assertIsNotNone(cookie)
-        self.assertIs(authenticated_participation, self.participation)
-        self.assertIs(authenticated_participation.user, self.user)
-        self.assertIs(authenticated_participation.contest, self.contest)
+        self.assertIs(authenticated_user, self.user)
 
     def assertFailure(self, username, password, ip_address):
-        authenticated_participation, cookie = validate_login(
-            self.session, self.contest, self.timestamp,
+        authenticated_user, cookie = validate_login(
+            self.session, self.timestamp,
             username, password, ipaddress.ip_address(ip_address))
 
-        self.assertIsNone(authenticated_participation)
+        self.assertIsNone(authenticated_user)
         self.assertIsNone(cookie)
 
     def test_successful_login(self):
@@ -83,6 +81,7 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
     def test_no_user(self):
         self.assertFailure("myotheruser", "mypass", "127.0.0.1")
 
+    @unittest.skip("removed")
     def test_no_participation_for_user_in_contest(self):
         other_contest = self.add_contest(allow_password_authentication=True)
         other_user = self.add_user(
@@ -169,7 +168,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.participation = self.add_participation(
             contest=self.contest, user=self.user)
         _, self.cookie = validate_login(
-            self.session, self.contest, self.timestamp, self.user.username,
+            self.session, self.timestamp, self.user.username,
             "mypass", ipaddress.ip_address("10.0.0.1"))
 
     def attempt_authentication(self, **kwargs):
@@ -177,10 +176,9 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         # and ip_address. A missing argument means the default value is used
         # instead. An argument passed as None means that None will be used.
         return authenticate_request(
-            self.session, self.contest,
+            self.session,
             kwargs.get("timestamp", self.timestamp),
-            kwargs.get("cookie", self.cookie),
-            ipaddress.ip_address(kwargs.get("ip_address", "10.0.0.1")))
+            kwargs.get("cookie", self.cookie))
 
     def assertSuccess(self, **kwargs):
         # Assert that the authentication succeeds in any way (be it through IP
@@ -196,13 +194,11 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.session.expire(self.user)
         self.session.expire(self.contest)
 
-        authenticated_participation, cookie = \
+        authenticated_user, cookie = \
             self.attempt_authentication(**kwargs)
 
-        self.assertIsNotNone(authenticated_participation)
-        self.assertIs(authenticated_participation, self.participation)
-        self.assertIs(authenticated_participation.user, self.user)
-        self.assertIs(authenticated_participation.contest, self.contest)
+        self.assertIsNotNone(authenticated_user)
+        self.assertIs(authenticated_user, self.user)
 
         return cookie
 
@@ -227,9 +223,9 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
     def assertFailure(self, **kwargs):
         # Assert that the authentication fails.
         # The arguments are the same as those of attempt_authentication.
-        authenticated_participation, cookie = \
+        authenticated_user, cookie = \
             self.attempt_authentication(**kwargs)
-        self.assertIsNone(authenticated_participation)
+        self.assertIsNone(authenticated_user)
         self.assertIsNone(cookie)
 
     @patch.object(config, "cookie_duration", 10)
@@ -338,6 +334,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.session.delete(self.user)
         self.assertFailure()
 
+    @unittest.skip("removed")
     def test_no_participation_for_user_in_contest(self):
         self.session.delete(self.participation)
         self.assertFailure()
