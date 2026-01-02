@@ -50,6 +50,7 @@ from werkzeug.http import parse_accept_header
 from cms.db import get_active_contest_list
 from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
+from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import utc as utc_tzinfo
 
 
@@ -119,6 +120,29 @@ class BaseHandler(CommonRequestHandler):
 
         self.set_header("Content-Language", chosen_lang)
 
+    def get_current_user(self):
+        """Return the currently logged in user.
+
+        The user is obtained from the login cookie, if it is valid,
+          and the cookie is refreshed.
+
+        In case of any error, the cookie is deleted.
+
+        return (User|None): the user object for the logged-in user.
+
+        """
+        cookie = self.get_secure_cookie(self.LOGIN_COOKIE_NAME)
+
+        user, cookie = authenticate_request(
+            self.sql_session, self.timestamp, cookie)
+
+        if cookie is None:
+            self.clear_cookie(self.LOGIN_COOKIE_NAME)
+        elif self.refresh_cookie:
+            self.set_secure_cookie(self.LOGIN_COOKIE_NAME, cookie, expires_days=None)
+
+        return user
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 
@@ -144,6 +168,8 @@ class BaseHandler(CommonRequestHandler):
         ret["handler"] = self
 
         ret["xsrf_form_html"] = self.xsrf_form_html()
+
+        ret["user"] = self.current_user
 
         return ret
 

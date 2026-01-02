@@ -44,80 +44,62 @@ __all__ = ["validate_login", "authenticate_request"]
 logger = logging.getLogger(__name__)
 
 
-def get_password(participation):
-    """Return the password the participation can log in with.
-
-    participation (Participation): a participation.
-
-    return (str): the password that is on record for them.
-
-    """
-    return participation.user.password
-
-
 def validate_login(
-        sql_session, contest, timestamp, username, password, ip_address):
+        sql_session, timestamp, username, password, ip_address):
     """Authenticate a user logging in, with username and password.
 
     Given the information the user provided (the username and the
-    password) and some context information (contest, to determine which
-    users are allowed to log in; timestamp for cookie creation) try to
-    authenticate the user and return its participation and the cookie
+    password) and some context information (timestamp for cookie creation) try to
+    authenticate the user and return it together with the cookie
     to set to help authenticate future visits.
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
-    contest (Contest): the contest the user is trying to access.
     timestamp (datetime): the date and the time of the request.
     username (str): the username the user provided.
     password (str): the password the user provided.
     ip_address (IPv4Address|IPv6Address): the IP address the request
         came from.
 
-    return ((Participation, bytes)|(None, None)): if the user couldn't
-        be authenticated then return None, otherwise return the
-        participation that they wanted to authenticate as; if a cookie
-        has to be set return it as well, otherwise return None.
+    return ((User, bytes)|(None, None)): if the user couldn't be
+        authenticated then return None, otherwise return the user object;
+        if a cookie has to be set return it as well, otherwise return None.
 
     """
     def log_failed_attempt(msg, *args):
         logger.info("Unsuccessful login attempt from IP address %s, as user "
-                    "%r, on contest %s, at %s: " + msg, ip_address,
-                    username, contest.name, timestamp, *args)
+                    "%r, at %s: " + msg,
+                    ip_address, username, timestamp, *args)
 
-    participation = sql_session.query(Participation) \
-        .join(Participation.user) \
-        .options(contains_eager(Participation.user)) \
-        .filter(Participation.contest == contest)\
+    user = sql_session.query(User) \
         .filter(User.username == username)\
         .first()
 
-    if participation is None:
-        log_failed_attempt("user not registered to contest")
+    if user is None:
+        log_failed_attempt("user not registered")
         return None, None
 
-    correct_password = get_password(participation)
+    correct_password = user.password
 
     try:
         password_valid = validate_password(correct_password, password)
     except ValueError as e:
         # This is either a programming or a configuration error.
         logger.warning(
-            "Invalid password stored in database for user %s in contest %s: "
-            "%s", participation.user.username, participation.contest.name, e)
+            "Invalid password stored in database for user %s: %s",
+            user.username, e)
         return None, None
 
     if not password_valid:
         log_failed_attempt("wrong password")
         return None, None
 
-    logger.info("Successful login attempt from IP address %s, as user %r, on "
-                "contest %s, at %s", ip_address, username, contest.name,
-                timestamp)
+    logger.info("Successful login attempt from IP address %s, as user %r, at %s",
+                ip_address, username, timestamp)
 
     # If hashing is used, the cookie stores the hashed password so that
     # the expensive bcrypt call doesn't need to be done at every request.
-    return (participation,
+    return (user,
             json.dumps([username, correct_password, make_timestamp(timestamp)])
                 .encode("utf-8"))
 
@@ -126,18 +108,16 @@ class AmbiguousIPAddress(Exception):
     pass
 
 
-def authenticate_request(
-        sql_session, contest, timestamp, cookie, ip_address):
+def authenticate_request(sql_session, timestamp, cookie):
     """Authenticate a user returning to the site, with a cookie.
 
     Given the information the user's browser provided (the cookie) and
-    some context information (contest, to determine which users are
-    allowed to log in; timestamp for cookie validation/creation) try to
-    authenticate the user and return its participation and the cookie
+    some context information (timestamp for cookie validation/creation)
+    try to authenticate the user and return it together with the cookie
     to refresh to help authenticate future visits.
 
     Only username/password authentication is allowed. If the cookie is
-    valid, the corresponding participation is returned, together with a
+    valid, the corresponding user is returned, together with a
     refreshed cookie.
 
     In case of any error, no new cookie is returned and the old one, if
@@ -145,26 +125,23 @@ def authenticate_request(
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
-    contest (Contest): the contest the user is trying to access.
     timestamp (datetime): the date and the time of the request.
     cookie (bytes|None): the cookie the user's browser provided in the
         request (if any).
-    ip_address (IPv4Address|IPv6Address): the IP address the request
-        came from.
 
-    return ((Participation, bytes|None)|(None, None)): if the user
+    return ((User, bytes|None)|(None, None)): if the user
         couldn't be authenticated then return None, otherwise return
-        the participation that they wanted to authenticate as; if a
+        the user that they wanted to authenticate as; if a
         cookie has to be set return it as well, otherwise return None.
 
     """
-    participation, cookie = _authenticate_request_from_cookie(
-        sql_session, contest, timestamp, cookie)
+    user, cookie = _authenticate_request_from_cookie(
+        sql_session, timestamp, cookie)
 
-    if participation is None:
+    if user is None:
         return None, None
 
-    return participation, cookie
+    return user, cookie
 
 
 def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
@@ -222,21 +199,19 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
     return participation
 
 
-def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
-    """Return the current participation based on the cookie.
+def _authenticate_request_from_cookie(sql_session, timestamp, cookie):
+    """Return the current user based on the cookie.
 
-    If a participation can be extracted, the cookie is refreshed.
+    If a user can be extracted, the cookie is refreshed.
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
-    contest (Contest): the contest the user is trying to access.
     timestamp (datetime): the date and the time of the request.
     cookie (bytes|None): the cookie the user's browser provided in the
         request (if any).
 
-    return ((Participation, bytes)|(None, None)): the participation
-        extracted from the cookie and the cookie to set/refresh, or
-        None in case of errors.
+    return ((User, bytes)|(None, None)): the user extracted from the cookie
+        and the cookie to set/refresh, or None in case of errors.
 
     """
     if cookie is None:
@@ -266,18 +241,15 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
                            config.cookie_duration)
         return None, None
 
-    # Load participation from DB and make sure it exists.
-    participation = sql_session.query(Participation) \
-        .join(Participation.user) \
-        .options(contains_eager(Participation.user)) \
-        .filter(Participation.contest == contest) \
+    # Load user from DB and make sure it exists.
+    user = sql_session.query(User) \
         .filter(User.username == username) \
         .first()
-    if participation is None:
-        log_failed_attempt("user not registered to contest")
+    if user is None:
+        log_failed_attempt("user not registered")
         return None, None
 
-    correct_password = get_password(participation)
+    correct_password = user.password
 
     # We compare hashed password because it would be too expensive to
     # re-hash the user-provided plaintext password at every request.
@@ -285,12 +257,11 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
         log_failed_attempt("wrong password")
         return None, None
 
-    logger.info("Successful cookie authentication as user %r, on contest %s, "
-                "returning from %s, at %s", username, contest.name, last_update,
-                timestamp)
+    logger.info("Successful cookie authentication as user %r, returning from %s, at %s",
+                username, last_update, timestamp)
 
     # We store the hashed password (if hashing is used) so that the
     # expensive bcrypt hashing doesn't need to be done at every request.
-    return (participation,
+    return (user,
             json.dumps([username, correct_password, make_timestamp(timestamp)])
                 .encode("utf-8"))
