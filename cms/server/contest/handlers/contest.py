@@ -43,6 +43,7 @@ try:
     import tornado4.web as tornado_web
 except ImportError:
     import tornado.web as tornado_web
+from sqlalchemy.exc import IntegrityError
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest, Participation
@@ -133,6 +134,9 @@ class ContestHandler(BaseHandler):
         The participation is obtained for the currently logged-in user
         and the current contest.
 
+        If the participation doesn't exist and the contest allows joining,
+        a new participation is created.
+
         return (Participation|None): the participation object for the
             user logged in for the running contest.
 
@@ -147,7 +151,37 @@ class ContestHandler(BaseHandler):
             .filter(Participation.user == user) \
             .first()
 
+        if participation is None and self.contest.registration_allow_join:
+            try:
+                with self.sql_session.begin_nested():
+                    participation = Participation(user=user, contest=self.contest)
+                    self.sql_session.add(participation)
+                    self.sql_session.flush()
+                    self._participation_created = True
+            except IntegrityError:
+                # Possible race condition. Try fetching again.
+                participation = self.sql_session.query(Participation) \
+                    .filter(Participation.contest == self.contest) \
+                    .filter(Participation.user == user) \
+                    .first()
+                if participation is None:
+                    logger.warning("Failed to create a new participation for user %s on contest %s",
+                                   user.username, self.contest.name, exc_info=True)
+
         return participation
+
+    def finish(self, *args, **kwargs):
+        # Commit the freshly created participation, but only for non-error responses.
+        if getattr(self, '_participation_created', False) and 100 <= self.get_status() < 400:
+            try:
+                self.sql_session.commit()
+            except IntegrityError:
+                logger.warning("Failed to commit new participation for user %s on contest %s",
+                               self.current_user.user.username, self.contest.name, exc_info=True)
+            else:
+                self.service.proxy_service.user_registered(participation_id=self.current_user.id)
+
+        super().finish(*args, **kwargs)
 
     def render_params(self):
         ret = super().render_params()
