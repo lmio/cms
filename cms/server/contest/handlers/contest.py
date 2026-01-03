@@ -192,7 +192,7 @@ class ContestHandler(BaseHandler):
             ret["contest_url"] = self.contest_url
 
         ret["phase"] = self.contest.phase(self.timestamp)
-        ret["registration_phase"] = self.contest.registration_phase(self.timestamp)
+        ret["allow_registration"] = config.allow_registration and self.contest.registration_allow_join
 
         ret["printing_enabled"] = (config.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions

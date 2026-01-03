@@ -7,36 +7,6 @@
 {% block body %}
 
 <script>
-const registerFields = [
-    "first_name",
-    "last_name",
-    "email",
-    {% if contest.registration_require_country %}
-    "country",
-    {% endif %}
-    {% if not contest.registration_auto_credentials %}
-    "password-confirm",
-    {% endif %}
-    {% if contest.registration_require_school_details %}
-    "role-student",
-    "role-guest",
-    {% endif %}
-];
-const joinFields = [
-    {% if contest.registration_auto_credentials %}
-    "username",
-    "password",
-    {% endif %}
-];
-{% if contest.registration_require_school_details %}
-const schoolFields = [
-    "district",
-    "city",
-    "school",
-    "grade",
-];
-{% endif %}
-
 function clearErrors() {
     // Reset error text
     $("#password-input").removeClass("error");
@@ -48,84 +18,11 @@ function clearErrors() {
 }
 
 $(document).ready(function() {
-    function showField(fieldName) {
-        $(`#${fieldName}`).prop("disabled", false);
-        $(`#${fieldName}`).closest(".control-group").show();
-    }
-
-    function hideField(fieldName) {
-        $(`#${fieldName}`).prop("disabled", true);
-        $(`#${fieldName}`).closest(".control-group").hide();
-    }
-
-    {% if contest.registration_allow_join %}
-    const passwordHelp = $("#password-input span.help-block").text();
-
-    $("#register-pill").click(function(e) {
-        clearErrors();
-        $("#password-input span.help-block").show().text(passwordHelp);
-        $('input[name=new_user]').val(true);
-        joinFields.forEach(hideField);
-        registerFields.forEach(showField);
-        {% if contest.registration_require_school_details %}
-        if ($('input[type=radio][name="role"]:checked').val() === 'student') {
-            schoolFields.forEach(showField);
-        }
-        {% endif %}
-        $("#profile").after($("#participation"));
-        $("#form-divider").show();
-    });
-
-    $("#join-pill").click(function(e) {
-        clearErrors();
-        $('input[name=new_user]').val(false);
-        registerFields.forEach(hideField);
-        {% if contest.registration_require_school_details %}
-        schoolFields.forEach(hideField);
-        {% endif %}
-        joinFields.forEach(showField);
-        $("#credentials").after($("#participation"));
-        $("#form-divider").hide();
-    });
-    {% endif %}
-
-    {% if contest.registration_require_school_details %}
-    $('input[type=radio][name="role"]').change(function(ev) {
-        if (ev.target.value === 'student') {
-            schoolFields.forEach(showField);
-        } else {
-            schoolFields.forEach(hideField);
-        }
-    });
-
-    let $select_district = $('select[name="district"]');
-    let $select_school = $('select[name="school"]');
-    let $no_school = $select_school.children('option[value=""]').clone();
-    let schools_by_district = {};
-    $select_school.find('optgroup').each(function (i, og) {
-        schools_by_district[$(og).data('district-id')] = $(og).find('option').clone();
-    });
-
-    function district_changed () {
-        let val = $select_district.val();
-        $select_school.children().remove();
-        $select_school.append($no_school.clone());
-        if (val && schools_by_district.hasOwnProperty(val)) {
-            $select_school.append(schools_by_district[$select_district.val()].clone());
-        }
-        $select_school.val('');
-    }
-    $select_district.change(district_changed);
-    district_changed();
-    {% endif %}
-
     $("#signup").submit(function(e) {
         clearErrors();
 
-        let isNewUser = $('input[name=new_user]').val() == 'true';
-
         // Check that passwords are the same
-        if (isNewUser && registerFields.includes("password-confirm") && $("#password").val() !== $("#password-confirm").val()) {
+        if ($("#password").val() !== $("#password-confirm").val()) {
             $("#password-confirm-input").addClass("error");
             $("#password-confirm-input span.help-block").show().text("{% trans %}The passwords do not match!{% endtrans %}");
             $("#password-confirm").focus();
@@ -138,33 +35,14 @@ $(document).ready(function() {
             $.post(url, data).done(function(data) {
                 $("#signup-mask").hide();
                 $("#confirmed-mask").show();
-                let [username, password] = data.split(":");
-                $("#show-username").text(username);
-                $("#show-password").text(password || "");
+                $("#show-username").text(data);
             }).fail(function(data) {
                 if (data.status === 409) {
-                    if (isNewUser) {
-                        // Username is already used
-                        $("#username-input").addClass("error");
-                        $("#username-input span.help-block").show().text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
-                        $("#username").focus();
-                    } else {
-                        // User is already participating in this contest
-                        $("#username-input").addClass("error");
-                        $("#username-input span.help-block").show().text("{% trans %}This user is already registered in the contest.{% endtrans %}");
-                        $("#username").focus();
-                    }
-                } else if (data.status === 404) {
-                    // Invalid username
+                    // Username is already used
                     $("#username-input").addClass("error");
-                    $("#username-input span.help-block").show().text("{% trans %}No such user.{% endtrans %}");
+                    $("#username-input span.help-block").show().text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
                     $("#username").focus();
-                } else if (data.status === 403) {
-                    // Password does not match
-                    $("#password-input").addClass("error");
-                    $("#password-input span.help-block").show().text("{% trans %}The password is not correct.{% endtrans %}");
-                    $("#password").focus();
-                } else if (data.status === 405) {
+                } else if (data.status === 404) {
                     // Registration is not active.
                     window.location = "{{ contest_url() }}";
                 }
@@ -183,19 +61,12 @@ $(document).ready(function() {
     <div id="signup-mask">
         <h1>{% trans %}Registration{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
-        {% if contest.registration_allow_join %}
-        <ul class="nav nav-pills">
-            <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
-            <li id="join-pill"><a href="#" data-toggle="tab">{% trans %}Join contest{% endtrans %}</a></li>
-        </ul>
-        {% endif %}
         <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
             {{ xsrf_form_html|safe }}
             {% set next_page = handler.get_argument("next", none) %}
             {% if next_page is not none %}
             <input type="hidden" name="next" value="{{ next_page }}">
             {% endif %}
-            <input type="hidden" name="new_user" value="true" />
             <fieldset>
                 <div id="profile">
                     <div class="control-group">
@@ -216,102 +87,22 @@ $(document).ready(function() {
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="email" class="input-xlarge" name="email" id="email" autocomplete="email">
                         </div>
                     </div>
-                    {% if contest.registration_require_country %}
-                    <div class="control-group">
-                        <label class="control-label" for="country">{% trans %}Country{% endtrans %}</label>
-                        <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="country" id="country">
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if contest.registration_require_school_details %}
-                    <div class="control-group">
-                        <div class="controls">
-                            <label class="inline radio"><input required type="radio" name="role" value="student" id="role-student" />
-                                <span>{% trans %}Student{% endtrans %}</span>
-                            </label>
-                            <label class="inline radio"><input required type="radio" name="role" value="guest" id="role-guest" />
-                                <span>{% trans %}Guest{% endtrans %}</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="control-group" style="display: none">
-                        <label class="control-label" for="district">{% trans %}District{% endtrans %}</label>
-                        <div class="controls">
-                            <select required id="district" name="district" class="form-control" disabled>
-                                <option value="">---</option>
-                                {% for d in district_list %}
-                                <option value="{{ d.id }}">{{ d.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control-group" style="display: none">
-                        <label class="control-label" for="city">{% trans %}City{% endtrans %}</label>
-                        <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="city" id="city" disabled>
-                        </div>
-                    </div>
-                    <div class="control-group" style="display: none">
-                        <label class="control-label" for="school">{% trans %}School{% endtrans %}</label>
-                        <div class="controls">
-                            <select required id="school" name="school" class="form-control" disabled>
-                                <option value="">---</option>
-                                {% for d in district_list %}
-                                <optgroup label="{{ d.name }}" data-district-id="{{ d.id }}">
-                                    {% for s in d.schools %}
-                                    <option value="{{ s.id }}">{{ s.name }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control-group" style="display: none">
-                        <label class="control-label" for="grade">{% trans %}Grade{% endtrans %}</label>
-                        <div class="controls">
-                            <select required id="grade" name="grade" class="form-control" disabled>
-                                <option value="">--</option>
-                                {% for i in contest.registration_allowed_grades or range(1, 13) %}
-                                <option value="{{ i }}">{{ i }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
 
-                {% if contest.registration_require_team %}
-                <div id="participation">
-                    <div class="control-group">
-                        <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
-                        <div class="controls">
-                            <select id="team" name="team">
-                                {% for t in teams %}
-                                <option value="{{ t.code }}">{{ t.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if not contest.registration_auto_credentials %}
                 <hr id="form-divider">
-                {% endif %}
 
                 <div id="credentials">
-                    <div id="username-input" class="control-group" {% if contest.registration_auto_credentials %}style="display: none"{% endif %}>
+                    <div id="username-input" class="control-group">
                         <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_\-]+$" type="text" class="input-xlarge" name="username" id="username" {% if contest.registration_auto_credentials %}disabled{% endif %}>
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_\-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block" style="display: none"></span>
                         </div>
                     </div>
-                    <div id="password-input" class="control-group" {% if contest.registration_auto_credentials %}style="display: none"{% endif %}>
+                    <div id="password-input" class="control-group">
                         <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password" {% if contest.registration_auto_credentials %}disabled{% endif %}>
+                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
                             <span class="help-block">
                                 {% trans min_length=MIN_PASSWORD_LENGTH %}
                                 Must be one character or more.
@@ -321,7 +112,6 @@ $(document).ready(function() {
                             </span>
                         </div>
                     </div>
-                    {% if not contest.registration_auto_credentials %}
                     <div id="password-confirm-input" class="control-group">
                         <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
                         <div class="controls">
@@ -329,7 +119,6 @@ $(document).ready(function() {
                             <span class="help-block" style="display: none"></span>
                         </div>
                     </div>
-                    {% endif %}
                 </div>
 
                 {% if policy_url %}
@@ -357,21 +146,12 @@ $(document).ready(function() {
 
         <p>{% trans %}Registered in the contest successfully!{% endtrans %}</p>
 
-        {% if contest.registration_auto_credentials %}
-        <p>{% trans %}Here are your login details. Please write them down.{% endtrans %}</p>
-        {% endif %}
-
         <p>{% trans %}Your username is:{% endtrans %}</p>
 
         <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
         </p>
 
-        {% if contest.registration_auto_credentials %}
-        <p>{% trans %}Your password is:{% endtrans %}</p>
-        <p id="show-password" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;"></p>
-        {% else %}
         <p>{% trans %}Your password is stored securely.{% endtrans %}</p>
-        {% endif %}
 
         <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
     </div>

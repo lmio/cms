@@ -117,7 +117,7 @@
         <label for="allow_registration">Enabled</label>
       </td>
       <td>
-        <input type="checkbox" id="allow_registration" name="allow_registration" {{ "checked" if contest.allow_registration else "" }}/>
+        <input type="checkbox" id="allow_registration" name="allow_registration" {{ "checked" if contest.allow_registration else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -127,7 +127,7 @@
                                   Example: '2015-12-31 15:00:00'."></span>
         Registration start time (in UTC)
       </td>
-      <td><input type="text" name="registration_start" value="{{ contest.registration_start if contest.registration_start is not none else "" }}"></td>
+      <td><input type="text" name="registration_start" value="{{ contest.registration_start if contest.registration_start is not none else "" }}" disabled></td>
     </tr>
     <tr>
       <td>
@@ -136,7 +136,7 @@
                                   Example: '2015-12-31 18:00:00'."></span>
         Registration end time (in UTC)
       </td>
-      <td><input type="text" name="registration_stop" value="{{ contest.registration_stop if contest.registration_stop is not none else "" }}"></td>
+      <td><input type="text" name="registration_stop" value="{{ contest.registration_stop if contest.registration_stop is not none else "" }}" disabled></td>
     </tr>
     <tr>
       <td>
@@ -153,7 +153,7 @@
         <label for="registration_require_team">Require team</label>
       </td>
       <td>
-        <input type="checkbox" id="registration_require_team" name="registration_require_team" {{ "checked" if contest.registration_require_team else "" }}/>
+        <input type="checkbox" id="registration_require_team" name="registration_require_team" {{ "checked" if contest.registration_require_team else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -162,7 +162,7 @@
         <label for="registration_auto_credentials">Autogenerate credentials</label>
       </td>
       <td>
-        <input type="checkbox" id="registration_auto_credentials" name="registration_auto_credentials" {{ "checked" if contest.registration_auto_credentials else "" }}/>
+        <input type="checkbox" id="registration_auto_credentials" name="registration_auto_credentials" {{ "checked" if contest.registration_auto_credentials else "" }} disabled/>
       </td>
     </tr>
     <tr>
@@ -177,21 +177,21 @@
         <span class="info" title="Should registration include country name."></span>
         <label for="registration_require_country">Require country name</label>
       </td>
-      <td><input type="checkbox" id="registration_require_country" name="registration_require_country" {{ "checked" if contest.registration_require_country else "" }}></td>
+      <td><input type="checkbox" id="registration_require_country" name="registration_require_country" {{ "checked" if contest.registration_require_country else "" }} disabled></td>
     </tr>
     <tr>
       <td>
         <span class="info" title="Should registration include school related fields."></span>
         <label for="registration_require_school_details">Require school details</label>
       </td>
-      <td><input type="checkbox" id="registration_require_school_details" name="registration_require_school_details" {{ "checked" if contest.registration_require_school_details else "" }}></td>
+      <td><input type="checkbox" id="registration_require_school_details" name="registration_require_school_details" {{ "checked" if contest.registration_require_school_details else "" }} disabled></td>
     </tr>
     <tr>
       <td>
         <span class="info" title="Comma separated list of grades allowed in registration, or empty for 1-12."></span>
         <label for="registration_allowed_grades">Allowed grades</label>
       </td>
-      <td><input type="text" id="registration_allowed_grades" name="registration_allowed_grades" value="{{ contest.registration_allowed_grades|join(",") }}"/></td>
+      <td><input type="text" id="registration_allowed_grades" name="registration_allowed_grades" value="{{ contest.registration_allowed_grades|join(",") }}" disabled/></td>
     </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>

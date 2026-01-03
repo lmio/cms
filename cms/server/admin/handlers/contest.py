@@ -113,25 +113,25 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "allow_user_tests")
             # self.get_bool(attrs, "block_hidden_participations")
             # self.get_bool(attrs, "allow_password_authentication")
-            self.get_bool(attrs, "allow_registration")
-            self.get_datetime(attrs, "registration_start", empty=None)
-            self.get_datetime(attrs, "registration_stop", empty=None)
+            # self.get_bool(attrs, "allow_registration")
+            # self.get_datetime(attrs, "registration_start", empty=None)
+            # self.get_datetime(attrs, "registration_stop", empty=None)
             # self.get_bool(attrs, "allow_registration_by_parent")
             self.get_bool(attrs, "registration_allow_join")
-            self.get_bool(attrs, "registration_require_team")
-            self.get_bool(attrs, "registration_auto_credentials")
-            self.get_bool(attrs, "registration_require_country")
-            self.get_bool(attrs, "registration_require_school_details")
+            # self.get_bool(attrs, "registration_require_team")
+            # self.get_bool(attrs, "registration_auto_credentials")
+            # self.get_bool(attrs, "registration_require_country")
+            # self.get_bool(attrs, "registration_require_school_details")
             # self.get_bool(attrs, "ip_restriction")
             # self.get_bool(attrs, "ip_autologin")
 
-            allowed_grades = self.get_argument("registration_allowed_grades", "")
-            if allowed_grades:
-                attrs["registration_allowed_grades"] = \
-                    [int(x.strip()) for x in allowed_grades.split(",")
-                     if len(x) > 0 and not x.isspace()]
-            else:
-                attrs["registration_allowed_grades"] = []
+            # allowed_grades = self.get_argument("registration_allowed_grades", "")
+            # if allowed_grades:
+            #     attrs["registration_allowed_grades"] = \
+            #         [int(x.strip()) for x in allowed_grades.split(",")
+            #          if len(x) > 0 and not x.isspace()]
+            # else:
+            #     attrs["registration_allowed_grades"] = []
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")

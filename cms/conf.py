@@ -129,6 +129,7 @@ class Config:
         self.contest_listen_address = [""]
         self.contest_listen_port = [8888]
         self.cookie_duration = 30 * 60  # 30 minutes
+        self.allow_registration = False
         self.submit_local_copy = True
         self.submit_local_copy_path = "%s/submissions/"
         self.tests_local_copy = True
