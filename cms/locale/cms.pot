@@ -464,9 +464,7 @@ msgid "Logout"
 msgstr ""
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(username)s</strong>"
 msgstr ""
 
 msgid "Failed to log in."
@@ -796,10 +794,13 @@ msgstr ""
 msgid "no print jobs yet"
 msgstr ""
 
+msgid "Please enter a valid email address."
+msgstr ""
+
 msgid "The passwords do not match!"
 msgstr ""
 
-msgid "This username is already taken, please choose a different one."
+msgid "An account with this email already exists."
 msgstr ""
 
 msgid "This user is already registered in the contest."
@@ -844,7 +845,7 @@ msgstr[1] ""
 msgid "Confirm password"
 msgstr ""
 
-msgid "Registered in the contest successfully!"
+msgid "Registered successfully!"
 msgstr ""
 
 msgid "Your username is:"

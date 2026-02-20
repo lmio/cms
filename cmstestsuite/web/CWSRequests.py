@@ -38,6 +38,13 @@ logger = logging.getLogger(__name__)
 
 
 class CWSLoginRequest(LoginRequest):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data = {
+            "email": self.username,
+            "password": self.password,
+        }
+
     def test_success(self):
         if not LoginRequest.test_success(self):
             return False

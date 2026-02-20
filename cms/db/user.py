@@ -62,7 +62,7 @@ class User(Base):
 
     # Username and password to log in the CWS.
     username = Column(
-        Codename,
+        Unicode,
         nullable=False,
         unique=True)
     password = Column(

@@ -67,10 +67,8 @@ $(document).ready(function () {
                         <button type="submit" class="btn btn-warning">{% trans %}Logout{% endtrans %}</button>
                     </form>
                     <p class="navbar-text pull-right">
-                        {% trans first_name=user.first_name,
-                                 last_name=user.last_name,
-                                 username=user.username %}
-                            Logged in as <strong>{{ first_name }} {{ last_name }}</strong> <em>({{ username }})</em>
+                        {% trans username=user.email or user.username %}
+                            Logged in as <strong>{{ username }}</strong>
                         {% endtrans %}
                     </p>
 {% endif %}
@@ -98,9 +96,9 @@ $(document).ready(function () {
                     {% endif %}
                     <fieldset>
                         <div class="control-group">
-                            <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
+                            <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" name="username" id="username">
+                                <input type="text" class="input-xlarge" name="email" id="email">
                             </div>
                         </div>
                         <div class="control-group">

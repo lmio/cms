@@ -138,25 +138,15 @@ class RegistrationHandler(ContestHandler):
 
     def _create_user(self):
         try:
-            first_name = self.get_argument("first_name")
-            last_name = self.get_argument("last_name")
             email = self.get_argument("email")
 
-            if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
-                raise ValueError()
-            if not 1 <= len(last_name) <= self.MAX_INPUT_LENGTH:
-                raise ValueError()
             if not 1 <= len(email) <= self.MAX_INPUT_LENGTH \
                     or not self.email_re.match(email):
                 raise ValueError()
 
-            username = self.get_argument("username")
+            username = email.lower()
             password = self.get_argument("password")
 
-            if not 1 <= len(username) <= self.MAX_INPUT_LENGTH:
-                raise ValueError()
-            if not re.match(r"^[A-Za-z0-9_-]+$", username):
-                raise ValueError()
             if not self.MIN_PASSWORD_LENGTH <= len(password) \
                     <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
@@ -175,7 +165,7 @@ class RegistrationHandler(ContestHandler):
             raise tornado_web.HTTPError(409)
 
         # Store new user
-        user = User(first_name, last_name, username, password, email=email,
+        user = User(first_name="", last_name="", username=username, password=password, email=email,
                     registration_timestamp=self.timestamp)
         self.sql_session.add(user)
 
@@ -197,7 +187,8 @@ class LoginHandler(ContestHandler):
             next_page = self.contest_url()
         error_page = self.contest_url(**error_args)
 
-        username = self.get_argument("username", "")
+        email = self.get_argument("email", "")
+        username = email.lower()
         password = self.get_argument("password", "")
 
         try:
