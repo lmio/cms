@@ -503,12 +503,8 @@ msgid "Logout"
 msgstr "Atsijungti"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Prisijungta kaip <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(username)s</strong>"
+msgstr "Prisijungta kaip <strong>%(username)s</strong>"
 
 msgid "Failed to log in."
 msgstr "Prisijungti nepavyko."
@@ -861,11 +857,14 @@ msgstr "Paruošiama..."
 msgid "no print jobs yet"
 msgstr "spausdinimo darbų dar nėra"
 
+msgid "Please enter a valid email address."
+msgstr "Įvesk tinkamą el. pašto adresą."
+
 msgid "The passwords do not match!"
 msgstr "Slaptažodžiai nesutampa!"
 
-msgid "This username is already taken, please choose a different one."
-msgstr "Šis vartotojo vardas jau užimtas, pasirink kitokį."
+msgid "An account with this email already exists."
+msgstr "Paskyra su šiuo el. paštu jau egzistuoja."
 
 msgid "This user is already registered in the contest."
 msgstr "Šis vartotojas jau registruotas šiose varžybose."
@@ -910,8 +909,8 @@ msgstr[2] "Turi būti %(min_length)s ar daugiau simbolių."
 msgid "Confirm password"
 msgstr "Patvirtink slaptažodį"
 
-msgid "Registered in the contest successfully!"
-msgstr "Registracija varžyboms sėkminga!"
+msgid "Registered successfully!"
+msgstr "Registracija sėkminga!"
 
 msgid "Your username is:"
 msgstr "Tavo vartotojo vardas yra:"

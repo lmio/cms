@@ -13,20 +13,32 @@ function clearErrors() {
     $("#password-input span.help-block").hide().text("");
     $("#password-confirm-input").removeClass("error");
     $("#password-confirm-input span.help-block").hide().text("");
-    $("#username-input").removeClass("error");
-    $("#username-input span.help-block").hide().text("");
+    $("#email-input").removeClass("error");
+    $("#email-input span.help-block").hide().text("");
 }
 
 $(document).ready(function() {
     $("#signup").submit(function(e) {
         clearErrors();
 
+        let errors = false;
+        if (!/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test($("#email").val())) {
+            $("#email-input").addClass("error");
+            $("#email-input span.help-block").show().text("{% trans %}Please enter a valid email address.{% endtrans %}");
+            $("#email").focus();
+            errors = true;
+        }
         // Check that passwords are the same
         if ($("#password").val() !== $("#password-confirm").val()) {
             $("#password-confirm-input").addClass("error");
             $("#password-confirm-input span.help-block").show().text("{% trans %}The passwords do not match!{% endtrans %}");
-            $("#password-confirm").focus();
-        } else {
+            if (!errors) {
+                $("#password-confirm").focus();
+            }
+            errors = true;
+        }
+
+        if (!errors) {
             var data = $(this).serialize();
             var url = $(this).attr('action');
 
@@ -35,13 +47,12 @@ $(document).ready(function() {
             $.post(url, data).done(function(data) {
                 $("#signup-mask").hide();
                 $("#confirmed-mask").show();
-                $("#show-username").text(data);
             }).fail(function(data) {
                 if (data.status === 409) {
                     // Username is already used
-                    $("#username-input").addClass("error");
-                    $("#username-input span.help-block").show().text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
-                    $("#username").focus();
+                    $("#email-input").addClass("error");
+                    $("#email-input span.help-block").show().text("{% trans %}An account with this email already exists.{% endtrans %}");
+                    $("#email").focus();
                 } else if (data.status === 404) {
                     // Registration is not active.
                     window.location = "{{ contest_url() }}";
@@ -68,34 +79,11 @@ $(document).ready(function() {
             <input type="hidden" name="next" value="{{ next_page }}">
             {% endif %}
             <fieldset>
-                <div id="profile">
-                    <div class="control-group">
-                        <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
-                        <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
-                        <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
-                        </div>
-                    </div>
-                    <div class="control-group">
+                <div id="credentials">
+                    <div id="email-input" class="control-group">
                         <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="email" class="input-xlarge" name="email" id="email" autocomplete="email">
-                        </div>
-                    </div>
-                </div>
-
-                <hr id="form-divider">
-
-                <div id="credentials">
-                    <div id="username-input" class="control-group">
-                        <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
-                        <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_\-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block" style="display: none"></span>
                         </div>
                     </div>
@@ -144,14 +132,7 @@ $(document).ready(function() {
     <div id="confirmed-mask" style="display: none;">
         <h1>{% trans %}Registration{% endtrans %}</h1>
 
-        <p>{% trans %}Registered in the contest successfully!{% endtrans %}</p>
-
-        <p>{% trans %}Your username is:{% endtrans %}</p>
-
-        <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
-        </p>
-
-        <p>{% trans %}Your password is stored securely.{% endtrans %}</p>
+        <p>{% trans %}Registered successfully!{% endtrans %}</p>
 
         <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
     </div>
