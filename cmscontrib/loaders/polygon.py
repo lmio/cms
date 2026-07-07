@@ -275,20 +275,17 @@ class PolygonTaskLoader(TaskLoader):
             args["task_type_parameters"] = \
                 ["alone", [infile_param, outfile_param], evaluation_param]
 
-            args["score_type"] = "Sum"
+            args["score_type"] = "SharedGroupThreshold"
             total_value = 100.0
-            input_value = 0.0
 
-            testcases = int(testset.find('test-count').text)
-
-            n_input = testcases
-            if n_input != 0:
-                input_value = total_value / n_input
-            args["score_type_parameters"] = input_value
+            tests = testset.find("tests")
+            groups = testset.find("groups")
+            group_testcases = {g.attrib["name"]: [] for g in groups}
+            group_points = {g.attrib["name"]: 0.0 for g in groups}
 
             args["testcases"] = {}
 
-            for i in range(testcases):
+            for i, test in enumerate(tests):
                 infile = os.path.join(self.path, testset_name,
                                       "%02d" % (i + 1))
                 outfile = os.path.join(self.path, testset_name,
@@ -306,6 +303,27 @@ class PolygonTaskLoader(TaskLoader):
                                     input_digest, output_digest)
                 testcase.public = True
                 args["testcases"][testcase.codename] = testcase
+
+                group_name = test.attrib["group"]
+                group_testcases[group_name].append(testcase.codename)
+                group_points[group_name] += float(test.attrib["points"])
+
+            for group in groups:
+                if group.attrib["points-policy"] == "complete-group":
+                    group_points[group.attrib["name"]] = float(group.attrib["points"])
+            points_sum = sum(group_points.values())
+            if points_sum != total_value and points_sum > 0:
+                multiplier = total_value / points_sum
+                for k in group_points.keys():
+                    group_points[k] *= multiplier
+
+            subtasks = []
+            for group in groups:
+                group_name = group.attrib["name"]
+                subtasks.append(
+                    (group_points[group_name], group_testcases[group_name], 0.0)
+                )
+            args["score_type_parameters"] = subtasks
 
             if task_cms_conf is not None and \
                hasattr(task_cms_conf, "datasets") and \
