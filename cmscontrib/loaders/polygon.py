@@ -271,9 +271,31 @@ class PolygonTaskLoader(TaskLoader):
                 logger.info("Checker not found, using diff")
                 evaluation_param = "diff"
 
+            graders = [
+                file
+                for file in root.findall("./files/resources/file[@for-types='cpp.*']")
+                if file.find("./stages/stage[@name='compile']") is not None
+                and file.find("./assets/asset[@name='solution']") is not None
+            ]
+            if graders:
+                for file in graders:
+                    file_path = file.attrib["path"]
+                    grader_filename = os.path.join(self.path, file_path)
+                    if os.path.exists(grader_filename):
+                        digest = self.file_cacher.put_file_from_path(
+                            grader_filename,
+                            "Grader for task %s and language C++" % task.name)
+                        manager_name = os.path.basename(file_path)
+                        args["managers"][manager_name] = Manager(manager_name, digest)
+                    else:
+                        logger.warning("Grader file %s not found", file_path)
+                compilation_param = "grader"
+            else:
+                compilation_param = "alone"
+
             args["task_type"] = "Batch"
             args["task_type_parameters"] = \
-                ["alone", [infile_param, outfile_param], evaluation_param]
+                [compilation_param, [infile_param, outfile_param], evaluation_param]
 
             args["score_type"] = "SharedGroupThreshold"
             total_value = 100.0
