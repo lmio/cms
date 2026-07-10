@@ -342,8 +342,14 @@ class PolygonTaskLoader(TaskLoader):
             subtasks = []
             for group in groups:
                 group_name = group.attrib["name"]
+                testcases = []
+                dependencies = group.find('dependencies')
+                if dependencies is not None:
+                    for dep in dependencies:
+                        testcases.extend(group_testcases[dep.attrib["group"]])
+                testcases.extend(group_testcases[group_name])
                 subtasks.append(
-                    (group_points[group_name], group_testcases[group_name], 0.0)
+                    (group_points[group_name], testcases, 0.0)
                 )
             args["score_type_parameters"] = subtasks
 
