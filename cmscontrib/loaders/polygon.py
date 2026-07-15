@@ -356,13 +356,17 @@ class PolygonTaskLoader(TaskLoader):
                 group_points[group_name] += float(test.attrib["points"])
 
             for group in groups:
+                group_name = group.attrib["name"]
                 if group.attrib["points-policy"] == "complete-group":
-                    group_points[group.attrib["name"]] = float(group.attrib["points"])
+                    points = float(group.attrib["points"])
+                else:
+                    points = group_points[group_name]
+                group_points[group_name] = round(points, 6)
             points_sum = sum(group_points.values())
-            if points_sum != total_value and points_sum > 0:
+            if abs(points_sum - total_value) > 1e-6 and points_sum > 0:
                 multiplier = total_value / points_sum
-                for k in group_points.keys():
-                    group_points[k] *= multiplier
+                for k, v in group_points.items():
+                    group_points[k] = round(v * multiplier, 6)
 
             subtasks = []
             for group in groups:
