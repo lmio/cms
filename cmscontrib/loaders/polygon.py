@@ -238,38 +238,57 @@ class PolygonTaskLoader(TaskLoader):
             args["managers"] = {}
             infile_param = judging.attrib['input-file']
             outfile_param = judging.attrib['output-file']
+            evaluation_param = None
 
-            # Checker can be in any of these two locations.
-            checker_src = os.path.join(self.path, "files", "check.cpp")
-            if not os.path.exists(checker_src):
-                checker_src = os.path.join(self.path, "check.cpp")
-
-            if os.path.exists(checker_src):
-                logger.info("Checker found, compiling")
-                checker_exe = os.path.join(
-                    os.path.dirname(checker_src), "checker")
-                testlib_path = "/usr/local/include/cms"
-                testlib_include = os.path.join(testlib_path, "testlib.h")
-                extra_include = os.path.join(self.path, "files")
-                if not config.installed:
-                    testlib_path = os.path.join(os.path.dirname(__file__),
-                                                "polygon")
+            manager_src = os.path.join(self.path, "files", "manager.cpp")
+            if os.path.exists(manager_src):
+                args["task_type"] = "Communication"
+                logger.info("Manager found, compiling")
+                manager_exe = os.path.join(
+                    os.path.dirname(manager_src), "manager")
                 code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
-                                        "-DCMS", "-I", testlib_path,
-                                        "-include", testlib_include,
-                                        "-iquote", extra_include,
-                                        "-o", checker_exe, checker_src])
+                                        "-DCMS", "-o", manager_exe, manager_src])
                 if code != 0:
-                    logger.critical("Could not compile checker")
+                    logger.critical("Could not compile manager")
                     return None
                 digest = self.file_cacher.put_file_from_path(
-                    checker_exe,
+                    manager_exe,
                     "Manager for task %s" % name)
-                args["managers"]["checker"] = Manager("checker", digest)
-                evaluation_param = "comparator"
+                args["managers"]["manager"] = Manager("manager", digest)
+
             else:
-                logger.info("Checker not found, using diff")
-                evaluation_param = "diff"
+                args["task_type"] = "Batch"
+                # Checker can be in any of these two locations.
+                checker_src = os.path.join(self.path, "files", "check.cpp")
+                if not os.path.exists(checker_src):
+                    checker_src = os.path.join(self.path, "check.cpp")
+
+                if os.path.exists(checker_src):
+                    logger.info("Checker found, compiling")
+                    checker_exe = os.path.join(
+                        os.path.dirname(checker_src), "checker")
+                    testlib_path = "/usr/local/include/cms"
+                    testlib_include = os.path.join(testlib_path, "testlib.h")
+                    extra_include = os.path.join(self.path, "files")
+                    if not config.installed:
+                        testlib_path = os.path.join(os.path.dirname(__file__),
+                                                    "polygon")
+                    code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
+                                            "-DCMS", "-I", testlib_path,
+                                            "-include", testlib_include,
+                                            "-iquote", extra_include,
+                                            "-o", checker_exe, checker_src])
+                    if code != 0:
+                        logger.critical("Could not compile checker")
+                        return None
+                    digest = self.file_cacher.put_file_from_path(
+                        checker_exe,
+                        "Manager for task %s" % name)
+                    args["managers"]["checker"] = Manager("checker", digest)
+                    evaluation_param = "comparator"
+                else:
+                    logger.info("Checker not found, using diff")
+                    evaluation_param = "diff"
 
             graders = [
                 file
@@ -289,13 +308,19 @@ class PolygonTaskLoader(TaskLoader):
                         args["managers"][manager_name] = Manager(manager_name, digest)
                     else:
                         logger.warning("Grader file %s not found", file_path)
-                compilation_param = "grader"
-            else:
-                compilation_param = "alone"
 
-            args["task_type"] = "Batch"
-            args["task_type_parameters"] = \
-                [compilation_param, [infile_param, outfile_param], evaluation_param]
+            if args["task_type"] == "Batch":
+                args["task_type_parameters"] = [
+                    "grader" if graders else "alone",
+                    [infile_param, outfile_param],
+                    evaluation_param,
+                ]
+            elif args["task_type"] == "Communication":
+                args["task_type_parameters"] = [
+                    1,
+                    "stub" if graders else "alone",
+                    "std_io",
+                ]
 
             args["score_type"] = "SharedGroupThreshold"
             total_value = 100.0
