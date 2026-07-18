@@ -314,6 +314,7 @@ class Communication(TaskType):
         #     programs terminated.
         manager_time_limit = max(self.num_processes * (job.time_limit + 1.0),
                                  config.trusted_sandbox_max_time_s)
+        sandbox_mgr.open_files = 0  # Do not limit open files for the manager.
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,

@@ -908,6 +908,7 @@ class IsolateSandbox(SandboxBase):
         self.stdin_file = None         # -i
         self.stack_space = None        # -k
         self.address_space = None      # -m
+        self.open_files = None         # -n
         self.stdout_file = None        # -o
         self.stderr_file = None        # -r
         self.timeout = None            # -t
@@ -1109,6 +1110,8 @@ class IsolateSandbox(SandboxBase):
                 res += ["--cg-mem=%d" % (self.address_space // 1024)]
             else:
                 res += ["--mem=%d" % (self.address_space // 1024)]
+        if self.open_files is not None:
+            res += ["--open-files=%s" % self.open_files]
         if self.stdout_file is not None:
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
