@@ -858,18 +858,17 @@ class IsolateSandbox(SandboxBase):
         """
         SandboxBase.__init__(self, file_cacher, name, temp_dir)
 
-        # Isolate only accepts ids between 0 and 999 (by default). We assign
-        # the range [(shard+1)*10, (shard+2)*10) to each Worker and keep the
-        # range [0, 10) for other uses (command-line scripts like cmsMake or
-        # direct console users of isolate). Inside each range ids are assigned
-        # sequentially, with a wrap-around.
+        # We assign the range [(shard+1)*100, (shard+2)*100) to each Worker and
+        # keep the range [0, 100) for other uses (command-line scripts like
+        # cmsMake or direct console users of isolate). Inside each range ids are
+        # assigned sequentially, with a wrap-around.
         # FIXME This is the only use of FileCacher.service, and it's an
         # improper use! Avoid it!
         if file_cacher is not None and file_cacher.service is not None:
-            box_id = ((file_cacher.service.shard + 1) * 10
-                      + (IsolateSandbox.next_id % 10)) % 1000
+            box_id = ((file_cacher.service.shard + 1) * 100
+                      + (IsolateSandbox.next_id % 100)) % 10000
         else:
-            box_id = IsolateSandbox.next_id % 10
+            box_id = IsolateSandbox.next_id % 100
         IsolateSandbox.next_id += 1
 
         # We create a directory "home" inside the outer temporary directory,
