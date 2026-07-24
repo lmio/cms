@@ -23,7 +23,8 @@ function question_reply_toggle(element, invoker)
 function update_additional_answer(element, invoker)
 {
   var obj = document.getElementsByClassName("alternative_answer")[element];
-  if (invoker.selectedIndex == 5)
+  var selected = invoker.selectedOptions;
+  if (selected.length === 1 && selected[0].value == "other")
     obj.style.display = "block";
   else
     obj.style.display = "none";
@@ -193,9 +194,8 @@ function update_additional_answer(element, invoker)
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
               <option value="yes">Yes</option>
               <option value="no">No</option>
-              <option value="answered">Answered in task description</option>
-              <option value="invalid">Invalid question</option>
-              <option value="nocomment">No comment</option>
+              <option value="nocomment">No Comment/Please refer to the task statement</option>
+              <option value="invalid">Invalid Question</option>
               <option selected value="other">Other</option>
             </select>
             <br/>

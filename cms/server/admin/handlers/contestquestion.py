@@ -71,9 +71,8 @@ class QuestionReplyHandler(BaseHandler):
     QUICK_ANSWERS = {
         "yes": "Yes",
         "no": "No",
-        "answered": "Answered in task description",
-        "invalid": "Invalid question",
-        "nocomment": "No comment",
+        "nocomment": "No Comment/Please refer to the task statement",
+        "invalid": "Invalid Question",
     }
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
