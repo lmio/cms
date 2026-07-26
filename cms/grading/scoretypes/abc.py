@@ -395,10 +395,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             testcases = []
             public_testcases = []
-            previous_tc_all_correct = True
+            # In "Restricted" feedback mode:
+            #   show until the first testcase with a lowest score
+
+            tc_first_lowest_idx = None
+            tc_first_lowest_score = None
             for tc_idx in target:
+                tc_score = float(evaluations[tc_idx].outcome)
                 tc_outcome = self.get_public_outcome(
-                    float(evaluations[tc_idx].outcome), parameter)
+                    tc_score, parameter)
 
                 testcases.append({
                     "idx": tc_indices[tc_idx],
@@ -406,14 +411,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
                     "memory": evaluations[tc_idx].execution_memory,
-                    "show_in_restricted_feedback": previous_tc_all_correct})
+                    "show_in_restricted_feedback": True})
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
-                    # Only block restricted feedback if this is the first
-                    # *public* non-correct testcase, otherwise we might be
-                    # leaking info on private testcases.
-                    if tc_outcome != "Correct":
-                        previous_tc_all_correct = False
+                    if tc_first_lowest_score is None or \
+                            tc_score < tc_first_lowest_score:
+                        tc_first_lowest_idx = tc_indices[tc_idx]
+                        tc_first_lowest_score = tc_score
                 else:
                     public_testcases.append({"idx": tc_indices[tc_idx]})
 
@@ -421,6 +425,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 [float(evaluations[tc_idx].outcome) for tc_idx in target],
                 parameter)
             st_score = st_score_fraction * parameter[0]
+
+            if st_score_fraction < 1.0:
+                for tc in testcases:
+                    tc["show_in_restricted_feedback"] = (tc["idx"] <= tc_first_lowest_idx)
 
             score += st_score
             subtasks.append({
