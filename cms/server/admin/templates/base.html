@@ -111,7 +111,7 @@ $(document).ready(init);
           </li>
           {% endif %}
 
-          {% for c in contest_list[:5] %}
+          {% for c in (contest_list|sort(True, attribute="active"))[:5] %}
           <li class="menu_entry">
             <a class="menu_link bold" href="{{ url("contest", c.id) }}" title="{{ c.description }}">
               {{ c.name }}
@@ -144,7 +144,7 @@ $(document).ready(init);
           </li>
           {% endif %}
 
-          {% for t in task_list[:5] %}
+          {% for t in (task_list|selectattr("contest")|sort(True, attribute="contest.active") + task_list|rejectattr("contest")|list)[:5] %}
           <li class="menu_entry">
             <a class="menu_link bold" href="{{ url("task", t.id) }}" title="{{ t.title }}">
               {{ t.name }}
