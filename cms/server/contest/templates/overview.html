@@ -192,7 +192,7 @@
 {% set extensions = "[%s]"|format(contest.languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
 {% for t_iter in contest.tasks %}
         <tr>
-            <th>{{ t_iter.name }}</th>
+            <th>{{ t_iter.short_name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
     {% if t_iter.active_dataset.time_limit is not none %}

@@ -72,7 +72,7 @@ $(document).ready(function () {
 {% for task in contest.tasks %}
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
-    <li{% if task == default_task %} class="active"{% endif %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
+    <li{% if task == default_task %} class="active"{% endif %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.short_name }}</a></li>
     {% endif %}
 {% endfor %}
 </ul>

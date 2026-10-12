@@ -47,7 +47,7 @@
                     <datalist id="task_names_list">
                         {% if actual_phase >= 0 %}
                             {% for task in contest.tasks %}
-                        <option value="{{ task.name }}">
+                        <option value="{{ task.short_name }}">
                             {% endfor %}
                         {% endif %}
                     </datalist>

@@ -265,6 +265,15 @@ class Task(Base):
         passive_deletes=True,
         back_populates="task")
 
+    @property
+    def short_name(self):
+        # User presentable short codename that doesn't need to be unique system-wide.
+        if self.contest and self.name.startswith(self.contest.name):
+            short = self.name.removeprefix(self.contest.name)
+            if short.startswith(('-', '_')):
+                return short[1:]
+        return self.name
+
 
 class Statement(Base):
     """Class to store a translation of the task statement.

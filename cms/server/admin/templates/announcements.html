@@ -18,7 +18,7 @@
             <input type="text" name="subject" id="new_subject" style="width: 100%" list="task_names_list" autocomplete="off">
             <datalist id="task_names_list">
               {% for task in contest.tasks %}
-              <option value="{{ task.name }}">
+              <option value="{{ task.short_name }}">
               {% endfor %}
             </datalist>
           </div>
